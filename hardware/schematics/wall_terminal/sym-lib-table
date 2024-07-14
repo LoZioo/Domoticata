@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "ESP32 _38PIN")(type "KiCad")(uri "D:/git/Domoticata/schematics/ESP32 _38PIN.kicad_sym")(options "")(descr ""))
+)

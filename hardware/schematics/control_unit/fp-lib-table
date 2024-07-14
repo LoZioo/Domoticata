@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "MCU_Espressif_ESP32_38PIN")(type "KiCad")(uri "${KIPRJMOD}/../../lib/footprints/MCU_Espressif_ESP32_38PIN.pretty")(options "")(descr ""))
+)
