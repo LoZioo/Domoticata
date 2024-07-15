@@ -393,7 +393,7 @@
 				(pin input line
 					(at -12.7 0 0)
 					(length 2.54)
-					(name "EN/RESET"
+					(name "EN/~{RESET}"
 						(effects
 							(font
 								(size 1.27 1.27)

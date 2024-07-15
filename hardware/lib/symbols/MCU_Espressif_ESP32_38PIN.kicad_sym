@@ -226,7 +226,7 @@
 			(pin input line
 				(at -12.7 0 0)
 				(length 2.54)
-				(name "EN/RESET"
+				(name "EN/~{RESET}"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -760,7 +760,7 @@
 			)
 		)
 		(property "Value" ""
-			(at -3.81 22.86 0)
+			(at 3.81 -22.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -777,7 +777,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at -3.81 22.86 0)
+			(at 3.81 -22.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -807,7 +807,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 -22.86 0)
+				(at 12.7 22.86 180)
 				(length 2.54)
 				(name "V5/Vin"
 					(effects
@@ -825,7 +825,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 0 0)
+				(at 12.7 0 180)
 				(length 2.54)
 				(name "G26"
 					(effects
@@ -843,7 +843,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 2.54 0)
+				(at 12.7 -2.54 180)
 				(length 2.54)
 				(name "G25"
 					(effects
@@ -861,7 +861,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 5.08 0)
+				(at 12.7 -5.08 180)
 				(length 2.54)
 				(name "G33"
 					(effects
@@ -879,7 +879,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 7.62 0)
+				(at 12.7 -7.62 180)
 				(length 2.54)
 				(name "G32"
 					(effects
@@ -897,7 +897,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 10.16 0)
+				(at 12.7 -10.16 180)
 				(length 2.54)
 				(name "G35"
 					(effects
@@ -915,7 +915,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 12.7 0)
+				(at 12.7 -12.7 180)
 				(length 2.54)
 				(name "G34"
 					(effects
@@ -933,7 +933,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 15.24 0)
+				(at 12.7 -15.24 180)
 				(length 2.54)
 				(name "SN/G39"
 					(effects
@@ -951,7 +951,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 17.78 0)
+				(at 12.7 -17.78 180)
 				(length 2.54)
 				(name "SP/G36"
 					(effects
@@ -969,9 +969,9 @@
 				)
 			)
 			(pin input line
-				(at -12.7 20.32 0)
+				(at 12.7 -20.32 180)
 				(length 2.54)
-				(name "EN/RESET"
+				(name "EN/~{RESET}"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -987,7 +987,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 22.86 0)
+				(at 12.7 -22.86 180)
 				(length 2.54)
 				(name "3V3"
 					(effects
@@ -1005,7 +1005,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 -20.32 0)
+				(at 12.7 20.32 180)
 				(length 2.54)
 				(name "CMD"
 					(effects
@@ -1023,7 +1023,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 22.86 180)
+				(at -12.7 -22.86 0)
 				(length 2.54)
 				(name "GND"
 					(effects
@@ -1041,7 +1041,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 20.32 180)
+				(at -12.7 -20.32 0)
 				(length 2.54)
 				(name "G23"
 					(effects
@@ -1059,7 +1059,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 17.78 180)
+				(at -12.7 -17.78 0)
 				(length 2.54)
 				(name "G22"
 					(effects
@@ -1077,7 +1077,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 15.24 180)
+				(at -12.7 -15.24 0)
 				(length 2.54)
 				(name "TXD/G1"
 					(effects
@@ -1095,7 +1095,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 12.7 180)
+				(at -12.7 -12.7 0)
 				(length 2.54)
 				(name "RXD/G3"
 					(effects
@@ -1113,7 +1113,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 10.16 180)
+				(at -12.7 -10.16 0)
 				(length 2.54)
 				(name "G21"
 					(effects
@@ -1131,25 +1131,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 7.62 180)
-				(length 2.54)
-				(name "GND"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "26"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin input line
-				(at 12.7 22.86 180)
+				(at -12.7 -22.86 0)
 				(length 2.54) hide
 				(name "GND"
 					(effects
@@ -1167,7 +1149,25 @@
 				)
 			)
 			(pin input line
-				(at 12.7 5.08 180)
+				(at -12.7 -7.62 0)
+				(length 2.54)
+				(name "GND"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "26"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at -12.7 -5.08 0)
 				(length 2.54)
 				(name "G19"
 					(effects
@@ -1185,7 +1185,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 2.54 180)
+				(at -12.7 -2.54 0)
 				(length 2.54)
 				(name "G18"
 					(effects
@@ -1203,7 +1203,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 0 180)
+				(at -12.7 0 0)
 				(length 2.54)
 				(name "G5"
 					(effects
@@ -1221,7 +1221,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 -17.78 0)
+				(at 12.7 17.78 180)
 				(length 2.54)
 				(name "SD3"
 					(effects
@@ -1239,7 +1239,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 -2.54 180)
+				(at -12.7 2.54 0)
 				(length 2.54)
 				(name "G17"
 					(effects
@@ -1257,7 +1257,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 -5.08 180)
+				(at -12.7 5.08 0)
 				(length 2.54)
 				(name "G16"
 					(effects
@@ -1275,7 +1275,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 -7.62 180)
+				(at -12.7 7.62 0)
 				(length 2.54)
 				(name "G4"
 					(effects
@@ -1293,7 +1293,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 -10.16 180)
+				(at -12.7 10.16 0)
 				(length 2.54)
 				(name "G0"
 					(effects
@@ -1311,7 +1311,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 -12.7 180)
+				(at -12.7 12.7 0)
 				(length 2.54)
 				(name "G2"
 					(effects
@@ -1329,7 +1329,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 -15.24 180)
+				(at -12.7 15.24 0)
 				(length 2.54)
 				(name "G15"
 					(effects
@@ -1347,7 +1347,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 -17.78 180)
+				(at -12.7 17.78 0)
 				(length 2.54)
 				(name "SD1"
 					(effects
@@ -1365,7 +1365,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 -20.32 180)
+				(at -12.7 20.32 0)
 				(length 2.54)
 				(name "SD0"
 					(effects
@@ -1383,7 +1383,7 @@
 				)
 			)
 			(pin input line
-				(at 12.7 -22.86 180)
+				(at -12.7 22.86 0)
 				(length 2.54)
 				(name "CLK"
 					(effects
@@ -1401,7 +1401,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 -15.24 0)
+				(at 12.7 15.24 180)
 				(length 2.54)
 				(name "SD2"
 					(effects
@@ -1419,7 +1419,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 -12.7 0)
+				(at 12.7 12.7 180)
 				(length 2.54)
 				(name "G13"
 					(effects
@@ -1437,25 +1437,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 -10.16 0)
-				(length 2.54)
-				(name "GND"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "6"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin input line
-				(at 12.7 22.86 180)
+				(at -12.7 -22.86 0)
 				(length 2.54) hide
 				(name "GND"
 					(effects
@@ -1473,7 +1455,25 @@
 				)
 			)
 			(pin input line
-				(at -12.7 -7.62 0)
+				(at 12.7 10.16 180)
+				(length 2.54)
+				(name "GND"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "6"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin input line
+				(at 12.7 7.62 180)
 				(length 2.54)
 				(name "G12"
 					(effects
@@ -1491,7 +1491,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 -5.08 0)
+				(at 12.7 5.08 180)
 				(length 2.54)
 				(name "G14"
 					(effects
@@ -1509,7 +1509,7 @@
 				)
 			)
 			(pin input line
-				(at -12.7 -2.54 0)
+				(at 12.7 2.54 180)
 				(length 2.54)
 				(name "G27"
 					(effects
