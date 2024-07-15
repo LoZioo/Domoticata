@@ -463,7 +463,7 @@
 					)
 				)
 				(pin input line
-					(at 12.7 -6.35 180)
+					(at 12.7 -8.89 180)
 					(length 2.54)
 					(name "G23"
 						(effects
@@ -481,7 +481,7 @@
 					)
 				)
 				(pin input line
-					(at 12.7 -8.89 180)
+					(at 12.7 -6.35 180)
 					(length 2.54)
 					(name "G22"
 						(effects
