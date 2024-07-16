@@ -1097,7 +1097,7 @@
 		)
 		(uuid "fa9bb64c-72b9-4482-8c43-a776939dfcd1")
 	)
-	(text "NOTE:\nChiedere se predisporre anche uscite per relay"
+	(text "NOTE:\nChiedere se predisporre anche uscite per relay\nPredisporre gruppo di continuita'"
 		(exclude_from_sim no)
 		(at 146.558 29.718 0)
 		(effects
