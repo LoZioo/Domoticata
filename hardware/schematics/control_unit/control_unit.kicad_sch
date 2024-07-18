@@ -1097,7 +1097,7 @@
 		)
 		(uuid "fa9bb64c-72b9-4482-8c43-a776939dfcd1")
 	)
-	(text "NOTE:\nChiedere se predisporre anche uscite per relay\nPredisporre gruppo di continuita'"
+	(text "NOTE:\nChiedere se predisporre anche uscite per relay"
 		(exclude_from_sim no)
 		(at 146.558 29.718 0)
 		(effects
@@ -1266,7 +1266,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0390fe8f-149f-4134-8f98-f3279b321510")
-		(property "Reference" "#PWR010"
+		(property "Reference" "#PWR011"
 			(at 121.92 29.21 0)
 			(effects
 				(font
@@ -1316,7 +1316,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85"
-					(reference "#PWR010")
+					(reference "#PWR011")
 					(unit 1)
 				)
 			)
@@ -1399,7 +1399,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2042d6c6-0343-4c8c-a2a8-ce5b360e08a5")
-		(property "Reference" "#PWR011"
+		(property "Reference" "#PWR010"
 			(at 115.57 67.31 0)
 			(effects
 				(font
@@ -1450,7 +1450,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85"
-					(reference "#PWR011")
+					(reference "#PWR010")
 					(unit 1)
 				)
 			)
@@ -1466,7 +1466,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "31fcc07b-1f42-4e11-8a90-cc06fa562ce2")
-		(property "Reference" "#PWR08"
+		(property "Reference" "#PWR07"
 			(at 92.71 58.42 0)
 			(effects
 				(font
@@ -1517,7 +1517,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85"
-					(reference "#PWR08")
+					(reference "#PWR07")
 					(unit 1)
 				)
 			)
@@ -1603,7 +1603,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6496dcf4-a226-45c2-8617-927d202cb320")
-		(property "Reference" "#PWR012"
+		(property "Reference" "#PWR09"
 			(at 109.22 77.47 0)
 			(effects
 				(font
@@ -1654,7 +1654,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85"
-					(reference "#PWR012")
+					(reference "#PWR09")
 					(unit 1)
 				)
 			)
@@ -1670,7 +1670,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7f1c8605-a068-460b-9dff-26516c3f3df3")
-		(property "Reference" "#PWR07"
+		(property "Reference" "#PWR06"
 			(at 82.55 86.36 0)
 			(effects
 				(font
@@ -1721,7 +1721,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85"
-					(reference "#PWR07")
+					(reference "#PWR06")
 					(unit 1)
 				)
 			)
@@ -1737,7 +1737,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8988de81-0340-4a86-9872-1af96fa2aed9")
-		(property "Reference" "#PWR06"
+		(property "Reference" "#PWR08"
 			(at 99.06 81.28 0)
 			(effects
 				(font
@@ -1788,7 +1788,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85"
-					(reference "#PWR06")
+					(reference "#PWR08")
 					(unit 1)
 				)
 			)
@@ -1804,7 +1804,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e99b54ee-8756-41c9-a4bb-dbfa59a38f45")
-		(property "Reference" "#PWR01"
+		(property "Reference" "#PWR02"
 			(at 31.75 40.64 0)
 			(effects
 				(font
@@ -1855,7 +1855,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85"
-					(reference "#PWR01")
+					(reference "#PWR02")
 					(unit 1)
 				)
 			)
@@ -1871,7 +1871,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f0df6c04-a000-423a-8bfb-22784f9c6bd8")
-		(property "Reference" "#PWR09"
+		(property "Reference" "#PWR012"
 			(at 121.92 57.15 0)
 			(effects
 				(font
@@ -1922,7 +1922,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85"
-					(reference "#PWR09")
+					(reference "#PWR012")
 					(unit 1)
 				)
 			)
@@ -2005,7 +2005,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "fe528ff4-bacc-4a79-9358-3c6e67f3c95d")
-		(property "Reference" "#PWR02"
+		(property "Reference" "#PWR01"
 			(at 29.21 26.67 0)
 			(effects
 				(font
@@ -2056,7 +2056,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85"
-					(reference "#PWR02")
+					(reference "#PWR01")
 					(unit 1)
 				)
 			)
