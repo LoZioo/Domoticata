@@ -1097,7 +1097,7 @@
 		)
 		(uuid "fa9bb64c-72b9-4482-8c43-a776939dfcd1")
 	)
-	(text "NOTE:\nChiedere se predisporre anche uscite per relay"
+	(text "NOTE:\nChiedere se predisporre anche uscite per relay\nPredisporre ventola di raffreddamento e termocoppie\nMettere fusibili\nAggiungere altre zone con MOSFET (minimo 12)"
 		(exclude_from_sim no)
 		(at 146.558 29.718 0)
 		(effects
@@ -1796,7 +1796,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 31.75 34.29 0)
+		(at 35.56 34.29 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1805,7 +1805,7 @@
 		(fields_autoplaced yes)
 		(uuid "e99b54ee-8756-41c9-a4bb-dbfa59a38f45")
 		(property "Reference" "#PWR02"
-			(at 31.75 40.64 0)
+			(at 35.56 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1814,7 +1814,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 31.75 39.37 0)
+			(at 35.56 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1823,7 +1823,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 31.75 34.29 0)
+			(at 35.56 34.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1832,7 +1832,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 31.75 34.29 0)
+			(at 35.56 34.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1841,7 +1841,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 31.75 34.29 0)
+			(at 35.56 34.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2353,7 +2353,7 @@
 			)
 		)
 		(pin "GND" input
-			(at 31.75 34.29 270)
+			(at 35.56 34.29 270)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2372,7 +2372,7 @@
 			)
 			(uuid "aa4357fb-29fa-4811-b69a-53089d000ad1")
 		)
-		(pin "Vin" input
+		(pin "24V" input
 			(at 25.4 26.67 180)
 			(effects
 				(font
@@ -2380,7 +2380,27 @@
 				)
 				(justify left)
 			)
-			(uuid "ad16f6aa-dcf5-41b1-a67b-0a4ed8a46375")
+			(uuid "d6783982-57e1-45a0-ae25-da64e96ab604")
+		)
+		(pin "B-" input
+			(at 31.75 34.29 270)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "4ccf8487-102c-47fd-b6f4-bc137d1295c2")
+		)
+		(pin "B+" input
+			(at 27.94 34.29 270)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "41e7a32d-0360-4e2d-b38f-0391a76c74c1")
 		)
 		(instances
 			(project "control_unit"
