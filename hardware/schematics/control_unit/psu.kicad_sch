@@ -305,6 +305,139 @@
 				)
 			)
 		)
+		(symbol "Device:Fuse"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "F"
+				(at 2.032 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Fuse"
+				(at -1.905 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Fuse"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "fuse"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "*Fuse*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Fuse_0_1"
+				(rectangle
+					(start -0.762 -2.54)
+					(end 0.762 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0 -2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Fuse_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Device:L"
 			(pin_numbers hide)
 			(pin_names
@@ -1453,7 +1586,7 @@
 	)
 	(hierarchical_label "24V"
 		(shape input)
-		(at 95.25 82.55 180)
+		(at 87.63 82.55 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1833,7 +1966,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2270bd21-b500-4ca7-bc90-0610abb5d656")
-		(property "Reference" "R35"
+		(property "Reference" "R47"
 			(at 205.74 101.5999 0)
 			(effects
 				(font
@@ -1887,7 +2020,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
-					(reference "R35")
+					(reference "R47")
 					(unit 1)
 				)
 			)
@@ -1970,7 +2103,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3d39dac0-b560-4f89-911a-b9da0650da58")
-		(property "Reference" "R36"
+		(property "Reference" "R48"
 			(at 218.44 91.4399 0)
 			(effects
 				(font
@@ -2024,7 +2157,74 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
-					(reference "R36")
+					(reference "R48")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:Fuse")
+		(at 91.44 82.55 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5177b0d0-fa8b-4c07-bda8-d57b9797f053")
+		(property "Reference" "F1"
+			(at 91.44 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Fuse"
+			(at 91.44 78.74 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 91.44 84.328 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 91.44 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Fuse"
+			(at 91.44 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "810cbe6c-badf-4a43-b482-cd57a805804d")
+		)
+		(pin "2"
+			(uuid "7eae341e-9adc-4162-80a3-037a1f60a3e3")
+		)
+		(instances
+			(project "control_unit"
+				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
+					(reference "F1")
 					(unit 1)
 				)
 			)
@@ -2180,7 +2380,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "72ae6914-3cbd-47d3-a099-9b9c47d028f5")
-		(property "Reference" "D2"
+		(property "Reference" "D8"
 			(at 219.71 100.6474 90)
 			(effects
 				(font
@@ -2234,7 +2434,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
-					(reference "D2")
+					(reference "D8")
 					(unit 1)
 				)
 			)
@@ -2250,7 +2450,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7fe303fc-93d4-4e4b-9bc9-3b15243582fa")
-		(property "Reference" "U13"
+		(property "Reference" "U15"
 			(at 143.51 74.93 0)
 			(effects
 				(font
@@ -2313,7 +2513,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
-					(reference "U13")
+					(reference "U15")
 					(unit 1)
 				)
 			)
@@ -2337,7 +2537,7 @@
 				)
 			)
 		)
-		(property "Value" "L"
+		(property "Value" "47u 3A"
 			(at 167.64 85.09 90)
 			(effects
 				(font
@@ -2397,7 +2597,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a211d0e9-8a05-4fed-a28b-bd155d65de63")
-		(property "Reference" "D1"
+		(property "Reference" "D7"
 			(at 162.56 93.6624 90)
 			(effects
 				(font
@@ -2451,7 +2651,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
-					(reference "D1")
+					(reference "D7")
 					(unit 1)
 				)
 			)
@@ -2537,7 +2737,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d7e463cd-fb68-4e1f-8ff5-e053c7fece3c")
-		(property "Reference" "R34"
+		(property "Reference" "R46"
 			(at 205.74 91.4399 0)
 			(effects
 				(font
@@ -2591,7 +2791,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
-					(reference "R34")
+					(reference "R46")
 					(unit 1)
 				)
 			)

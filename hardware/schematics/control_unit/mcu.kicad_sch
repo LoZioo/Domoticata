@@ -916,16 +916,8 @@
 		)
 	)
 	(no_connect
-		(at 137.16 107.95)
-		(uuid "124f1b50-1831-4acc-bcb7-4c1a3604e467")
-	)
-	(no_connect
 		(at 137.16 54.61)
 		(uuid "3ef92a9d-ceaf-4b8c-b148-b11e26d94aaf")
-	)
-	(no_connect
-		(at 137.16 74.93)
-		(uuid "5aebbe9b-4054-4834-bfbd-fdf5c18e5d59")
 	)
 	(no_connect
 		(at 137.16 59.69)
@@ -936,32 +928,12 @@
 		(uuid "77e7fb01-01f7-434c-b711-ace9b181c268")
 	)
 	(no_connect
-		(at 137.16 57.15)
-		(uuid "8ec9975d-857b-4d1c-ba8e-91c2da37afa1")
-	)
-	(no_connect
-		(at 137.16 64.77)
-		(uuid "90f3b0b0-60ae-4808-a4e9-cec22657ee8d")
-	)
-	(no_connect
-		(at 137.16 52.07)
-		(uuid "ae7a7484-166b-48b5-a613-002b6f2162db")
-	)
-	(no_connect
-		(at 137.16 67.31)
-		(uuid "b7d8da05-d3e6-412a-8eb8-88a16b6d5e98")
+		(at 111.76 83.82)
+		(uuid "9f70a8c9-fd65-41db-9d97-65eddb59adef")
 	)
 	(no_connect
 		(at 137.16 110.49)
 		(uuid "c22dcb88-7536-46bf-9fa5-a75bdb6167c9")
-	)
-	(no_connect
-		(at 137.16 62.23)
-		(uuid "c737c347-96bc-4dce-9e5f-ca6d09a8bc09")
-	)
-	(no_connect
-		(at 137.16 72.39)
-		(uuid "d28d30fa-78e2-440a-9e19-218b487162f3")
 	)
 	(no_connect
 		(at 137.16 113.03)
@@ -1011,7 +983,7 @@
 	)
 	(hierarchical_label "RX"
 		(shape input)
-		(at 137.16 77.47 0)
+		(at 137.16 107.95 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1023,7 +995,7 @@
 	)
 	(hierarchical_label "O3"
 		(shape input)
-		(at 137.16 87.63 0)
+		(at 137.16 77.47 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1033,21 +1005,9 @@
 		)
 		(uuid "177e9650-399a-49fc-b9e4-1d82593ab24b")
 	)
-	(hierarchical_label "~{RST}"
-		(shape input)
-		(at 111.76 83.82 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "1cad72cb-7a60-4ed7-ad00-cd760d6a50e8")
-	)
 	(hierarchical_label "O6"
 		(shape input)
-		(at 137.16 95.25 0)
+		(at 137.16 85.09 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1057,9 +1017,45 @@
 		)
 		(uuid "25b476c5-dfb7-4fc9-bc5d-8503b36a2b67")
 	)
+	(hierarchical_label "O12"
+		(shape input)
+		(at 137.16 100.33 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "28bfb0a5-85a5-4241-b2e7-8d840f357917")
+	)
+	(hierarchical_label "O18"
+		(shape input)
+		(at 137.16 52.07 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "3d8af788-7a03-4070-9b99-0c8d861357ef")
+	)
+	(hierarchical_label "O16"
+		(shape input)
+		(at 137.16 74.93 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "4138c9e5-8908-4aac-9f77-d664f844323f")
+	)
 	(hierarchical_label "TX"
 		(shape input)
-		(at 137.16 80.01 0)
+		(at 137.16 64.77 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1071,7 +1067,7 @@
 	)
 	(hierarchical_label "O9"
 		(shape input)
-		(at 137.16 102.87 0)
+		(at 137.16 92.71 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1081,9 +1077,33 @@
 		)
 		(uuid "57b51306-dcc2-42a2-8ff2-261fb3fa8920")
 	)
+	(hierarchical_label "O13"
+		(shape input)
+		(at 137.16 102.87 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5aed19fd-c02b-4f57-b6b0-65f2750a655b")
+	)
+	(hierarchical_label "O11"
+		(shape input)
+		(at 137.16 97.79 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "61841a4d-d885-4165-afa4-90c319977f78")
+	)
 	(hierarchical_label "O8"
 		(shape input)
-		(at 137.16 100.33 0)
+		(at 137.16 90.17 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1095,7 +1115,7 @@
 	)
 	(hierarchical_label "DE{slash}~{RE}"
 		(shape input)
-		(at 137.16 69.85 0)
+		(at 137.16 67.31 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1107,7 +1127,7 @@
 	)
 	(hierarchical_label "O10"
 		(shape input)
-		(at 137.16 105.41 0)
+		(at 137.16 95.25 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1119,7 +1139,7 @@
 	)
 	(hierarchical_label "O5"
 		(shape input)
-		(at 137.16 92.71 0)
+		(at 137.16 82.55 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1129,9 +1149,21 @@
 		)
 		(uuid "7b247c21-45cc-4b6c-ad8f-bcbee50cb482")
 	)
+	(hierarchical_label "O17"
+		(shape input)
+		(at 137.16 57.15 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9886991a-5894-4900-be2c-c1923aa0cf71")
+	)
 	(hierarchical_label "O7"
 		(shape input)
-		(at 137.16 97.79 0)
+		(at 137.16 87.63 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1143,7 +1175,7 @@
 	)
 	(hierarchical_label "O1"
 		(shape input)
-		(at 137.16 82.55 0)
+		(at 137.16 62.23 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1167,7 +1199,7 @@
 	)
 	(hierarchical_label "O4"
 		(shape input)
-		(at 137.16 90.17 0)
+		(at 137.16 80.01 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1177,9 +1209,21 @@
 		)
 		(uuid "d057f776-bad6-4c0c-a179-e83ee1c63aa3")
 	)
+	(hierarchical_label "O14"
+		(shape input)
+		(at 137.16 105.41 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e270cf50-e972-4d02-a7c0-e957b8d44acd")
+	)
 	(hierarchical_label "O2"
 		(shape input)
-		(at 137.16 85.09 0)
+		(at 137.16 69.85 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1201,6 +1245,18 @@
 		)
 		(uuid "e41eaf65-5ea4-4f82-a080-7c8582dec4a9")
 	)
+	(hierarchical_label "O15"
+		(shape input)
+		(at 137.16 72.39 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "f72229e8-11cc-4880-a69e-c0ef12fb883e")
+	)
 	(symbol
 		(lib_id "MCU_Espressif_ESP32_38PIN:ESP32_38PIN_Ideal")
 		(at 124.46 83.82 0)
@@ -1211,7 +1267,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "259b3b25-7238-4d81-b4ec-86097182f713")
-		(property "Reference" "U12"
+		(property "Reference" "U14"
 			(at 111.76 78.7714 0)
 			(effects
 				(font
@@ -1371,7 +1427,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/7664bf1e-4b5c-43ea-a123-dd981a1854d7"
-					(reference "U12")
+					(reference "U14")
 					(unit 1)
 				)
 			)
