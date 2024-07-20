@@ -1517,7 +1517,7 @@
 		)
 		(uuid "1130c445-4d98-4822-a67a-b792a99aeda5")
 	)
-	(hierarchical_label "OUT_9"
+	(hierarchical_label "O9"
 		(shape input)
 		(at 91.44 111.76 180)
 		(fields_autoplaced yes)
@@ -1589,7 +1589,7 @@
 		)
 		(uuid "22d07188-84f2-43af-af14-b197d1f6aca8")
 	)
-	(hierarchical_label "OUT_1"
+	(hierarchical_label "O1"
 		(shape input)
 		(at 218.44 35.56 180)
 		(fields_autoplaced yes)
@@ -1637,7 +1637,7 @@
 		)
 		(uuid "2e08a258-c4c3-45b4-b0e5-e4ba923a3083")
 	)
-	(hierarchical_label "LED_9"
+	(hierarchical_label "L9"
 		(shape input)
 		(at 128.27 110.49 0)
 		(fields_autoplaced yes)
@@ -1649,7 +1649,7 @@
 		)
 		(uuid "3842108e-59d9-457c-99f0-4054e64e4ace")
 	)
-	(hierarchical_label "OUT_10"
+	(hierarchical_label "O10"
 		(shape input)
 		(at 91.44 149.86 180)
 		(fields_autoplaced yes)
@@ -1697,7 +1697,7 @@
 		)
 		(uuid "452be22f-0146-4152-945b-5bc218553369")
 	)
-	(hierarchical_label "OUT_5"
+	(hierarchical_label "O5"
 		(shape input)
 		(at 154.94 73.66 180)
 		(fields_autoplaced yes)
@@ -1733,7 +1733,7 @@
 		)
 		(uuid "4f2aa06e-5795-431f-8b59-54b8885494e5")
 	)
-	(hierarchical_label "OUT_7"
+	(hierarchical_label "O7"
 		(shape input)
 		(at 91.44 35.56 180)
 		(fields_autoplaced yes)
@@ -1745,7 +1745,7 @@
 		)
 		(uuid "5137ddf7-a4cf-4115-b099-9864aea691c3")
 	)
-	(hierarchical_label "LED_4"
+	(hierarchical_label "L4"
 		(shape input)
 		(at 191.77 34.29 0)
 		(fields_autoplaced yes)
@@ -1757,7 +1757,7 @@
 		)
 		(uuid "5647dfde-9435-41d3-a0ce-e0b412bdfb5b")
 	)
-	(hierarchical_label "LED_8"
+	(hierarchical_label "L8"
 		(shape input)
 		(at 128.27 72.39 0)
 		(fields_autoplaced yes)
@@ -1853,7 +1853,7 @@
 		)
 		(uuid "70252776-7cc6-4fa2-8eb9-7d16a7c70705")
 	)
-	(hierarchical_label "LED_6"
+	(hierarchical_label "L6"
 		(shape input)
 		(at 191.77 110.49 0)
 		(fields_autoplaced yes)
@@ -1865,7 +1865,7 @@
 		)
 		(uuid "717b2576-9997-4b8e-a07f-ad2ac6c462d2")
 	)
-	(hierarchical_label "LED_2"
+	(hierarchical_label "L2"
 		(shape input)
 		(at 255.27 72.39 0)
 		(fields_autoplaced yes)
@@ -1913,7 +1913,7 @@
 		)
 		(uuid "7a9d7b0e-6a6b-4b33-8db3-d04dca4496a3")
 	)
-	(hierarchical_label "LED_3"
+	(hierarchical_label "L3"
 		(shape input)
 		(at 255.27 110.49 0)
 		(fields_autoplaced yes)
@@ -1949,7 +1949,7 @@
 		)
 		(uuid "827b6350-881d-4d48-bd01-922bdba2e5ae")
 	)
-	(hierarchical_label "OUT_8"
+	(hierarchical_label "O8"
 		(shape input)
 		(at 91.44 73.66 180)
 		(fields_autoplaced yes)
@@ -1961,7 +1961,7 @@
 		)
 		(uuid "85633e69-8656-4ba0-9b3b-68aededd2d57")
 	)
-	(hierarchical_label "LED_1"
+	(hierarchical_label "L1"
 		(shape input)
 		(at 255.27 34.29 0)
 		(fields_autoplaced yes)
@@ -1997,7 +1997,7 @@
 		)
 		(uuid "8eb6916f-bd8f-40c0-b69f-f1332869699b")
 	)
-	(hierarchical_label "OUT_2"
+	(hierarchical_label "O2"
 		(shape input)
 		(at 218.44 73.66 180)
 		(fields_autoplaced yes)
@@ -2057,7 +2057,7 @@
 		)
 		(uuid "ad97ea43-8dd9-46b5-8091-a1ff500fa105")
 	)
-	(hierarchical_label "LED_7"
+	(hierarchical_label "L7"
 		(shape input)
 		(at 128.27 34.29 0)
 		(fields_autoplaced yes)
@@ -2081,7 +2081,7 @@
 		)
 		(uuid "bb66210d-a42e-4672-a771-f312d3b3d946")
 	)
-	(hierarchical_label "OUT_6"
+	(hierarchical_label "O6"
 		(shape input)
 		(at 154.94 111.76 180)
 		(fields_autoplaced yes)
@@ -2165,7 +2165,7 @@
 		)
 		(uuid "e6519265-9db5-4125-8304-6e6ca7a4b709")
 	)
-	(hierarchical_label "OUT_4"
+	(hierarchical_label "O4"
 		(shape input)
 		(at 154.94 35.56 180)
 		(fields_autoplaced yes)
@@ -2177,7 +2177,7 @@
 		)
 		(uuid "e6b7e114-448f-458c-9439-55c2d177e122")
 	)
-	(hierarchical_label "LED_10"
+	(hierarchical_label "L10"
 		(shape input)
 		(at 128.27 148.59 0)
 		(fields_autoplaced yes)
@@ -2189,7 +2189,7 @@
 		)
 		(uuid "fa28dce7-2336-4532-8207-56eb1653d128")
 	)
-	(hierarchical_label "LED_5"
+	(hierarchical_label "L5"
 		(shape input)
 		(at 191.77 72.39 0)
 		(fields_autoplaced yes)
@@ -2201,7 +2201,7 @@
 		)
 		(uuid "faf442b7-afa2-4128-973f-21cb582320fc")
 	)
-	(hierarchical_label "OUT_3"
+	(hierarchical_label "O3"
 		(shape input)
 		(at 218.44 111.76 180)
 		(fields_autoplaced yes)

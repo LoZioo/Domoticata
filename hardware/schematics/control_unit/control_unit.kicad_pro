@@ -476,6 +476,7 @@
   },
   "schematic": {
     "annotate_start_num": 0,
+    "bom_export_filename": "",
     "bom_fmt_presets": [],
     "bom_fmt_settings": {
       "field_delimiter": ",",
@@ -583,7 +584,7 @@
     ],
     [
       "8904da64-7973-4a3f-8dc5-f09a7326cd0e",
-      "IN"
+      "PERIPHERALS"
     ],
     [
       "7664bf1e-4b5c-43ea-a123-dd981a1854d7",
