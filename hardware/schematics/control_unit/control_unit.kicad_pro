@@ -73,6 +73,7 @@
         "footprint_type_mismatch": "ignore",
         "hole_clearance": "error",
         "hole_near_hole": "error",
+        "holes_co_located": "warning",
         "invalid_outline": "error",
         "isolated_copper": "warning",
         "item_on_disabled_layer": "error",
@@ -593,6 +594,14 @@
     [
       "70183e60-46ba-44bc-8910-d8be2a9cbc46",
       "PSU"
+    ],
+    [
+      "87efc983-d4c8-4f73-94a9-7fc59b404f3a",
+      "PROTECTIONS"
+    ],
+    [
+      "c26fa081-0dcc-46f1-824c-e1a5c901dc40",
+      "HOMEMONITOR"
     ]
   ],
   "text_variables": {}

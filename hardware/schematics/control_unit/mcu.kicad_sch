@@ -914,6 +914,102 @@
 				)
 			)
 		)
+		(symbol "power:PWR_FLAG"
+			(power)
+			(pin_numbers hide)
+			(pin_names
+				(offset 0) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#FLG"
+				(at 0 1.905 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "PWR_FLAG"
+				(at 0 3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Special symbol for telling ERC where power comes from"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "flag power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "PWR_FLAG_0_0"
+				(pin power_out line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+		)
 	)
 	(no_connect
 		(at 137.16 54.61)
@@ -924,50 +1020,8 @@
 		(uuid "6ef6f823-4d13-4541-94b4-e2e7c7258ba1")
 	)
 	(no_connect
-		(at 137.16 115.57)
-		(uuid "77e7fb01-01f7-434c-b711-ace9b181c268")
-	)
-	(no_connect
 		(at 111.76 83.82)
 		(uuid "9f70a8c9-fd65-41db-9d97-65eddb59adef")
-	)
-	(no_connect
-		(at 137.16 110.49)
-		(uuid "c22dcb88-7536-46bf-9fa5-a75bdb6167c9")
-	)
-	(no_connect
-		(at 137.16 113.03)
-		(uuid "d31adfef-5df5-4788-9be8-1c959fdcaa77")
-	)
-	(wire
-		(pts
-			(xy 119.38 46.99) (xy 119.38 34.29)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "095a98aa-a93d-4101-bc57-788763726245")
-	)
-	(wire
-		(pts
-			(xy 119.38 34.29) (xy 125.73 34.29)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1a7cc97e-bdcc-462b-8441-b4e678489153")
-	)
-	(wire
-		(pts
-			(xy 125.73 34.29) (xy 125.73 35.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "27ad57e6-5ccd-4b08-aefa-8c5c38bc0b08")
 	)
 	(hierarchical_label "5V"
 		(shape input)
@@ -1019,7 +1073,7 @@
 	)
 	(hierarchical_label "O12"
 		(shape input)
-		(at 137.16 100.33 0)
+		(at 137.16 64.77 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1029,9 +1083,9 @@
 		)
 		(uuid "28bfb0a5-85a5-4241-b2e7-8d840f357917")
 	)
-	(hierarchical_label "O18"
+	(hierarchical_label "3.3V"
 		(shape input)
-		(at 137.16 52.07 0)
+		(at 99.06 46.99 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1039,11 +1093,11 @@
 			)
 			(justify left)
 		)
-		(uuid "3d8af788-7a03-4070-9b99-0c8d861357ef")
+		(uuid "3e1e7f96-e89d-48f1-8f9f-fea64ed8941d")
 	)
 	(hierarchical_label "O16"
 		(shape input)
-		(at 137.16 74.93 0)
+		(at 137.16 67.31 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1053,9 +1107,21 @@
 		)
 		(uuid "4138c9e5-8908-4aac-9f77-d664f844323f")
 	)
+	(hierarchical_label "AC_I"
+		(shape input)
+		(at 137.16 115.57 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "45452691-d9b4-4dde-bda2-d6dd9c5fef93")
+	)
 	(hierarchical_label "TX"
 		(shape input)
-		(at 137.16 64.77 0)
+		(at 137.16 57.15 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1079,7 +1145,7 @@
 	)
 	(hierarchical_label "O13"
 		(shape input)
-		(at 137.16 102.87 0)
+		(at 137.16 97.79 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1091,7 +1157,7 @@
 	)
 	(hierarchical_label "O11"
 		(shape input)
-		(at 137.16 97.79 0)
+		(at 137.16 74.93 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1115,7 +1181,7 @@
 	)
 	(hierarchical_label "DE{slash}~{RE}"
 		(shape input)
-		(at 137.16 67.31 0)
+		(at 137.16 52.07 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1124,6 +1190,18 @@
 			(justify left)
 		)
 		(uuid "678643d3-cd35-4786-ac5d-2640e3488909")
+	)
+	(hierarchical_label "AC_V"
+		(shape input)
+		(at 137.16 113.03 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "71729e8f-4fbd-4c44-b20f-610ffa23f878")
 	)
 	(hierarchical_label "O10"
 		(shape input)
@@ -1149,9 +1227,21 @@
 		)
 		(uuid "7b247c21-45cc-4b6c-ad8f-bcbee50cb482")
 	)
+	(hierarchical_label "3.3V"
+		(shape input)
+		(at 119.38 46.99 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "7fac51e6-36b1-490c-8670-d57ac5f578bb")
+	)
 	(hierarchical_label "O17"
 		(shape input)
-		(at 137.16 57.15 0)
+		(at 137.16 72.39 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1185,17 +1275,17 @@
 		)
 		(uuid "b9bc819e-c2e5-4dbc-b608-b944cd381e7e")
 	)
-	(hierarchical_label "GND"
+	(hierarchical_label "TEMP"
 		(shape input)
-		(at 125.73 43.18 270)
+		(at 137.16 110.49 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right)
+			(justify left)
 		)
-		(uuid "c08eb5c6-70e7-4e3b-a59c-9c7b991a953a")
+		(uuid "c883176d-3c7f-444d-b44e-29b7578efc00")
 	)
 	(hierarchical_label "O4"
 		(shape input)
@@ -1209,9 +1299,21 @@
 		)
 		(uuid "d057f776-bad6-4c0c-a179-e83ee1c63aa3")
 	)
+	(hierarchical_label "3.3V"
+		(shape input)
+		(at 74.93 50.8 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "dd64a2bd-a39d-402c-94d3-b002edd02ff2")
+	)
 	(hierarchical_label "O14"
 		(shape input)
-		(at 137.16 105.41 0)
+		(at 137.16 100.33 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1245,9 +1347,21 @@
 		)
 		(uuid "e41eaf65-5ea4-4f82-a080-7c8582dec4a9")
 	)
+	(hierarchical_label "GND"
+		(shape input)
+		(at 99.06 54.61 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "e9889d90-d427-404b-9fcf-69629afdd9b6")
+	)
 	(hierarchical_label "O15"
 		(shape input)
-		(at 137.16 72.39 0)
+		(at 137.16 102.87 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1256,6 +1370,18 @@
 			(justify left)
 		)
 		(uuid "f72229e8-11cc-4880-a69e-c0ef12fb883e")
+	)
+	(hierarchical_label "FAN"
+		(shape input)
+		(at 137.16 105.41 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "fc5ec184-0072-4071-98be-e36487889330")
 	)
 	(symbol
 		(lib_id "MCU_Espressif_ESP32_38PIN:ESP32_38PIN_Ideal")
@@ -1434,26 +1560,26 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C_Polarized")
-		(at 125.73 39.37 0)
+		(lib_id "power:PWR_FLAG")
+		(at 74.93 50.8 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "9dc72e73-b094-4cff-9a02-1da395f21abd")
-		(property "Reference" "C1"
-			(at 129.54 37.2109 0)
+		(uuid "babe7987-4f87-4cd3-a6ae-d1d96d9751c2")
+		(property "Reference" "#FLG04"
+			(at 76.835 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(hide yes)
 			)
 		)
-		(property "Value" "100u 25V"
-			(at 129.54 39.7509 0)
+		(property "Value" "PWR_FLAG"
+			(at 78.74 50.8001 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1462,7 +1588,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 126.6952 43.18 0)
+			(at 74.93 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1471,7 +1597,73 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 125.73 39.37 0)
+			(at 74.93 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 74.93 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "0bde1fa7-b534-4e6e-a957-32eba8716d42")
+		)
+		(instances
+			(project ""
+				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/7664bf1e-4b5c-43ea-a123-dd981a1854d7"
+					(reference "#FLG04")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 99.06 50.8 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f8dad1d0-95b8-401d-be1d-e9f29230660a")
+		(property "Reference" "C1"
+			(at 102.87 48.6409 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100u 25V"
+			(at 102.87 51.1809 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 100.0252 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 99.06 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1480,7 +1672,7 @@
 			)
 		)
 		(property "Description" "Polarized capacitor"
-			(at 125.73 39.37 0)
+			(at 99.06 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1489,10 +1681,10 @@
 			)
 		)
 		(pin "2"
-			(uuid "bf170cf6-2b35-402e-b070-a9fba5b2fc99")
+			(uuid "0f602705-203e-4f73-93cb-1bd1292e0499")
 		)
 		(pin "1"
-			(uuid "daab0f79-df76-447d-afe6-477fd53261f7")
+			(uuid "840272a8-22ad-4382-8f89-30b6a302e847")
 		)
 		(instances
 			(project "control_unit"
