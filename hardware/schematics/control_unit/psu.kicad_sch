@@ -1472,6 +1472,16 @@
 	)
 	(wire
 		(pts
+			(xy 115.57 81.28) (xy 115.57 82.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "59d4f3c0-ff67-4e58-82a1-63db90212a78")
+	)
+	(wire
+		(pts
 			(xy 160.02 91.44) (xy 160.02 87.63)
 		)
 		(stroke
@@ -1598,7 +1608,7 @@
 	)
 	(hierarchical_label "24V"
 		(shape input)
-		(at 95.25 59.69 180)
+		(at 95.25 62.23 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1646,18 +1656,6 @@
 	)
 	(hierarchical_label "GND"
 		(shape input)
-		(at 95.25 64.77 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "6edaa64b-c854-4fe8-ae63-bdc94192ce1c")
-	)
-	(hierarchical_label "GND"
-		(shape input)
 		(at 130.81 87.63 180)
 		(fields_autoplaced yes)
 		(effects
@@ -1670,7 +1668,7 @@
 	)
 	(hierarchical_label "5V"
 		(shape input)
-		(at 95.25 62.23 180)
+		(at 95.25 64.77 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1754,7 +1752,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 95.25 62.23 270)
+		(at 95.25 64.77 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1763,73 +1761,6 @@
 		(fields_autoplaced yes)
 		(uuid "02c6a0ea-c9a3-43cd-8d6a-7bcca009bbc5")
 		(property "Reference" "#FLG02"
-			(at 97.155 62.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 99.06 62.2299 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 95.25 62.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 95.25 62.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 95.25 62.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "e06b8bdb-fdc3-493a-9cec-05f685805056")
-		)
-		(instances
-			(project "control_unit"
-				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
-					(reference "#FLG02")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 95.25 64.77 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "1a4e929b-d57c-4e70-a98f-e74387923998")
-		(property "Reference" "#FLG03"
 			(at 97.155 64.77 0)
 			(effects
 				(font
@@ -1875,12 +1806,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "27bb88d8-d699-4e78-b080-9b46b68520c3")
+			(uuid "e06b8bdb-fdc3-493a-9cec-05f685805056")
 		)
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
-					(reference "#FLG03")
+					(reference "#FLG02")
 					(unit 1)
 				)
 			)
@@ -1914,7 +1845,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_THT:C_Rect_L7.2mm_W2.5mm_P5.00mm_FKS2_FKP2_MKS2_MKP2"
 			(at 192.7352 99.06 0)
 			(effects
 				(font
@@ -1966,7 +1897,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2270bd21-b500-4ca7-bc90-0610abb5d656")
-		(property "Reference" "R47"
+		(property "Reference" "R50"
 			(at 205.74 101.5999 0)
 			(effects
 				(font
@@ -1984,7 +1915,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
 			(at 201.422 102.87 90)
 			(effects
 				(font
@@ -2020,7 +1951,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
-					(reference "R47")
+					(reference "R50")
 					(unit 1)
 				)
 			)
@@ -2028,7 +1959,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 95.25 59.69 270)
+		(at 95.25 62.23 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2037,7 +1968,7 @@
 		(fields_autoplaced yes)
 		(uuid "3bcda5b3-a386-4ce4-a9a4-9b03c9a1c3f1")
 		(property "Reference" "#FLG01"
-			(at 97.155 59.69 0)
+			(at 97.155 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2046,7 +1977,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 99.06 59.6899 90)
+			(at 99.06 62.2299 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2055,7 +1986,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 95.25 59.69 0)
+			(at 95.25 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2064,7 +1995,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 95.25 59.69 0)
+			(at 95.25 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2073,7 +2004,7 @@
 			)
 		)
 		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 95.25 59.69 0)
+			(at 95.25 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2103,7 +2034,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3d39dac0-b560-4f89-911a-b9da0650da58")
-		(property "Reference" "R48"
+		(property "Reference" "R51"
 			(at 218.44 91.4399 0)
 			(effects
 				(font
@@ -2121,7 +2052,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
 			(at 214.122 92.71 90)
 			(effects
 				(font
@@ -2157,7 +2088,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
-					(reference "R48")
+					(reference "R51")
 					(unit 1)
 				)
 			)
@@ -2188,7 +2119,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Fuse:Fuseholder_Clip-6.3x32mm_Littelfuse_102_Inline_P34.21x7.62mm_D2.54mm_Horizontal"
 			(at 91.44 84.328 90)
 			(effects
 				(font
@@ -2258,7 +2189,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_THT:CP_Radial_D6.3mm_P2.50mm"
 			(at 176.2252 99.06 0)
 			(effects
 				(font
@@ -2328,7 +2259,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_THT:CP_Radial_D8.0mm_P3.80mm"
 			(at 98.7552 91.44 0)
 			(effects
 				(font
@@ -2398,7 +2329,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "LED_THT:LED_D5.0mm"
 			(at 215.9 100.33 0)
 			(effects
 				(font
@@ -2450,7 +2381,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7fe303fc-93d4-4e4b-9bc9-3b15243582fa")
-		(property "Reference" "U15"
+		(property "Reference" "U16"
 			(at 143.51 74.93 0)
 			(effects
 				(font
@@ -2513,7 +2444,72 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
-					(reference "U15")
+					(reference "U16")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 115.57 81.28 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8c83a9b7-b6bd-450b-9e80-0bc62c049aa1")
+		(property "Reference" "#FLG03"
+			(at 115.57 79.375 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 115.57 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 115.57 81.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 115.57 81.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 115.57 81.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "20157443-6572-42e6-b593-8c0101e02d2b")
+		)
+		(instances
+			(project "control_unit"
+				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
+					(reference "#FLG03")
 					(unit 1)
 				)
 			)
@@ -2545,7 +2541,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Inductor_THT:L_Toroid_Vertical_L14.7mm_W8.6mm_P5.58mm_Pulse_KM-1"
 			(at 167.64 87.63 0)
 			(effects
 				(font
@@ -2685,7 +2681,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_THT:C_Rect_L7.2mm_W2.5mm_P5.00mm_FKS2_FKP2_MKS2_MKP2"
 			(at 116.5352 91.44 0)
 			(effects
 				(font
@@ -2737,7 +2733,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d7e463cd-fb68-4e1f-8ff5-e053c7fece3c")
-		(property "Reference" "R46"
+		(property "Reference" "R49"
 			(at 205.74 91.4399 0)
 			(effects
 				(font
@@ -2755,7 +2751,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
 			(at 201.422 92.71 90)
 			(effects
 				(font
@@ -2791,7 +2787,7 @@
 		(instances
 			(project "control_unit"
 				(path "/95f83be4-8e7e-4d00-b795-d60cd8e47b85/70183e60-46ba-44bc-8910-d8be2a9cbc46"
-					(reference "R46")
+					(reference "R49")
 					(unit 1)
 				)
 			)
