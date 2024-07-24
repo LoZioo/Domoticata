@@ -1912,7 +1912,7 @@
 		(descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=7.62mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
 		(tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 7.62mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
 		(property "Reference" "R45"
-			(at -2.54 0 360)
+			(at -2.54 0 0)
 			(layer "F.SilkS")
 			(uuid "f8236c43-6f28-4d09-a253-e06ce4a7aa6e")
 			(effects
@@ -1923,7 +1923,7 @@
 			)
 		)
 		(property "Value" "18k"
-			(at 3.81 2.37 360)
+			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(uuid "978a795e-9b98-4e0f-9b31-965b1891dfc8")
 			(effects
@@ -2138,7 +2138,7 @@
 			(uuid "088fde36-4f18-4086-8c53-2a9c5fac1499")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 3.81 0 360)
+			(at 3.81 0 0)
 			(layer "F.Fab")
 			(uuid "424d42eb-68d8-4be8-8668-4a04016480cc")
 			(effects
@@ -2856,7 +2856,7 @@
 		(descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=7.62mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
 		(tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 7.62mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
 		(property "Reference" "R57"
-			(at 2.54 -2.37 360)
+			(at 2.54 -2.37 0)
 			(layer "F.SilkS")
 			(uuid "20bc256f-d38a-4178-9cc8-b3a4655dd76e")
 			(effects
@@ -2867,7 +2867,7 @@
 			)
 		)
 		(property "Value" "R"
-			(at 3.81 2.37 360)
+			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(uuid "ac1fc74a-f0d9-47fe-a2f7-5aa8483ff392")
 			(effects
@@ -3082,7 +3082,7 @@
 			(uuid "a228d10a-5973-4ad2-98de-a30aa066e27c")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 3.81 0 360)
+			(at 3.81 0 0)
 			(layer "F.Fab")
 			(uuid "ce61f1a3-aa7f-4339-ab7f-c0a907868e59")
 			(effects
@@ -3131,7 +3131,7 @@
 		(descr "CP, Radial series, Radial, pin pitch=2.00mm, , diameter=4mm, Electrolytic Capacitor")
 		(tags "CP Radial series Radial pin pitch 2.00mm  diameter 4mm Electrolytic Capacitor")
 		(property "Reference" "C7"
-			(at -1.27 2.37 360)
+			(at -1.27 2.37 0)
 			(layer "F.SilkS")
 			(uuid "5bfa26ed-06d8-48aa-a056-fb8ba803543d")
 			(effects
@@ -3142,7 +3142,7 @@
 			)
 		)
 		(property "Value" "10u"
-			(at 1 3.25 360)
+			(at 1 3.25 0)
 			(layer "F.Fab")
 			(uuid "7ed389f0-7f73-4bb0-adea-a14cf76377d7")
 			(effects
@@ -4210,7 +4210,7 @@
 			(uuid "56bf04e6-7a84-41b4-9c1e-01cc12c394ca")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 1 0 360)
+			(at 1 0 0)
 			(layer "F.Fab")
 			(uuid "f3396782-3cd7-4ae6-a46f-4ead72fab04a")
 			(effects
@@ -9334,7 +9334,7 @@
 		(descr "Diode, DO-41_SOD81 series, Axial, Horizontal, pin pitch=7.62mm, , length*diameter=5.2*2.7mm^2, , http://www.diodes.com/_files/packages/DO-41%20(Plastic).pdf")
 		(tags "Diode DO-41_SOD81 series Axial Horizontal pin pitch 7.62mm  length 5.2mm diameter 2.7mm")
 		(property "Reference" "D6"
-			(at 3.81 -2.47 360)
+			(at 3.81 -2.47 0)
 			(layer "F.SilkS")
 			(uuid "4ca06571-160f-45ec-8987-a377b82f2564")
 			(effects
@@ -9345,7 +9345,7 @@
 			)
 		)
 		(property "Value" "1N4007"
-			(at 3.81 2.47 360)
+			(at 3.81 2.47 0)
 			(layer "F.Fab")
 			(uuid "44680ceb-16d1-4f6d-b938-ff9306058dbd")
 			(effects
@@ -9646,7 +9646,7 @@
 			(uuid "fb885ced-2bc0-44fc-9272-ef9a44031221")
 		)
 		(fp_text user "K"
-			(at 0 -2.1 360)
+			(at 0 -2.1 0)
 			(layer "F.SilkS")
 			(uuid "f88dade6-7587-4fae-94a7-aafe6f747827")
 			(effects
@@ -9657,7 +9657,7 @@
 			)
 		)
 		(fp_text user "K"
-			(at 0 -2.1 360)
+			(at 0 -2.1 0)
 			(layer "F.Fab")
 			(uuid "0fc58608-9147-48bc-9aa9-ffe15e1b0b2b")
 			(effects
@@ -9668,7 +9668,7 @@
 			)
 		)
 		(fp_text user "${REFERENCE}"
-			(at 4.2 0 360)
+			(at 4.2 0 0)
 			(layer "F.Fab")
 			(uuid "e85a7ba3-182e-4171-8898-d073bfbc9036")
 			(effects
@@ -11337,6 +11337,7 @@
 		(property "Reference" "G***"
 			(at 0 0 0)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "30323b07-3854-49a1-9378-7550a5cf529d")
 			(effects
 				(font
@@ -23149,7 +23150,7 @@
 		(descr "Diode, DO-41_SOD81 series, Axial, Horizontal, pin pitch=7.62mm, , length*diameter=5.2*2.7mm^2, , http://www.diodes.com/_files/packages/DO-41%20(Plastic).pdf")
 		(tags "Diode DO-41_SOD81 series Axial Horizontal pin pitch 7.62mm  length 5.2mm diameter 2.7mm")
 		(property "Reference" "D5"
-			(at 3.81 -2.47 360)
+			(at 3.81 -2.47 0)
 			(layer "F.SilkS")
 			(uuid "e16bc266-5fb8-433c-af57-cf39a97198c6")
 			(effects
@@ -23160,7 +23161,7 @@
 			)
 		)
 		(property "Value" "1N5819"
-			(at 3.81 2.47 360)
+			(at 3.81 2.47 0)
 			(layer "F.Fab")
 			(uuid "35876809-7c0a-4287-b324-0e7ee42bf9cf")
 			(effects
@@ -23435,7 +23436,7 @@
 			(uuid "53394291-50d5-453b-b1e0-aed7cfe8d6d1")
 		)
 		(fp_text user "K"
-			(at 0 -2.1 360)
+			(at 0 -2.1 0)
 			(layer "F.SilkS")
 			(uuid "5e664a9e-9ea8-45ec-b746-adf0aee26ec8")
 			(effects
@@ -23446,7 +23447,7 @@
 			)
 		)
 		(fp_text user "${REFERENCE}"
-			(at 4.2 0 360)
+			(at 4.2 0 0)
 			(layer "F.Fab")
 			(uuid "35873c86-a629-4d66-af32-e7bb6c5ec732")
 			(effects
@@ -23457,7 +23458,7 @@
 			)
 		)
 		(fp_text user "K"
-			(at 0 -2.1 360)
+			(at 0 -2.1 0)
 			(layer "F.Fab")
 			(uuid "6c1bc8d0-5cc8-4ffc-bf85-ebeef8377d4d")
 			(effects
@@ -24428,7 +24429,7 @@
 		(descr "8-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils), Socket")
 		(tags "THT DIP DIL PDIP 2.54mm 7.62mm 300mil Socket")
 		(property "Reference" "U14"
-			(at 7.62 -2.33 360)
+			(at 7.62 -2.33 0)
 			(layer "F.SilkS")
 			(uuid "20f8540d-3896-4c94-8fb0-bc6893fdd5f1")
 			(effects
@@ -24439,7 +24440,7 @@
 			)
 		)
 		(property "Value" "MAX487E"
-			(at 3.81 9.95 360)
+			(at 3.81 9.95 0)
 			(layer "F.Fab")
 			(uuid "fcb28a9f-ebb9-49d8-b27e-8635024d3a28")
 			(effects
@@ -24725,7 +24726,7 @@
 			(uuid "016053f9-aeaf-449b-8f8c-6341c62cbaa5")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 3.81 3.81 360)
+			(at 3.81 3.81 0)
 			(layer "F.Fab")
 			(uuid "c66ed0a8-79f4-4eb7-94b0-6cd1a6b11eef")
 			(effects
@@ -24842,7 +24843,7 @@
 		(descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=7.62mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
 		(tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 7.62mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
 		(property "Reference" "R46"
-			(at 3.81 -2.37 360)
+			(at 3.81 -2.37 0)
 			(layer "F.SilkS")
 			(uuid "bba492a6-8527-4d5e-838d-1c400a81b547")
 			(effects
@@ -24853,7 +24854,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 3.81 2.37 360)
+			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(uuid "0f95f22a-b2a2-4d0d-a5c3-f521f206f322")
 			(effects
@@ -25068,7 +25069,7 @@
 			(uuid "4fcd45cb-779e-472c-974a-0d7fa1f4f643")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 3.81 0 360)
+			(at 3.81 0 0)
 			(layer "F.Fab")
 			(uuid "70b959fc-a2b8-4b47-a98e-029a5a81e5b6")
 			(effects
@@ -32848,7 +32849,7 @@
 		(descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=7.62mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
 		(tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 7.62mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
 		(property "Reference" "R58"
-			(at -2.54 0 360)
+			(at -2.54 0 0)
 			(layer "F.SilkS")
 			(uuid "57b99324-1cab-44a2-916d-a7131d2e6d9c")
 			(effects
@@ -32859,7 +32860,7 @@
 			)
 		)
 		(property "Value" "R"
-			(at 3.81 2.37 360)
+			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(uuid "36629383-f91c-4181-aa8c-9f9d9b94e4d6")
 			(effects
@@ -33074,7 +33075,7 @@
 			(uuid "1467d25a-78fd-4f8c-b722-3b29cde6f4ca")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 3.81 0 360)
+			(at 3.81 0 0)
 			(layer "F.Fab")
 			(uuid "a71b16c3-a8a8-4772-a0c0-3334483a6a1f")
 			(effects
@@ -35036,7 +35037,7 @@
 		(descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=7.62mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
 		(tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 7.62mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
 		(property "Reference" "R56"
-			(at 10.16 0 360)
+			(at 10.16 0 0)
 			(layer "F.SilkS")
 			(uuid "80e66aa9-28ec-41f8-9be6-1825851427d4")
 			(effects
@@ -35047,7 +35048,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 3.81 2.37 360)
+			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(uuid "9dca20e3-1001-40e9-ae45-f088cac063f7")
 			(effects
@@ -35262,7 +35263,7 @@
 			(uuid "2a360612-1c65-4978-a706-18b1fb6abcff")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 3.81 0 360)
+			(at 3.81 0 0)
 			(layer "F.Fab")
 			(uuid "96ada57c-a721-4dd7-9626-1d4c42d06a98")
 			(effects
@@ -42645,7 +42646,7 @@
 		(descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=7.62mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
 		(tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 7.62mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
 		(property "Reference" "R55"
-			(at 10.16 0 360)
+			(at 10.16 0 0)
 			(layer "F.SilkS")
 			(uuid "4da050f0-4fa6-4a48-910e-93d898bae75d")
 			(effects
@@ -42656,7 +42657,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 3.81 2.37 360)
+			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(uuid "19c73fc1-864b-4165-bf25-eb6d8d549266")
 			(effects
@@ -42871,7 +42872,7 @@
 			(uuid "6c04e94c-90b7-488e-a981-f101294b8957")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 3.81 0 360)
+			(at 3.81 0 0)
 			(layer "F.Fab")
 			(uuid "4b42c67a-161f-4330-9634-3b5ecb9ca469")
 			(effects
@@ -44071,7 +44072,7 @@
 		(descr "CP, Radial series, Radial, pin pitch=2.50mm, , diameter=6.3mm, Electrolytic Capacitor")
 		(tags "CP Radial series Radial pin pitch 2.50mm  diameter 6.3mm Electrolytic Capacitor")
 		(property "Reference" "C1"
-			(at 4.278 -3.048 360)
+			(at 4.278 -3.048 0)
 			(layer "F.SilkS")
 			(uuid "702c2341-68b1-4099-9155-bf9a7d5103e9")
 			(effects
@@ -44082,7 +44083,7 @@
 			)
 		)
 		(property "Value" "100u 25V"
-			(at 1.25 4.4 360)
+			(at 1.25 4.4 0)
 			(layer "F.Fab")
 			(uuid "51946676-b725-4e86-ac74-19e9ad4e4075")
 			(effects
@@ -45550,7 +45551,7 @@
 			(uuid "522775a3-d6fe-43c8-b6a4-7da1e2bac671")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 1.25 0 360)
+			(at 1.25 0 0)
 			(layer "F.Fab")
 			(uuid "6dd38ebe-5ee3-4c28-86a3-ae819b6aea64")
 			(effects
