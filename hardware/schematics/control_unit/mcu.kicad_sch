@@ -923,10 +923,6 @@
 		(at 137.16 59.69)
 		(uuid "6ef6f823-4d13-4541-94b4-e2e7c7258ba1")
 	)
-	(no_connect
-		(at 111.76 83.82)
-		(uuid "9f70a8c9-fd65-41db-9d97-65eddb59adef")
-	)
 	(hierarchical_label "5V"
 		(shape input)
 		(at 116.84 46.99 90)
@@ -1058,6 +1054,18 @@
 			(justify left)
 		)
 		(uuid "5aed19fd-c02b-4f57-b6b0-65f2750a655b")
+	)
+	(hierarchical_label "~{RESET}"
+		(shape input)
+		(at 111.76 83.82 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "602c656f-4746-4926-a5e7-766c3603dd52")
 	)
 	(hierarchical_label "O11"
 		(shape input)

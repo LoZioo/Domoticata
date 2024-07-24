@@ -1584,6 +1584,7 @@
 	(symbol
 		(lib_id "Device:Transformer_1P_1S")
 		(at 144.78 100.33 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1599,7 +1600,7 @@
 			)
 		)
 		(property "Value" "Transformer_1P_1S"
-			(at 144.7927 92.71 0)
+			(at 144.7927 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1607,7 +1608,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "HomeMonitor:Transformer"
 			(at 144.78 100.33 0)
 			(effects
 				(font
@@ -2295,46 +2296,46 @@
 			)
 		)
 		(pin "6"
-			(uuid "6dab55cc-ebba-465e-9398-1d9e6a921ac4")
+			(uuid "6dab55cc-ebba-465e-9398-1d9e6a921ac5")
 		)
 		(pin "7"
-			(uuid "14b646bf-bbce-4475-b0e9-7bf72b79c891")
+			(uuid "14b646bf-bbce-4475-b0e9-7bf72b79c892")
 		)
 		(pin "4"
-			(uuid "cc94cbf5-f8cf-41bb-a5b2-462940773238")
+			(uuid "cc94cbf5-f8cf-41bb-a5b2-462940773239")
 		)
 		(pin "2"
-			(uuid "f423041b-e1ee-4b87-9a8b-688bad71902c")
+			(uuid "f423041b-e1ee-4b87-9a8b-688bad71902d")
 		)
 		(pin "5"
-			(uuid "cc05b6b2-7c69-4928-924d-e4f5229d87bf")
+			(uuid "cc05b6b2-7c69-4928-924d-e4f5229d87c0")
 		)
 		(pin "12"
-			(uuid "3ff558ff-b7c4-447e-a222-0968d847e225")
+			(uuid "3ff558ff-b7c4-447e-a222-0968d847e226")
 		)
 		(pin "14"
-			(uuid "8e8c52bd-8d05-4dcd-aaca-c7e726c13df0")
+			(uuid "8e8c52bd-8d05-4dcd-aaca-c7e726c13df1")
 		)
 		(pin "3"
-			(uuid "5c051c2d-f163-4b7b-8602-d40700b7127f")
+			(uuid "5c051c2d-f163-4b7b-8602-d40700b71280")
 		)
 		(pin "9"
-			(uuid "60eb5d2f-d61f-43a1-b8df-628e85a5a1d2")
+			(uuid "60eb5d2f-d61f-43a1-b8df-628e85a5a1d3")
 		)
 		(pin "1"
-			(uuid "7df61313-4388-4584-9f61-db8b22016bab")
+			(uuid "7df61313-4388-4584-9f61-db8b22016bac")
 		)
 		(pin "13"
-			(uuid "860672db-e18d-40b4-81bf-91abacd1cf28")
+			(uuid "860672db-e18d-40b4-81bf-91abacd1cf29")
 		)
 		(pin "10"
-			(uuid "abf3a0bf-ff86-4170-9664-27cf7e647117")
+			(uuid "abf3a0bf-ff86-4170-9664-27cf7e647118")
 		)
 		(pin "11"
-			(uuid "c6b0f906-0cae-4358-a86e-7fd7ae090c38")
+			(uuid "c6b0f906-0cae-4358-a86e-7fd7ae090c39")
 		)
 		(pin "8"
-			(uuid "07424688-e81c-46e3-bf79-d507e1d05f76")
+			(uuid "07424688-e81c-46e3-bf79-d507e1d05f77")
 		)
 		(instances
 			(project ""
