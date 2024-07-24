@@ -1794,8 +1794,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 190.5 87.63 90)
-		(mirror x)
+		(at 190.5 87.63 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2175,7 +2174,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 101.6 86.36 0)
+		(at 101.6 86.36 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2189,7 +2188,7 @@
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
 		(property "Value" "10k"
@@ -2198,11 +2197,11 @@
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
 		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
-			(at 99.822 86.36 90)
+			(at 103.378 86.36 90)
 			(effects
 				(font
 					(size 1.27 1.27)

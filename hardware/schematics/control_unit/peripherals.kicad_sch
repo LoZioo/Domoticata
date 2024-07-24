@@ -2710,7 +2710,8 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 162.56 119.38 90)
+		(at 162.56 119.38 270)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2778,7 +2779,8 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 118.11 69.85 180)
+		(at 118.11 69.85 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2786,7 +2788,7 @@
 		(dnp no)
 		(uuid "673e9181-f98b-4032-9ade-cdc1418392bc")
 		(property "Reference" "R44"
-			(at 120.65 68.5799 0)
+			(at 120.65 71.1201 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2795,7 +2797,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 120.65 71.1199 0)
+			(at 120.65 68.5801 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3435,7 +3437,8 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 118.11 80.01 180)
+		(at 118.11 80.01 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3443,7 +3446,7 @@
 		(dnp no)
 		(uuid "e074ab65-33c1-441e-8e43-371b0cfd359c")
 		(property "Reference" "R45"
-			(at 120.65 78.7399 0)
+			(at 120.65 81.2801 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3452,7 +3455,7 @@
 			)
 		)
 		(property "Value" "18k"
-			(at 120.65 81.2799 0)
+			(at 120.65 78.7401 0)
 			(effects
 				(font
 					(size 1.27 1.27)
