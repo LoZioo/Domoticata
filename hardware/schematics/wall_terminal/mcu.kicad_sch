@@ -346,7 +346,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5ecb9fa7-ea61-4779-86a2-e76084a9e62b")
-		(property "Reference" "U1"
+		(property "Reference" "U2"
 			(at 125.73 87.6299 0)
 			(effects
 				(font
@@ -419,7 +419,7 @@
 		(instances
 			(project "wall_terminal"
 				(path "/5c441dea-07fa-47c6-a7dc-b1c524c62a23/8a2a1432-423c-44a2-bc52-34f5f7caec87"
-					(reference "U1")
+					(reference "U2")
 					(unit 1)
 				)
 			)

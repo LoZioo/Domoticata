@@ -474,7 +474,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "3987be79-98cb-4e9e-8a19-f5be875b3ad4")
-		(property "Reference" "R9"
+		(property "Reference" "R11"
 			(at 140.97 69.85 0)
 			(effects
 				(font
@@ -529,7 +529,7 @@
 		(instances
 			(project "wall_terminal"
 				(path "/5c441dea-07fa-47c6-a7dc-b1c524c62a23/04533bd7-9782-459d-8439-bc8599753b86"
-					(reference "R9")
+					(reference "R11")
 					(unit 1)
 				)
 			)
@@ -544,7 +544,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4a72e7fa-41ac-4d8d-8a64-a37939e934c4")
-		(property "Reference" "R4"
+		(property "Reference" "R6"
 			(at 133.35 92.71 90)
 			(effects
 				(font
@@ -597,7 +597,7 @@
 		(instances
 			(project "wall_terminal"
 				(path "/5c441dea-07fa-47c6-a7dc-b1c524c62a23/04533bd7-9782-459d-8439-bc8599753b86"
-					(reference "R4")
+					(reference "R6")
 					(unit 1)
 				)
 			)
@@ -612,7 +612,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4f5212f8-3bfe-4ff4-aeb0-5835e284bbc8")
-		(property "Reference" "R5"
+		(property "Reference" "R7"
 			(at 133.35 99.06 90)
 			(effects
 				(font
@@ -665,7 +665,7 @@
 		(instances
 			(project "wall_terminal"
 				(path "/5c441dea-07fa-47c6-a7dc-b1c524c62a23/04533bd7-9782-459d-8439-bc8599753b86"
-					(reference "R5")
+					(reference "R7")
 					(unit 1)
 				)
 			)
@@ -680,7 +680,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "566e09a4-14de-4131-ab06-693db3f32f17")
-		(property "Reference" "R2"
+		(property "Reference" "R4"
 			(at 133.35 80.01 90)
 			(effects
 				(font
@@ -733,7 +733,7 @@
 		(instances
 			(project "wall_terminal"
 				(path "/5c441dea-07fa-47c6-a7dc-b1c524c62a23/04533bd7-9782-459d-8439-bc8599753b86"
-					(reference "R2")
+					(reference "R4")
 					(unit 1)
 				)
 			)
@@ -748,7 +748,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "aac99e8a-068e-45f3-9d21-4461efa34acc")
-		(property "Reference" "R3"
+		(property "Reference" "R5"
 			(at 133.35 86.36 90)
 			(effects
 				(font
@@ -801,7 +801,7 @@
 		(instances
 			(project "wall_terminal"
 				(path "/5c441dea-07fa-47c6-a7dc-b1c524c62a23/04533bd7-9782-459d-8439-bc8599753b86"
-					(reference "R3")
+					(reference "R5")
 					(unit 1)
 				)
 			)
@@ -816,7 +816,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e1501be2-49d1-44cf-a21b-d540b97755d9")
-		(property "Reference" "R7"
+		(property "Reference" "R9"
 			(at 133.35 111.76 90)
 			(effects
 				(font
@@ -869,7 +869,7 @@
 		(instances
 			(project "wall_terminal"
 				(path "/5c441dea-07fa-47c6-a7dc-b1c524c62a23/04533bd7-9782-459d-8439-bc8599753b86"
-					(reference "R7")
+					(reference "R9")
 					(unit 1)
 				)
 			)
@@ -884,7 +884,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e2135050-cf28-46e7-aa79-37c6174e07c4")
-		(property "Reference" "R8"
+		(property "Reference" "R10"
 			(at 133.35 118.11 90)
 			(effects
 				(font
@@ -937,7 +937,7 @@
 		(instances
 			(project "wall_terminal"
 				(path "/5c441dea-07fa-47c6-a7dc-b1c524c62a23/04533bd7-9782-459d-8439-bc8599753b86"
-					(reference "R8")
+					(reference "R10")
 					(unit 1)
 				)
 			)
@@ -952,7 +952,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "eddd5fb5-32bd-4ecd-ab11-c76540791004")
-		(property "Reference" "R6"
+		(property "Reference" "R8"
 			(at 133.35 105.41 90)
 			(effects
 				(font
@@ -1005,7 +1005,7 @@
 		(instances
 			(project "wall_terminal"
 				(path "/5c441dea-07fa-47c6-a7dc-b1c524c62a23/04533bd7-9782-459d-8439-bc8599753b86"
-					(reference "R6")
+					(reference "R8")
 					(unit 1)
 				)
 			)
@@ -1020,7 +1020,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "fa85e083-d86a-4a82-9601-2d6f4cc92bd8")
-		(property "Reference" "R1"
+		(property "Reference" "R3"
 			(at 133.35 73.66 90)
 			(effects
 				(font
@@ -1073,7 +1073,7 @@
 		(instances
 			(project "wall_terminal"
 				(path "/5c441dea-07fa-47c6-a7dc-b1c524c62a23/04533bd7-9782-459d-8439-bc8599753b86"
-					(reference "R1")
+					(reference "R3")
 					(unit 1)
 				)
 			)
