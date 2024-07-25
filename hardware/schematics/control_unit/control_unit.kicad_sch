@@ -2817,6 +2817,12 @@
 		(uuid "07a87c86-f6c3-46e1-8b6f-c6899b51a996")
 	)
 	(junction
+		(at 165.1 36.83)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "12c9f807-4b01-44a8-aede-41a62e93a900")
+	)
+	(junction
 		(at 165.1 41.91)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2827,12 +2833,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "48bdb668-d9e7-4152-99f5-79f27edec05b")
-	)
-	(junction
-		(at 165.1 36.83)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "68907bea-89d2-4ae7-a822-b9d90a8d56bb")
 	)
 	(junction
 		(at 119.38 121.92)
@@ -2925,6 +2925,16 @@
 			(type default)
 		)
 		(uuid "17b9a6b8-f460-4abf-81ec-ed8c10994947")
+	)
+	(wire
+		(pts
+			(xy 168.91 26.67) (xy 165.1 26.67)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "19dbe1bd-fc1d-46e8-bc9e-896de309482f")
 	)
 	(wire
 		(pts
@@ -3128,6 +3138,16 @@
 	)
 	(wire
 		(pts
+			(xy 165.1 26.67) (xy 165.1 27.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4ded6c06-330a-41ca-af6e-7860236c3954")
+	)
+	(wire
+		(pts
 			(xy 148.59 91.44) (xy 172.72 91.44)
 		)
 		(stroke
@@ -3165,16 +3185,6 @@
 			(type default)
 		)
 		(uuid "55e0cfbd-07a4-4bab-8317-0f4643d508f6")
-	)
-	(wire
-		(pts
-			(xy 176.53 31.75) (xy 165.1 31.75)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "562a3c9d-9ec0-4ab0-b5c5-fe884f5b836f")
 	)
 	(wire
 		(pts
@@ -3328,6 +3338,16 @@
 	)
 	(wire
 		(pts
+			(xy 168.91 31.75) (xy 168.91 26.67)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8602aa8f-43f1-4900-99d5-1a97e34018ef")
+	)
+	(wire
+		(pts
 			(xy 148.59 101.6) (xy 156.21 101.6)
 		)
 		(stroke
@@ -3408,6 +3428,16 @@
 	)
 	(wire
 		(pts
+			(xy 165.1 35.56) (xy 165.1 36.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a69a210d-62c8-42d8-b920-3ca949230d85")
+	)
+	(wire
+		(pts
 			(xy 177.8 124.46) (xy 182.88 124.46)
 		)
 		(stroke
@@ -3428,7 +3458,7 @@
 	)
 	(wire
 		(pts
-			(xy 167.64 26.67) (xy 176.53 26.67)
+			(xy 171.45 26.67) (xy 176.53 26.67)
 		)
 		(stroke
 			(width 0)
@@ -3468,7 +3498,7 @@
 	)
 	(wire
 		(pts
-			(xy 167.64 29.21) (xy 176.53 29.21)
+			(xy 171.45 29.21) (xy 176.53 29.21)
 		)
 		(stroke
 			(width 0)
@@ -3688,6 +3718,16 @@
 	)
 	(wire
 		(pts
+			(xy 176.53 31.75) (xy 168.91 31.75)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ea7f9d91-0167-464b-a8ac-1003f2dcf474")
+	)
+	(wire
+		(pts
 			(xy 111.76 64.77) (xy 121.92 64.77)
 		)
 		(stroke
@@ -3718,16 +3758,6 @@
 	)
 	(wire
 		(pts
-			(xy 165.1 31.75) (xy 165.1 36.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fa6be953-ae85-41d6-bbb8-783386fb8215")
-	)
-	(wire
-		(pts
 			(xy 165.1 41.91) (xy 165.1 45.72)
 		)
 		(stroke
@@ -3737,7 +3767,7 @@
 		(uuid "fa8c223b-dc1a-4859-ab67-cf88b9b02800")
 	)
 	(label "AC_N"
-		(at 167.64 29.21 0)
+		(at 171.45 29.21 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3833,7 +3863,7 @@
 		(uuid "adb8fbbe-b864-44fb-84d8-94a8fd6b5a44")
 	)
 	(label "AC_L"
-		(at 167.64 26.67 0)
+		(at 171.45 26.67 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4743,16 +4773,16 @@
 	)
 	(symbol
 		(lib_id "Device:Fuse")
-		(at 165.1 49.53 0)
+		(at 165.1 31.75 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "5b637958-08f9-4df0-aca9-302753ccd786")
 		(property "Reference" "F1"
-			(at 167.64 48.2599 0)
+			(at 162.56 30.4799 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4761,7 +4791,7 @@
 			)
 		)
 		(property "Value" "T30A 250V"
-			(at 167.64 50.7999 0)
+			(at 162.56 33.0199 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4770,7 +4800,7 @@
 			)
 		)
 		(property "Footprint" "Fuse:Fuseholder_Clip-6.3x32mm_Littelfuse_102_Inline_P34.21x7.62mm_D2.54mm_Horizontal"
-			(at 163.322 49.53 90)
+			(at 166.878 31.75 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4779,7 +4809,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 165.1 49.53 0)
+			(at 165.1 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4788,7 +4818,7 @@
 			)
 		)
 		(property "Description" "Fuse"
-			(at 165.1 49.53 0)
+			(at 165.1 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4880,7 +4910,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 165.1 53.34 0)
+		(at 165.1 45.72 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4889,7 +4919,7 @@
 		(fields_autoplaced yes)
 		(uuid "6dc93bd7-660f-4ba0-a388-7b2c352a5dbc")
 		(property "Reference" "#PWR019"
-			(at 165.1 59.69 0)
+			(at 165.1 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4898,7 +4928,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 165.1 58.42 0)
+			(at 165.1 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4907,7 +4937,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 165.1 53.34 0)
+			(at 165.1 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4916,7 +4946,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 165.1 53.34 0)
+			(at 165.1 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4925,7 +4955,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 165.1 53.34 0)
+			(at 165.1 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
