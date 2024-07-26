@@ -2215,8 +2215,7 @@
 	)
 	(symbol
 		(lib_id "Device:LED")
-		(at 215.9 100.33 270)
-		(mirror x)
+		(at 215.9 100.33 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2224,7 +2223,7 @@
 		(dnp no)
 		(uuid "72ae6914-3cbd-47d3-a099-9b9c47d028f5")
 		(property "Reference" "D8"
-			(at 212.09 100.6474 90)
+			(at 219.71 100.6474 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2233,7 +2232,7 @@
 			)
 		)
 		(property "Value" "LED"
-			(at 212.09 103.1874 90)
+			(at 219.71 103.1874 90)
 			(effects
 				(font
 					(size 1.27 1.27)
