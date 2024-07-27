@@ -19,7 +19,7 @@
 
 #define ADC_MAX		((1 << self->init.adc_res_bits) - 1)
 
-#define NO_EVENT	(-1)
+#define NO_VALUE	(0xFFFF)
 #define NO_EDGE		(-1)
 
 /************************************************************************************************************
@@ -94,8 +94,11 @@ ul_err_t ul_analog_button_begin(ul_analog_button_init_t init, ul_analog_button_h
 
 	self->adc_current_val = self->adc_last_val = ADC_MAX;
 
-	memset(self->id_to_value, NO_EVENT, UL_CONF_ANALOG_BUTTON_MAX_EVENTS);
-	memset(self->id_to_edge, NO_EDGE, UL_CONF_ANALOG_BUTTON_MAX_EVENTS);
+	for(uint8_t i=0; i<UL_CONF_ANALOG_BUTTON_MAX_EVENTS; i++){
+		self->id_to_value[i] = NO_VALUE;
+		self->id_to_edge[i] = NO_EDGE;
+	}
+
 	self->button_index = 0;
 
 	*returned_handler = self;
@@ -162,7 +165,7 @@ ul_err_t ul_analog_button_evaluate(ul_analog_button_handler_t *self){
 		"Error: `self` is NULL"
 	);
 
-	// Update the values.
+	// Update values.
 	self->adc_last_val = self->adc_current_val;
 	self->adc_current_val = self->init.adc_read_callback();
 
@@ -172,17 +175,17 @@ ul_err_t ul_analog_button_evaluate(ul_analog_button_handler_t *self){
 	i = 0;
 	found = false;
 
-	// Serve the pending event (if any).
+	// Search the button event (if any).
 	while(
 		i < UL_CONF_ANALOG_BUTTON_MAX_EVENTS &&
-		self->id_to_value[i] != NO_EVENT &&
+		self->id_to_value[i] != NO_VALUE &&
 		!found
 	){
 
 		if(ul_utils_between(
-			self->id_to_value[i],
-			self->adc_current_val - UL_CONF_ANALOG_BUTTON_VALID_INTERVAL,
-			self->adc_current_val + UL_CONF_ANALOG_BUTTON_VALID_INTERVAL
+			self->adc_current_val,
+			self->id_to_value[i] - UL_CONF_ANALOG_BUTTON_VALID_INTERVAL,
+			self->id_to_value[i] + UL_CONF_ANALOG_BUTTON_VALID_INTERVAL
 		))
 			found = true;
 

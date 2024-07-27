@@ -97,7 +97,7 @@ typedef struct {
 	uint16_t adc_last_val;
 
 	// "Interrupt vector" of the library.
-	int8_t id_to_value[UL_CONF_ANALOG_BUTTON_MAX_EVENTS];
+	uint16_t id_to_value[UL_CONF_ANALOG_BUTTON_MAX_EVENTS];
 	int8_t id_to_edge[UL_CONF_ANALOG_BUTTON_MAX_EVENTS];
 
 	// Current index of `id_to_value` and `id_to_edge`.
