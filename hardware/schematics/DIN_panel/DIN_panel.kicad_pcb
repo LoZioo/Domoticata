@@ -74,9 +74,9 @@
 			(subtractmaskfromsilk no)
 			(outputformat 1)
 			(mirror no)
-			(drillshape 1)
+			(drillshape 0)
 			(scaleselection 1)
-			(outputdirectory "")
+			(outputdirectory "C:/Users/lozio/Desktop/DIN_panel/")
 		)
 	)
 	(net 0 "")
@@ -2728,6 +2728,19 @@
 				(thickness 0.15)
 			)
 			(justify mirror)
+		)
+	)
+	(gr_text "JLCJLCJLCJLC"
+		(at 151 81 0)
+		(layer "B.SilkS")
+		(uuid "b8964782-06f7-4570-9cea-a1d475eb5c22")
+		(effects
+			(font
+				(size 0.8 0.8)
+				(thickness 0.16)
+				(bold yes)
+			)
+			(justify bottom mirror)
 		)
 	)
 	(segment
