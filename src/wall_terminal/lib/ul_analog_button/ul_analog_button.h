@@ -23,6 +23,7 @@
 
 // UniLibC libraries.
 #include <ul_errors.h>
+#include <ul_utils.h>
 
 /************************************************************************************************************
 * Public Defines
@@ -87,7 +88,7 @@ typedef struct {
 	/* Instance state */
 
 	// Needed to implement the edge detector.
-	uint8_t adc_last_val;
+	uint16_t adc_last_val;
 
 } analog_button_handler_t;
 

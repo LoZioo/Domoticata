@@ -61,22 +61,39 @@ ul_err_t analog_button_begin(analog_button_init_t init, analog_button_handler_t 
 
 	/* Parameters check */
 
-	// UL_GOTO_ON_FALSE(
-	// 	self->init.non_zero_value > 0,
-	// 	UL_ERR_INVALID_ARG,
-	// 	ul_pm_begin_free,
-	// 	"Error: `self->init.non_zero_value` is 0"
-	// );
+	UL_GOTO_ON_FALSE(
+		ul_utils_between(
+			self->init.adc_res_bits,
+			8, 16
+		),
+		UL_ERR_INVALID_ARG,
+		ul_pm_begin_free,
+		"Error: `self->init.adc_res_bits` must be between 8 and 16"
+	);
+
+	UL_GOTO_ON_FALSE(
+		self->init.adc_callback != NULL,
+		UL_ERR_INVALID_ARG,
+		ul_pm_begin_free,
+		"Error: `self->init.adc_callback` is NULL"
+	);
+
+	UL_GOTO_ON_FALSE(
+		self->init.event_callback != NULL,
+		UL_ERR_INVALID_ARG,
+		ul_pm_begin_free,
+		"Error: `self->init.event_callback` is NULL"
+	);
 
 	/* Init configurations */
 
-	// self->a_value = 1;
+	self->adc_last_val = (1 << self->init.adc_res_bits) - 1;
 
 	*returned_handler = self;
 	return ret;
 
-// ul_pm_begin_free:
-// 	free(self);
+ul_pm_begin_free:
+	free(self);
 
 ul_pm_begin_err:
 	return ret;
