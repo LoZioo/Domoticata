@@ -219,7 +219,7 @@ extern ul_err_t ul_utils_buf_to_str(uint8_t *buf, uint32_t size, char *str, uint
  *	uint32_t slice_size = 4;
  *	uint8_t slice[slice_size];
  *
- *	bool process_slice = ul_utils_slice_buffer(buf, sizeof(buf), slice, &slice_size);
+ *	bool process_slice = ul_utils_slice_buf(buf, sizeof(buf), slice, &slice_size);
  *	while(process_slice){
  *		// ...
  *
@@ -228,10 +228,10 @@ extern ul_err_t ul_utils_buf_to_str(uint8_t *buf, uint32_t size, char *str, uint
  *			printf("%d, ", slice[i]);
  *		printf("]\n");
  *
- *		process_slice = ul_utils_slice_buffer(NULL, 0, slice, &slice_size);
+ *		process_slice = ul_utils_slice_buf(NULL, 0, slice, &slice_size);
  *	}
  */
-extern bool ul_utils_slice_buffer(uint8_t *buf, uint32_t size, uint8_t *slice, uint32_t *slice_size);
+extern bool ul_utils_slice_buf(uint8_t *buf, uint32_t size, uint8_t *slice, uint32_t *slice_size);
 
 /**
  * @brief Encode a variable series of arguments into a buffer (call this function from within another variable arguments function).

@@ -179,7 +179,7 @@ ul_err_t ul_utils_buf_to_str(uint8_t *buf, uint32_t size, char *str, uint8_t bas
 
 /* Arrays */
 
-bool ul_utils_slice_buffer(uint8_t *buf, uint32_t size, uint8_t *slice, uint32_t *slice_size){
+bool ul_utils_slice_buf(uint8_t *buf, uint32_t size, uint8_t *slice, uint32_t *slice_size){
 	if(ul_utils_either(slice, slice_size, ==, NULL))
 		return false;
 
