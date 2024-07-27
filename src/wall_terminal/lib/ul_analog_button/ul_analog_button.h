@@ -34,18 +34,6 @@
 ************************************************************************************************************/
 
 /**
- * @brief Analog button ADC sampling callback.
- * @return Must return the sampled ADC value.
-*/
-typedef uint16_t (*ul_analog_button_adc_callback_t)();
-
-/**
- * @brief Analog button event callback.
- * @param button_id The registered button ID that triggered the callback.
-*/
-typedef void (*ul_analog_button_event_callback_t)(uint8_t button_id);
-
-/**
  * @brief Trigger polarity.
  */
 typedef enum {
@@ -55,6 +43,19 @@ typedef enum {
 	UL_ANALOG_BUTTON_EDGE_BOTH
 
 } ul_analog_button_edge_t;
+
+/**
+ * @brief Analog button ADC sampling callback.
+ * @return Must return the sampled ADC value.
+*/
+typedef uint16_t (*ul_analog_button_adc_read_callback_t)();
+
+/**
+ * @brief Analog button event callback.
+ * @param button_id The registered button ID that triggered the callback.
+ * @param edge `ul_analog_button_edge_t` The edge that triggered the callback.
+*/
+typedef void (*ul_analog_button_event_callback_t)(uint8_t button_id, uint8_t edge);
 
 // Instance configurations.
 typedef struct {
@@ -69,7 +70,7 @@ typedef struct {
 	/**
 	 * @brief The ADC callback.
 	 */
-	ul_analog_button_adc_callback_t adc_callback;
+	ul_analog_button_adc_read_callback_t adc_read_callback;
 
 	/**
 	 * @brief The event callback.
@@ -86,6 +87,9 @@ typedef struct {
 	ul_analog_button_init_t init;
 
 	/* Instance state */
+
+	// Current ADC value from the `evaluate()`.
+	uint16_t adc_current_val;
 
 	// Needed to implement the edge detector.
 	uint16_t adc_last_val;
@@ -109,5 +113,25 @@ extern ul_err_t ul_analog_button_begin(ul_analog_button_init_t init, ul_analog_b
  * @brief Free the allocated resources.
 */
 extern void ul_analog_button_end(ul_analog_button_handler_t *self);
+
+/**
+ * @brief Bind an analog read to a button event.
+ * @param adc_mean_val The mean analog value.
+ * @param valid_interval The `event_callback` will be triggered if the sampled value is between `adc_mean_val` +- `valid_interval`.
+ * @param button_id Button ID to be retrived inside `event_callback`.
+ * @param edge `ul_analog_button_edge_t` The edge that must trigger `event_callback`.
+ */
+extern ul_err_t ul_analog_button_bind(
+	ul_analog_button_handler_t *self,
+	uint16_t adc_mean_val,
+	uint16_t valid_interval,
+	uint8_t button_id,
+	uint8_t edge
+);
+
+/**
+ * @brief Update and handle the button's bind events.
+ */
+extern ul_err_t ul_analog_button_evaluate(ul_analog_button_handler_t *self);
 
 #endif  /* INC_UL_ANALOG_BUTTON_H_ */

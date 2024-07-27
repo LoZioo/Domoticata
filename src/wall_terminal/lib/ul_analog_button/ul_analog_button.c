@@ -17,6 +17,8 @@
 * Private Defines
 ************************************************************************************************************/
 
+#define ADC_MAX	((1 << self->init.adc_res_bits) - 1)
+
 /************************************************************************************************************
 * Private Types Definitions
  ************************************************************************************************************/
@@ -72,10 +74,10 @@ ul_err_t ul_analog_button_begin(ul_analog_button_init_t init, ul_analog_button_h
 	);
 
 	UL_GOTO_ON_FALSE(
-		self->init.adc_callback != NULL,
+		self->init.adc_read_callback != NULL,
 		UL_ERR_INVALID_ARG,
 		ul_pm_begin_free,
-		"Error: `self->init.adc_callback` is NULL"
+		"Error: `self->init.adc_read_callback` is NULL"
 	);
 
 	UL_GOTO_ON_FALSE(
@@ -87,7 +89,7 @@ ul_err_t ul_analog_button_begin(ul_analog_button_init_t init, ul_analog_button_h
 
 	/* Init configurations */
 
-	self->adc_last_val = (1 << self->init.adc_res_bits) - 1;
+	self->adc_current_val = self->adc_last_val = (1 << self->init.adc_res_bits) - 1;
 
 	*returned_handler = self;
 	return ret;
@@ -101,4 +103,49 @@ ul_pm_begin_err:
 
 void ul_analog_button_end(ul_analog_button_handler_t *self){
 	free(self);
+}
+
+ul_err_t ul_analog_button_bind(
+	ul_analog_button_handler_t *self,
+	uint16_t adc_mean_val,
+	uint16_t valid_interval,
+	uint8_t button_id,
+	uint8_t edge
+){
+
+	UL_RETURN_ON_FALSE(
+		self != NULL,
+		UL_ERR_INVALID_ARG,
+		"Error: `self` is NULL"
+	);
+
+	UL_RETURN_ON_FALSE(
+		adc_mean_val <= ADC_MAX,
+		UL_ERR_INVALID_ARG,
+		"Error: `adc_mean_val` must be less or equal to 2^(`self->init.adc_res_bits`)"
+	);
+
+	UL_RETURN_ON_FALSE(
+		edge <= UL_ANALOG_BUTTON_EDGE_BOTH,
+		UL_ERR_INVALID_ARG,
+		"Error: `edge` must be a member of `ul_analog_button_edge_t`"
+	);
+
+	// 
+
+	return UL_OK;
+}
+
+ul_err_t ul_analog_button_evaluate(ul_analog_button_handler_t *self){
+
+	UL_RETURN_ON_FALSE(
+		self != NULL,
+		UL_ERR_INVALID_ARG,
+		"Error: `self` is NULL"
+	);
+
+	self->adc_last_val = self->adc_current_val;
+	self->adc_current_val = self->init.adc_read_callback();
+
+	return UL_OK;
 }
