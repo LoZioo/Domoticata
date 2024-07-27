@@ -4,6 +4,8 @@ set -e
 FILENAME="unilibc.txt"
 REPO_URL="git@github.com:LoZioo/UniLibC.git"
 
+rm -rf tmp
+
 # Needed libraries to $libs.
 mapfile -t libs < <(sed 's/\r$//' "$FILENAME")
 
