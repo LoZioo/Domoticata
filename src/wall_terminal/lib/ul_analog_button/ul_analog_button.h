@@ -20,8 +20,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 // UniLibC libraries.
+#include <ul_configs.h>
 #include <ul_errors.h>
 #include <ul_utils.h>
 
@@ -94,6 +96,13 @@ typedef struct {
 	// Needed to implement the edge detector.
 	uint16_t adc_last_val;
 
+	// "Interrupt vector" of the library.
+	int8_t id_to_value[UL_CONF_ANALOG_BUTTON_MAX_EVENTS];
+	int8_t id_to_edge[UL_CONF_ANALOG_BUTTON_MAX_EVENTS];
+
+	// Current index of `id_to_value` and `id_to_edge`.
+	uint8_t button_index;
+
 } ul_analog_button_handler_t;
 
 /************************************************************************************************************
@@ -117,17 +126,13 @@ extern void ul_analog_button_end(ul_analog_button_handler_t *self);
 /**
  * @brief Bind an analog read to a button event.
  * @param adc_mean_val The mean analog value.
- * @param valid_interval The `event_callback` will be triggered if the sampled value is between `adc_mean_val` +- `valid_interval`.
- * @param button_id Button ID to be retrived inside `event_callback`.
+ * @param button_id Button ID assigned to the specified event. Retrive it inside `event_callback`.
  * @param edge `ul_analog_button_edge_t` The edge that must trigger `event_callback`.
  */
-extern ul_err_t ul_analog_button_bind(
-	ul_analog_button_handler_t *self,
-	uint16_t adc_mean_val,
-	uint16_t valid_interval,
-	uint8_t button_id,
-	uint8_t edge
-);
+extern ul_err_t ul_analog_button_bind(ul_analog_button_handler_t *self, uint16_t adc_mean_val, uint8_t edge, uint8_t *button_id);
+
+// !!! FARE SHIFT ALL'INDIETRO DI TUTTI GLI ELEMENTI, SE NO EVALUATE NON FUNZIONA
+extern ul_err_t ul_analog_button_unbind(ul_analog_button_handler_t *self, uint16_t adc_mean_val, uint8_t edge, uint8_t *button_id);
 
 /**
  * @brief Update and handle the button's bind events.
