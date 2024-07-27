@@ -27,7 +27,7 @@
 * Public Defines
 ************************************************************************************************************/
 
-#ifdef UL_CONF_PRINT_DEBUG
+#ifdef UL_CONF_ERRORS_PRINT_DEBUG
 
 /**
  * @brief Check the error code and terminate the program in case the code is not `UL_OK`.
@@ -150,7 +150,7 @@
 	} \
 }
 
-#else /* UL_CONF_PRINT_DEBUG */
+#else /* UL_CONF_ERRORS_PRINT_DEBUG */
 
 /**
  * @brief Check the error code and terminate the program in case the code is not `UL_OK`.
@@ -228,7 +228,7 @@
  */
 #define UL_GOTO_ON_FALSE_ISR(c, err_code, goto_tag, format, ...)	UL_GOTO_ON_FALSE(c, err_code, goto_tag, format, ...)
 
-#endif /* UL_CONF_PRINT_DEBUG */
+#endif /* UL_CONF_ERRORS_PRINT_DEBUG */
 
 /************************************************************************************************************
 * Public Types Definitions
@@ -266,18 +266,18 @@ typedef int (*ul_errors_printf_callback_t)(const char *format, ...);
 * Public Variables Prototypes
 ************************************************************************************************************/
 
-#ifdef UL_CONF_PRINT_DEBUG
+#ifdef UL_CONF_ERRORS_PRINT_DEBUG
 
 extern ul_errors_printf_callback_t __ul_errors_printf;
 extern ul_errors_printf_callback_t __ul_errors_printf_isr;
 
-#endif /* UL_CONF_PRINT_DEBUG */
+#endif /* UL_CONF_ERRORS_PRINT_DEBUG */
 
 /************************************************************************************************************
 * Public Functions Prototypes
 ************************************************************************************************************/
 
-#ifdef UL_CONF_PRINT_DEBUG
+#ifdef UL_CONF_ERRORS_PRINT_DEBUG
 
 extern void __ul_errors_check_failed(ul_err_t rc, const char *file, int line, const char *function, const char *expression) __attribute__((__noreturn__));
 extern void __ul_errors_check_failed_without_abort(ul_err_t rc, const char *file, int line, const char *function, const char *expression);
@@ -290,12 +290,12 @@ extern void __ul_errors_check_failed_without_abort(ul_err_t rc, const char *file
  */
 extern bool ul_errors_begin(ul_errors_printf_callback_t default_printf_callback, ul_errors_printf_callback_t isr_printf_callback);
 
-#else /* UL_CONF_PRINT_DEBUG */
+#else /* UL_CONF_ERRORS_PRINT_DEBUG */
 
 /**
  * @brief A stub.
  */
 extern bool ul_errors_begin(ul_errors_printf_callback_t default_printf_callback, ul_errors_printf_callback_t isr_printf_callback);
 
-#endif /* UL_CONF_PRINT_DEBUG */
+#endif /* UL_CONF_ERRORS_PRINT_DEBUG */
 #endif /* INC_UL_ERRORS_H_ */
