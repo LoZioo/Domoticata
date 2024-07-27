@@ -37,7 +37,7 @@
 * Public Functions Definitions
  ************************************************************************************************************/
 
-ul_err_t analog_button_begin(analog_button_init_t init, analog_button_handler_t **returned_handler){
+ul_err_t ul_analog_button_begin(ul_analog_button_init_t init, ul_analog_button_handler_t **returned_handler){
 
 	UL_RETURN_ON_FALSE(
 		returned_handler != NULL,
@@ -49,12 +49,12 @@ ul_err_t analog_button_begin(analog_button_init_t init, analog_button_handler_t 
 
 	ul_err_t ret = UL_OK;
 
-	analog_button_handler_t *self = (analog_button_handler_t*) malloc(sizeof(analog_button_handler_t));
+	ul_analog_button_handler_t *self = (ul_analog_button_handler_t*) malloc(sizeof(ul_analog_button_handler_t));
 	UL_GOTO_ON_FALSE(
 		self != NULL,
 		UL_ERR_NO_MEM,
 		ul_pm_begin_err,
-		"Error on `malloc(sizeof(analog_button_handler_t)`"
+		"Error on `malloc(sizeof(ul_analog_button_handler_t)`"
 	);
 
 	self->init = init;
@@ -99,6 +99,6 @@ ul_pm_begin_err:
 	return ret;
 }
 
-void analog_button_end(analog_button_handler_t *self){
+void ul_analog_button_end(ul_analog_button_handler_t *self){
 	free(self);
 }
