@@ -1,8 +1,8 @@
 /* USER CODE BEGIN Header */
 /**
 	******************************************************************************
-	* @file           : main.cpp
-	* @brief          : main program body.
+	* @file           : analog_button_tuner.cpp
+	* @brief          : Print the read ADC values to the serial monitor.
 	******************************************************************************
 	* @attention
 	*
@@ -27,27 +27,14 @@
 #include <EEPROM.h>
 
 // UniLibC libraries.
-extern "C" {
-	#include <ul_errors.h>
-	#include <ul_utils.h>
-}
 
-// Header.
+// Headers.
 #include <const.h>
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
-/**
- * @brief Return values of `analog_button_read()`.
- */
-enum {
-	BUTTON_NONE = -1,
-	BUTTON_0,
-	BUTTON_1
-};
 
 /* USER CODE END PTD */
 
@@ -72,17 +59,7 @@ enum {
 /**
  * @brief GPIO initialization.
  */
-void GPIO_setup();
-
-/**
- * @brief GPIO initialization.
- */
 void UART_setup();
-
-/**
- * @brief Poll the ADC and convert the read value to a button.
- */
-int8_t analog_button_read(analog_pin_t adc_pin);
 
 /* USER CODE END PFP */
 
@@ -99,7 +76,6 @@ void setup(){
 	/* MCU Configuration--------------------------------------------------------*/
 	/* USER CODE BEGIN SysInit */
 
-	GPIO_setup();
 	UART_setup();
 
 	/* USER CODE END SysInit */
@@ -121,24 +97,14 @@ void loop(){
 	/* Infinite loop */
 	/* USER CODE BEGIN Loop */
 
-	static int8_t button;
-	button = analog_button_read(CONF_GPIO_ADC);
-
-	if(button != BUTTON_NONE){
-		Serial.println(button);
-		delay(100);
-	}
+	Serial.println(analogRead(CONF_GPIO_ADC));
+	delay(10);
 
 	/* USER CODE END Loop */
 }
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 2 */
-
-void GPIO_setup(){
-	pinMode(CONF_GPIO_PWM_A, OUTPUT);
-	pinMode(CONF_GPIO_PWM_B, OUTPUT);
-}
 
 void UART_setup(){
 
@@ -147,25 +113,6 @@ void UART_setup(){
 
 	if(cal < 0x80)
 		OSCCAL = cal;
-}
-
-int8_t analog_button_read(analog_pin_t adc_pin){
-
-	static uint16_t adc_val;
-	static int8_t button;
-
-	adc_val = analogRead(adc_pin);
-	button = BUTTON_NONE;
-
-	if(adc_val < CONF_BTN_VALID_EDGE){
-		if(ul_utils_between(adc_val, VAL_BTN_0_LOWER_THR, VAL_BTN_0_UPPER_THR))
-			button = BUTTON_0;
-
-		else if(ul_utils_between(adc_val, VAL_BTN_1_LOWER_THR, VAL_BTN_1_UPPER_THR))
-			button = BUTTON_1;
-	}
-
-	return button;
 }
 
 /* USER CODE END 2 */
