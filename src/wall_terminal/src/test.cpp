@@ -1,8 +1,8 @@
 /* USER CODE BEGIN Header */
 /**
 	******************************************************************************
-	* @file           : analog_button_tuner.cpp
-	* @brief          : Print the read ADC values to the serial monitor.
+	* @file           : main.cpp
+	* @brief          : main program body.
 	******************************************************************************
 	* @attention
 	*
@@ -27,8 +27,12 @@
 #include <EEPROM.h>
 
 // UniLibC libraries.
+extern "C" {
+	#include <ul_errors.h>
+	#include <ul_utils.h>
+}
 
-// Headers.
+// Header.
 #include <const.h>
 
 /* USER CODE END Includes */
@@ -36,10 +40,66 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
+/**
+ * @brief Return values of `analog_button_read()`.
+ */
+enum {
+	BUTTON_NONE = 0,
+	BUTTON_1,
+	BUTTON_2,
+	BUTTON_3,
+	BUTTON_4,
+	BUTTON_5,
+	BUTTON_6,
+	BUTTON_7,
+	BUTTON_8
+};
+
+/**
+ * @brief Button states (4-bits).
+ */
+enum {
+	BUTTON_STATE_IDLE,
+	BUTTON_STATE_PRESSED,
+	BUTTON_STATE_DOUBLE_PRESSED,
+	BUTTON_STATE_HOLD,
+};
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+static uint16_t __button_states;
+#define __btn_bit_shift(button)	(button * 2 - 2)
+#define __btn_bit_mask(button)		(3 << __btn_bit_shift(button))
+
+#define reset_button_states() \
+	__button_states = 0
+
+/**
+ * @brief Set the button state of the specified button.
+ * @param button `BUTTON_1`, `BUTTON_2`, ...
+ * @param state `BUTTON_STATE_PRESSED`, `BUTTON_STATE_DOUBLE_PRESSED`, ...
+ */
+#define set_button_state(button, state) \
+	__button_states = \
+	( \
+		__button_states & \
+		~( (uint16_t) __btn_bit_mask(button) ) \
+	) | ( state << __btn_bit_shift(button) )
+
+/**
+ * @brief Get the button state of the specified button.
+ * @param button `BUTTON_1`, `BUTTON_2`, ...
+ * @return `BUTTON_STATE_PRESSED`, `BUTTON_STATE_DOUBLE_PRESSED`, ...
+ */
+#define get_button_state(button) ( \
+	( \
+		__button_states & \
+		__btn_bit_mask(button) \
+	) >> __btn_bit_shift(button) \
+)
 
 /* USER CODE END PD */
 
@@ -55,6 +115,11 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
+
+/**
+ * @brief GPIO initialization.
+ */
+void GPIO_setup();
 
 /**
  * @brief GPIO initialization.
@@ -76,6 +141,7 @@ void setup(){
 	/* MCU Configuration--------------------------------------------------------*/
 	/* USER CODE BEGIN SysInit */
 
+	GPIO_setup();
 	UART_setup();
 
 	/* USER CODE END SysInit */
@@ -86,6 +152,15 @@ void setup(){
 
 	/* USER CODE BEGIN 1 */
 
+	reset_button_states();
+	set_button_state(BUTTON_2, BUTTON_STATE_PRESSED);
+	set_button_state(BUTTON_5, BUTTON_STATE_HOLD);
+	set_button_state(BUTTON_8, BUTTON_STATE_DOUBLE_PRESSED);
+
+	Serial.println(get_button_state(BUTTON_2));
+	Serial.println(get_button_state(BUTTON_5));
+	Serial.println(get_button_state(BUTTON_8));
+
 	/* USER CODE END 1 */
 }
 
@@ -93,18 +168,19 @@ void setup(){
  * @brief Put your main code here, to run repeatedly.
 */
 void loop(){
-
 	/* Infinite loop */
 	/* USER CODE BEGIN Loop */
-
-	Serial.println(analogRead(CONF_GPIO_ADC));
-	delay(10);
 
 	/* USER CODE END Loop */
 }
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 2 */
+
+void GPIO_setup(){
+	pinMode(CONF_GPIO_PWM_A, OUTPUT);
+	pinMode(CONF_GPIO_PWM_B, OUTPUT);
+}
 
 void UART_setup(){
 
