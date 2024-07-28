@@ -19,8 +19,16 @@
 
 #ifdef UL_CONF_ERRORS_PRINT_DEBUG
 
+// Shortcuts.
 #define printf_def	__ul_errors_printf
 #define printf_isr	__ul_errors_printf_isr
+
+// Suppress the warning emitted at linking time.
+#ifdef __AVR_ATmega2560__
+	#define __builtin_ret_addr(n)		NULL
+#else
+	#define __builtin_ret_addr			__builtin_return_address
+#endif
 
 /**
  * @brief Check if `ptr` is not `NULL`.
@@ -81,8 +89,7 @@ static void __ul_errors_check_failed_print(ul_err_t rc, const char *file, int li
 void __ul_errors_check_failed_print(ul_err_t rc, const char *file, int line, const char *function, const char *expression){
 	__assert_notnull(printf_def);
 
-	printf_def("\nUL_ERRORS_CHECK failed: ul_err_t #%u", rc);
-	printf_def(" at %p\n", __builtin_return_address(0));
+	printf_def("\nUL_ERRORS_CHECK failed: ul_err_t #%u at %p\n", rc, __builtin_ret_addr(0));
 	printf_def("file: \"%s\" line %d\nfunc: %s\nexpression: %s\n", file, line, function, expression);
 }
 

@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
 
 // UniLibC.
 #include <ul_configs.h>
@@ -28,6 +29,11 @@
 ************************************************************************************************************/
 
 #ifdef UL_CONF_ERRORS_PRINT_DEBUG
+
+// If it's not supported by the framework, just don't use it.
+#ifndef __ASSERT_FUNC
+	#define __ASSERT_FUNC	"N/A"
+#endif
 
 /**
  * @brief Check the error code and terminate the program in case the code is not `UL_OK`.

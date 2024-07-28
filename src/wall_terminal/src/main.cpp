@@ -50,11 +50,8 @@ extern "C" {
 #define CONF_GPIO_UART_DE_RE	-1
 
 // Analog buttons
-#define CONF_BTN_1_MIN	75
-#define CONF_BTN_1_MAX	85
-
-#define CONF_BTN_2_MIN	140
-#define CONF_BTN_2_MAX	150
+#define CONF_BTN_1_MEAN	80
+#define CONF_BTN_2_MIN	145
 
 /* USER CODE END PD */
 
@@ -65,6 +62,8 @@ extern "C" {
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
+
+ul_analog_button_handler_t *abtn;
 
 /* USER CODE END PV */
 
@@ -80,6 +79,13 @@ void GPIO_setup();
  * @brief GPIO initialization.
  */
 void UART_setup();
+
+/**
+ * @brief Analog button event callback.
+ * @param button_id The registered button ID that triggered the callback.
+ * @param edge `ul_analog_button_edge_t` The edge that triggered the callback.
+*/
+void ul_analog_button_event_callback(uint8_t button_id, uint8_t edge);
 
 /* USER CODE END PFP */
 
@@ -103,6 +109,14 @@ void setup(){
 
 	/* USER CODE BEGIN Init */
 
+	ul_analog_button_init_t abtn_init = {
+		.adc_res_bits = 10,
+		.adc_read_callback = []() -> uint16_t { return analogRead(CONF_GPIO_ADC); },
+		.event_callback = ul_analog_button_event_callback
+	};
+
+	ul_analog_button_begin(abtn_init, &abtn);
+
 	/* USER CODE END Init */
 
 	/* USER CODE BEGIN 1 */
@@ -120,20 +134,7 @@ void loop(){
 	/* Infinite loop */
 	/* USER CODE BEGIN Loop */
 
-	static uint16_t btn;
-	btn = analogRead(CONF_GPIO_ADC);
-
-	if(ul_utils_between(btn, CONF_BTN_1_MIN, CONF_BTN_1_MAX)){
-		Serial.println(F("1"));
-		delay(500);
-	}
-
-	else if(ul_utils_between(btn, CONF_BTN_2_MIN, CONF_BTN_2_MAX)){
-		Serial.println(F("2"));
-		delay(500);
-	}
-
-	// Serial.println(btn);
+	ul_analog_button_evaluate(abtn);
 	delay(1);
 
 	/* USER CODE END Loop */
@@ -154,6 +155,30 @@ void UART_setup(){
 
 	if(cal < 0x80)
 		OSCCAL = cal;
+}
+
+void ul_analog_button_event_callback(uint8_t button_id, uint8_t edge){
+	// Serial.print(F("id: "));
+	// Serial.print(button_id);
+	// Serial.print(F(", edge: "));
+
+	// switch(edge){
+	// 	case UL_ANALOG_BUTTON_EDGE_RISING:
+	// 		Serial.print(F("rising"));
+	// 		break;
+
+	// 	case UL_ANALOG_BUTTON_EDGE_FALLING:
+	// 		Serial.print(F("falling"));
+	// 		break;
+
+	// 	case UL_ANALOG_BUTTON_EDGE_BOTH:
+	// 		Serial.print(F("both"));
+	// 		break;
+
+	// 	default:
+	// 		Serial.print(F("???"));
+	// 		break;
+	// }
 }
 
 /* USER CODE END 2 */
