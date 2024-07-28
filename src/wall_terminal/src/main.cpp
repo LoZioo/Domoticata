@@ -60,6 +60,10 @@ static uint32_t t0;
 	while(millis() - t0 < ms) \
 		delay_nonblock_tasks()
 
+static uint8_t button_clicks[CONF_BTN_COUNT];
+#define reset_button_clicks() \
+	memset(button_clicks, 0, CONF_BTN_COUNT)
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -70,7 +74,7 @@ static uint32_t t0;
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
-bool serial_available
+
 
 /* USER CODE END PV */
 
@@ -124,6 +128,8 @@ void setup(){
 
 	/* USER CODE BEGIN 1 */
 
+	reset_button_clicks();
+
 	/* USER CODE END 1 */
 }
 
@@ -135,13 +141,24 @@ void loop(){
 	/* Infinite loop */
 	/* USER CODE BEGIN Loop */
 
+	static uint16_t ms = 0;
 	static int8_t button;
+
+	if(ms == 999){
+		Serial.println(button_clicks[0]);
+		Serial.println(button_clicks[1]);
+		Serial.println();
+	}
+
 	button = analog_button_read(CONF_GPIO_ADC);
 
 	if(button != BUTTON_NONE){
-		Serial.println(button);
+		button_clicks[button]++;
 		delay_nonblock(CONF_DEBOUNCE_TIME_MS);
 	}
+
+	delay(1);
+	ms = (ms + 1) % 1000;
 
 	/* USER CODE END Loop */
 }

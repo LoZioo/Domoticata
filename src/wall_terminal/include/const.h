@@ -26,6 +26,8 @@
 #define CONF_BTN_VALID_INTERVAL		20
 
 // Values from `analog_button_tuner.cpp`.
+#define CONF_BTN_COUNT		2
+
 #define CONF_BTN_0_MEAN		79
 #define CONF_BTN_1_MEAN		143
 
@@ -36,6 +38,6 @@
 #define VAL_BTN_1_UPPER_THR			(CONF_BTN_1_MEAN + CONF_BTN_VALID_INTERVAL)
 
 // Timings
-#define CONF_DEBOUNCE_TIME_MS		250
+#define CONF_DEBOUNCE_TIME_MS					250
 
 #endif  /* INC_UL_CONFIGS_H_ */
