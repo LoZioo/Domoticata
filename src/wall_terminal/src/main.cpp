@@ -54,6 +54,12 @@ enum {
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+static uint32_t t0;
+#define delay_nonblock(ms) \
+	t0 = millis(); \
+	while(millis() - t0 < ms) \
+		delay_nonblock_tasks()
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -63,6 +69,8 @@ enum {
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
+
+bool serial_available
 
 /* USER CODE END PV */
 
@@ -83,6 +91,12 @@ void UART_setup();
  * @brief Poll the ADC and convert the read value to a button.
  */
 int8_t analog_button_read(analog_pin_t adc_pin);
+
+/**
+ * @brief `delay_nonblock()` macro background tasks.
+ * @note No delays allowed inside; treat it like an ISR.
+ */
+inline void delay_nonblock_tasks();
 
 /* USER CODE END PFP */
 
@@ -126,7 +140,7 @@ void loop(){
 
 	if(button != BUTTON_NONE){
 		Serial.println(button);
-		delay(100);
+		delay_nonblock(CONF_DEBOUNCE_TIME_MS);
 	}
 
 	/* USER CODE END Loop */
@@ -172,5 +186,8 @@ int8_t analog_button_read(analog_pin_t adc_pin){
 
 /* Private user code for ISR (Interrupt Service Routines) --------------------*/
 /* USER CODE BEGIN ISR */
+
+void delay_nonblock_tasks(){
+}
 
 /* USER CODE END ISR */
