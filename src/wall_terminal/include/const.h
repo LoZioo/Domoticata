@@ -21,6 +21,11 @@
 #define CONF_GPIO_ADC					A1
 #define CONF_GPIO_UART_DE_RE	-1
 
+// UART
+#define CONF_UART_NACK				0xFD
+#define CONF_UART_ACK					0xFE
+#define CONF_UART_BROADCAST		0xFF
+
 // Analog buttons
 #define CONF_BTN_VALID_EDGE				(ADC_MAX - 100)
 #define CONF_BTN_VALID_INTERVAL		20

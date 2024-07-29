@@ -62,6 +62,8 @@ extern "C" {
 // !!! METTERE IN EEPROM
 uint8_t device_id = 0x06;
 
+bool send_button_states = false;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -181,11 +183,16 @@ void button_task(){
 			case BUTTON_STATE_IDLE:
 				set_button_state(button, BUTTON_STATE_PRESSED);
 				button_press_count = 1;
+
+				// !!! DEBUG
+				analogWrite(button-1, 30);
 				break;
 
 			case BUTTON_STATE_PRESSED:
 			case BUTTON_STATE_DOUBLE_PRESSED:
 				button_press_count++;
+
+				analogWrite(button-1, 255);
 				break;
 		}
 
@@ -206,22 +213,35 @@ void button_task(){
 
 void uart_task(){
 
-	if(Serial.available() && Serial.read() == device_id){
+	static uint16_t button_states;
+	button_states = save_button_states();
 
-		// Serial.write(device_id);
-		// Serial.write(' ');
-
-		// Serial.print(get_button_state(BUTTON_1));
-		// Serial.print(F(", "));
-		// Serial.print(get_button_state(BUTTON_2));
-		// Serial.println();
+	if(
+		button_states != 0 &&
+		Serial.available() &&
+		Serial.read() == device_id
+	){
 
 		Serial.write(device_id);
+		
+		while(Serial.read_blocking() != CONF_UART_ACK)
+			asm("nop");
+		
+		Serial.write(2);
 
-		uint16_t button_states = save_button_states();
+		while(Serial.read_blocking() != CONF_UART_ACK)
+			asm("nop");
+
 		Serial.write(ul_utils_cast_to_mem(button_states), sizeof(button_states));
 
+		while(Serial.read_blocking() != CONF_UART_ACK)
+			asm("nop");
+
 		reset_button_states();
+
+		// !!! DEBUG
+		analogWrite(CONF_GPIO_PWM_A, 0);
+		analogWrite(CONF_GPIO_PWM_B, 0);
 	}
 }
 
