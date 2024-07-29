@@ -60,7 +60,7 @@ extern "C" {
 /* USER CODE BEGIN PV */
 
 // !!! METTERE IN EEPROM
-uint8_t device_id = 'x';
+uint8_t device_id = 0x06;
 
 /* USER CODE END PV */
 
@@ -125,7 +125,7 @@ void loop(){
 	/* Infinite loop */
 	/* USER CODE BEGIN Loop */
 
-	delay_nonblock(CONF_LOOP_PERIOD_MS, millis, &button_t0, button_task);
+	ul_utils_delay_nonblock(CONF_LOOP_PERIOD_MS, millis, &button_t0, button_task);
 
 	/* USER CODE END Loop */
 }
@@ -173,15 +173,33 @@ uint8_t analog_button_read(analog_pin_t adc_pin){
 
 void button_task(){
 
-	static int8_t button;
+	static uint8_t button, button_press_count;
 	button = analog_button_read(CONF_GPIO_ADC);
 
 	if(button != BUTTON_NONE){
+		switch(get_button_state(button)){
+			case BUTTON_STATE_IDLE:
+				set_button_state(button, BUTTON_STATE_PRESSED);
+				button_press_count = 1;
+				break;
 
-		// !!! IMPLEMENTARE RILEVAZIONE DOUBLE PRESS E HOLD
-		set_button_state(button, BUTTON_STATE_PRESSED);
-		delay_nonblock(CONF_DEBOUNCE_TIME_MS, millis, &uart_t0, uart_task);
+			case BUTTON_STATE_PRESSED:
+			case BUTTON_STATE_DOUBLE_PRESSED:
+				button_press_count++;
+				break;
+		}
+
+		if(button_press_count == 2)
+			set_button_state(button, BUTTON_STATE_DOUBLE_PRESSED);
+
+		else if(button_press_count > CONF_HOLD_BTN_TICKS)
+			set_button_state(button, BUTTON_STATE_HOLD);
+
+		ul_utils_delay_nonblock(CONF_DEBOUNCE_TIME_MS, millis, &uart_t0, uart_task);
 	}
+
+	else
+		button_press_count = 0;
 
 	uart_task();
 }
@@ -189,13 +207,19 @@ void button_task(){
 void uart_task(){
 
 	if(Serial.available() && Serial.read() == device_id){
-		Serial.write(device_id);
-		Serial.write(' ');
 
-		Serial.print(get_button_state(BUTTON_1));
-		Serial.print(F(", "));
-		Serial.print(get_button_state(BUTTON_2));
-		Serial.println();
+		// Serial.write(device_id);
+		// Serial.write(' ');
+
+		// Serial.print(get_button_state(BUTTON_1));
+		// Serial.print(F(", "));
+		// Serial.print(get_button_state(BUTTON_2));
+		// Serial.println();
+
+		Serial.write(device_id);
+
+		uint16_t button_states = save_button_states();
+		Serial.write(ul_utils_cast_to_mem(button_states), sizeof(button_states));
 
 		reset_button_states();
 	}
