@@ -2,7 +2,7 @@
  *  @brief  Created on: July 29, 2024
  *          Davide Scalisi
  *
- * 					Description:	Minimal library to store up to 8 button states.
+ * 					Description:	Minimal library to store up to 4 button states for 8 different buttons on only 16-bits.
  *
  * @copyright [2024] Davide Scalisi *
  * @copyright All Rights Reserved. *
