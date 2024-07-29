@@ -25,24 +25,24 @@
 * Private Variables
  ************************************************************************************************************/
 
-static uint16_t __button_states = 0;
+static raw_button_states_t __button_states = 0;
 
 /************************************************************************************************************
 * Private Functions Prototypes
  ************************************************************************************************************/
 
-static uint8_t __btn_bit_shift(uint8_t button);
-static uint8_t __btn_bit_mask(uint8_t button);
+static uint8_t __btn_bit_shift(button_id_t button);
+static uint8_t __btn_bit_mask(button_id_t button);
 
 /************************************************************************************************************
 * Private Functions Definitions
  ************************************************************************************************************/
 
-uint8_t __btn_bit_shift(uint8_t button){
+uint8_t __btn_bit_shift(button_id_t button){
 	return (button * 2 - 2);
 }
 
-uint8_t __btn_bit_mask(uint8_t button){
+uint8_t __btn_bit_mask(button_id_t button){
 	return (3 << __btn_bit_shift(button));
 }
 
@@ -50,7 +50,7 @@ uint8_t __btn_bit_mask(uint8_t button){
 * Public Functions Definitions
  ************************************************************************************************************/
 
-uint8_t get_button_state(uint8_t button){
+button_state_t get_button_state(button_id_t button){
 	return (
 		(
 			__button_states &
@@ -59,7 +59,7 @@ uint8_t get_button_state(uint8_t button){
 	);
 }
 
-void set_button_state(uint8_t button, uint8_t state){
+void set_button_state(button_id_t button, button_state_t state){
 	__button_states = (
 		(
 			__button_states &
@@ -72,10 +72,10 @@ void reset_button_states(){
 	__button_states = 0;
 }
 
-uint16_t save_button_states(){
+raw_button_states_t save_button_states(){
 	return __button_states;
 }
 
-void load_button_states(uint16_t button_states){
+void load_button_states(raw_button_states_t button_states){
 	__button_states = button_states;
 }
