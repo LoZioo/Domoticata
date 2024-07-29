@@ -45,6 +45,6 @@
 
 // !!! METTERE IN EEPROM QUESTE COSTANTI; RISCRIVIBILI DA CENTRALINA
 #define CONF_DEBOUNCE_TIME_MS		200		// Button delay time after pressed.
-#define CONF_HOLD_BTN_TICKS			4			// At this number of ticks, the button will be considered held; the minimum hold time is `CONF_HOLD_BTN_TICKS` * `CONF_DEBOUNCE_TIME_MS`.
+#define CONF_HELD_BTN_TICKS			4			// At this number of ticks, the button will be considered held; the minimum hold time is `CONF_HOLD_BTN_TICKS` * `CONF_DEBOUNCE_TIME_MS`.
 
 #endif  /* INC_UL_CONFIGS_H_ */
