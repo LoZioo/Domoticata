@@ -49,7 +49,7 @@ typedef enum {
 	BUTTON_STATE_IDLE = 0,
 	BUTTON_STATE_PRESSED,
 	BUTTON_STATE_DOUBLE_PRESSED,
-	BUTTON_STATE_HOLD,
+	BUTTON_STATE_HELD,
 } button_state_t;
 
 /************************************************************************************************************
