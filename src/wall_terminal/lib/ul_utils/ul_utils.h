@@ -169,7 +169,7 @@ extern float ul_utils_normalize_angle(float a);
  * @param background_routine The background routine that must be executed repeatedly during the time delay.
  * @note No explicit blocking time delays are allowed inside the `background_routine()`: treat it like an ISR.
  */
-void delay_nonblock(uint16_t ms, uint32_t (*millis_routine)(), uint32_t *time_counter, void (*background_routine)());
+void ul_utils_delay_nonblock(uint16_t ms, uint32_t (*millis_routine)(), uint32_t *time_counter, void (*background_routine)());
 
 /* Contitions */
 

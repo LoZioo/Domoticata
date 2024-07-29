@@ -77,7 +77,7 @@ float ul_utils_normalize_angle(float rad){
 
 /* Time */
 
-void delay_nonblock(uint16_t ms, uint32_t (*millis_routine)(), uint32_t *time_counter, void (*background_routine)()){
+void ul_utils_delay_nonblock(uint16_t ms, uint32_t (*millis_routine)(), uint32_t *time_counter, void (*background_routine)()){
 	*time_counter = millis_routine();
 	while(millis_routine() - (*time_counter) < ms)
 		background_routine();
