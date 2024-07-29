@@ -32,85 +32,22 @@ extern "C" {
 	#include <ul_utils.h>
 }
 
-// Header.
+// Project libraries.
 #include <const.h>
+
+extern "C" {
+	#include <button_states.h>
+}
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-/**
- * @brief Button numbers.
- * @note Return values of `analog_button_read()`.
- */
-enum {
-	BUTTON_NONE = 0,
-	BUTTON_1,
-	BUTTON_2,
-	BUTTON_3,
-	BUTTON_4,
-	BUTTON_5,
-	BUTTON_6,
-	BUTTON_7,
-	BUTTON_8
-};
-
-/**
- * @brief Button states (4-bits).
- */
-enum {
-	BUTTON_STATE_IDLE,
-	BUTTON_STATE_PRESSED,
-	BUTTON_STATE_DOUBLE_PRESSED,
-	BUTTON_STATE_HOLD,
-};
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
-/* Non-blocking delay */
-
-static uint32_t button_t0, uart_t0;
-#define delay_nonblock(ms, t0, background_routine) \
-	t0 = millis(); \
-	while(millis() - t0 < ms) \
-		background_routine()
-
-/* Button management */
-
-static uint16_t __button_states = 0;
-#define __btn_bit_shift(button)	(button * 2 - 2)
-#define __btn_bit_mask(button)		(3 << __btn_bit_shift(button))
-
-#define reset_button_states() \
-	__button_states = 0
-
-/**
- * @brief Set the button state of the specified button.
- * @param button `BUTTON_1`, `BUTTON_2`, ...
- * @param state `BUTTON_STATE_PRESSED`, `BUTTON_STATE_DOUBLE_PRESSED`, ...
- */
-#define set_button_state(button, state) \
-	__button_states = \
-	( \
-		__button_states & \
-		~( (uint16_t) __btn_bit_mask(button) ) \
-	) | ( state << __btn_bit_shift(button) )
-
-/**
- * @brief Get the button state of the specified button.
- * @param button `BUTTON_1`, `BUTTON_2`, ...
- * @return `BUTTON_STATE_PRESSED`, `BUTTON_STATE_DOUBLE_PRESSED`, ...
- */
-#define get_button_state(button) ( \
-	( \
-		__button_states & \
-		__btn_bit_mask(button) \
-	) >> __btn_bit_shift(button) \
-)
 
 /* USER CODE END PD */
 
@@ -142,17 +79,14 @@ void UART_setup();
 
 /**
  * @brief Poll the ADC and convert the read value to a button.
+ * @return A member of `button_id_t` from `button_states.h`: `BUTTON_1`, `BUTTON_2`, ...
  */
 uint8_t analog_button_read(analog_pin_t adc_pin);
 
-/**
- * @note No delays allowed inside; treat it like an ISR.
- */
+static uint32_t button_t0;
 void button_task();
 
-/**
- * @note No delays allowed inside; treat it like an ISR.
- */
+static uint32_t uart_t0;
 void uart_task();
 
 /* USER CODE END PFP */
@@ -191,7 +125,7 @@ void loop(){
 	/* Infinite loop */
 	/* USER CODE BEGIN Loop */
 
-	delay_nonblock(CONF_LOOP_PERIOD_MS, button_t0, button_task);
+	delay_nonblock(CONF_LOOP_PERIOD_MS, millis, &button_t0, button_task);
 
 	/* USER CODE END Loop */
 }
@@ -246,7 +180,7 @@ void button_task(){
 
 		// !!! IMPLEMENTARE RILEVAZIONE DOUBLE PRESS E HOLD
 		set_button_state(button, BUTTON_STATE_PRESSED);
-		delay_nonblock(CONF_DEBOUNCE_TIME_MS, uart_t0, uart_task);
+		delay_nonblock(CONF_DEBOUNCE_TIME_MS, millis, &uart_t0, uart_task);
 	}
 
 	uart_task();
