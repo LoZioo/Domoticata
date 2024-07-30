@@ -60,7 +60,7 @@ typedef enum : uint8_t {
 /* USER CODE BEGIN PD */
 
 // !!! METTERE IN EEPROM
-#define local_device_id		0x06
+#define local_device_id		0x01
 
 /* USER CODE END PD */
 
@@ -213,7 +213,7 @@ bool background_button_task(){
 				button_press_count = 1;
 
 				// !!! DEBUG
-				analogWrite(button-1, 40);
+				// analogWrite(button-1, 40);
 				break;
 
 			case BUTTON_STATE_PRESSED:
@@ -221,7 +221,7 @@ bool background_button_task(){
 				button_press_count++;
 
 				// !!! DEBUG
-				analogWrite(button-1, 255);
+				// analogWrite(button-1, 255);
 				break;
 
 			default:
@@ -262,8 +262,7 @@ bool background_uart_task(){
 			)
 				&&		// Do not answer to these commands.
 			!ul_utils_in(
-				dup_header.command, 3,
-				DUP_COMMAND_POLL,
+				dup_header.command, 2,
 				DUP_COMMAND_ACK,
 				DUP_COMMAND_NACK
 			)
@@ -286,20 +285,23 @@ void state_handle_command(){
 
 	// Handle the received command.
 	switch(dup_header.command){
-		case DUP_COMMAND_GET_BUTTON_STATES: {
+		case DUP_COMMAND_BUTTON_STATES: {
 
 			// !!! CONTROLLARE SE SONO PASSATI 500MS DALL'ULTIMO TASTO PREMUTO
+
+			Serial.write(dup_encode_header((dup_decoded_header_t){
+				.device_id = DUP_ID_CU,
+				.command = DUP_COMMAND_BUTTON_STATES
+			}));
 
 			raw_button_states_t button_states = save_button_states();
 			Serial.write(ul_utils_cast_to_mem(button_states), sizeof(button_states));
 
 			reset_button_states();
 
-			// // !!! DEBUG
-			analogWrite(CONF_GPIO_PWM_A, 0);
-			analogWrite(CONF_GPIO_PWM_B, 0);
-
-			send_ack();
+			// !!! DEBUG
+			// analogWrite(CONF_GPIO_PWM_A, 0);
+			// analogWrite(CONF_GPIO_PWM_B, 0);
 		} break;
 
 		case DUP_COMMAND_SET_PWM: {
@@ -318,8 +320,6 @@ void state_handle_command(){
 					0, 100, 0, PWM_MAX
 				)
 			);
-
-			send_ack();
 		} break;
 
 		// Command not recognized.
