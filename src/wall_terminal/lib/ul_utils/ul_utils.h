@@ -162,14 +162,15 @@ extern float ul_utils_normalize_angle(float a);
 /* Time */
 
 /**
- * @brief Freeze the caller execution for at least `ms` milliseconds.
+ * @brief Freeze the caller execution for at least `ms` milliseconds. If you want, you can internally interrupt the delay by returning `false` from the `background_routine()`.
  * @param ms The number of milliseconds to pause.
  * @param millis_routine This routine must return the number of milliseconds passed when called.
  * @param time_counter A pointer to a variable needed to keep track of the passing time. You should keep one associated with each `background_routine()`.
- * @param background_routine The background routine that must be executed repeatedly during the time delay.
+ * @param background_routine The background routine that must be executed repeatedly during the time delay. Return `true` if the the delay must go on, otherwise return `false` to explicitly interrupt the delay.
+ * @return `true` if at least `ms` milliseconds have passed. `false` if the delay was explicitly interrupted by returning `false` from the `background_routine()` or there are some parameter errors.
  * @note No explicit blocking time delays are allowed inside the `background_routine()`: treat it like an ISR.
  */
-void ul_utils_delay_nonblock(uint16_t ms, uint32_t (*millis_routine)(), uint32_t *time_counter, void (*background_routine)());
+bool ul_utils_delay_nonblock(uint16_t ms, uint32_t (*millis_routine)(), uint32_t *time_counter, bool (*background_routine)());
 
 /* Contitions */
 
