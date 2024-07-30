@@ -49,9 +49,6 @@ extern "C" {
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-// !!! METTERE IN EEPROM
-#define device_id		0x06
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -228,12 +225,12 @@ bool uart_task(){
 	 */
 	if(
 		Serial.available() &&
-		Serial.read() == device_id &&
+		Serial.read() == CONF_UART_DEVICE_ID &&
 		get_button_states() != 0 &&
 		millis() - last_button_press_ms >= CONF_TIME_BTN_LOCK_MS
 	){
 
-		Serial.write(device_id);
+		Serial.write(CONF_UART_DEVICE_ID);
 		uint16_t button_states = get_button_states();
 		Serial.write(ul_utils_cast_to_mem(button_states), sizeof(button_states));
 
