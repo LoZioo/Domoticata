@@ -87,12 +87,12 @@ extern void reset_button_states();
 /**
  * @return A copy of the current raw button states.
  */
-extern button_state_t save_button_states();
+extern raw_button_states_t save_button_states();
 
 /**
  * @brief Restore the button states to the specified values.
  * @param button_states Raw button states from `save_button_states()`.
  */
-extern void load_button_states(button_state_t button_states);
+extern void load_button_states(raw_button_states_t button_states);
 
 #endif  /* INC_BUTTON_STATES_H_ */
