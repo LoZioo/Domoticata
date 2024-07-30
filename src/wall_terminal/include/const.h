@@ -14,17 +14,13 @@
 
 // Misc
 #define ADC_MAX		((1 << 10) - 1)
+#define PWM_MAX		0xFF
 
 // GPIO
 #define CONF_GPIO_PWM_A				0
 #define CONF_GPIO_PWM_B				1
 #define CONF_GPIO_ADC					A1
 #define CONF_GPIO_UART_DE_RE	-1
-
-// UART
-#define CONF_UART_NACK				0xFD
-#define CONF_UART_ACK					0xFE
-#define CONF_UART_BROADCAST		0xFF
 
 // Analog buttons
 #define CONF_BTN_VALID_EDGE				(ADC_MAX - 100)
@@ -41,7 +37,6 @@
 #define VAL_BTN_2_UPPER_THR			(CONF_BTN_2_MEAN + CONF_BTN_VALID_INTERVAL)
 
 // Timings
-#define CONF_LOOP_PERIOD_MS			1000
 
 // !!! METTERE IN EEPROM QUESTE COSTANTI; RISCRIVIBILI DA CENTRALINA
 #define CONF_DEBOUNCE_TIME_MS		200		// Button delay time after pressed.
