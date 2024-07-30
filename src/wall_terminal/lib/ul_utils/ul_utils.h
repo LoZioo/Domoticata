@@ -31,6 +31,14 @@
 * Public Defines
 ************************************************************************************************************/
 
+/* Conditional types */
+
+#ifdef __AVR_ATtiny13A__
+	#define millis_ret_t	uint32_t
+#else
+	#define millis_ret_t	unsigned long
+#endif
+
 /* Constants */
 
 #define UL_UTILS_DEG_TO_RAD		0.017453292519943295769236907684886
@@ -170,7 +178,7 @@ extern float ul_utils_normalize_angle(float a);
  * @return `true` if at least `ms` milliseconds have passed. `false` if the delay was explicitly interrupted by returning `false` from the `background_routine()` or if there are some parameter errors.
  * @note No explicit blocking time delays are allowed inside the `background_routine()`: treat it like an ISR.
  */
-bool ul_utils_delay_nonblock(uint16_t ms, uint32_t (*millis_routine)(), uint32_t *time_counter, bool (*background_routine)());
+bool ul_utils_delay_nonblock(uint16_t ms, millis_ret_t (*millis_routine)(), uint32_t *time_counter, bool (*background_routine)());
 
 /* Contitions */
 

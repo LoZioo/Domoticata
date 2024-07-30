@@ -77,7 +77,7 @@ float ul_utils_normalize_angle(float rad){
 
 /* Time */
 
-bool ul_utils_delay_nonblock(uint16_t ms, uint32_t (*millis_routine)(), uint32_t *time_counter, bool (*background_routine)()){
+bool ul_utils_delay_nonblock(uint16_t ms, millis_ret_t (*millis_routine)(), uint32_t *time_counter, bool (*background_routine)()){
 
 	if(
 		millis_routine == NULL ||
