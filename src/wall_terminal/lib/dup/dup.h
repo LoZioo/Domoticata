@@ -33,7 +33,7 @@
 ************************************************************************************************************/
 
 /**
- * @brief DUP commands: up to 8 commands and 30 device IDs (effectively 30 + 1 + 1, where 0 is the `CU`, 1 to 30 are the `WTs` and 31 is the broadcast). The command is trasmitted as is: `iiiiiccc`, where `iiiii` is the device ID and `ccc` is the command. Eventual parameters are transmitted just after this byte. The command of the response will always be the ACK or the NACK.
+ * @brief DUP commands: up to 8 commands and 30 device IDs (effectively 30 + 1 + 1, where 0 is the `CU`, 1 to 30 are the `WTs` and 31 is the broadcast). The command is trasmitted as is: `iiiiiccc`, where `iiiii` is the device ID and `ccc` is the command. Eventual parameters are transmitted just after this byte.
  * @note Control unit: `CU`, Wall terminal `WT`. The parameters are trasmitted in LSB-first mode, so read them from left to right.
  */
 typedef enum __attribute__((packed)) {
@@ -43,7 +43,7 @@ typedef enum __attribute__((packed)) {
 	DUP_COMMAND_ACK,								// (`CU`	<->	`WT`)
 	DUP_COMMAND_NACK,								// (`CU`	<->	`WT`)
 
-	DUP_COMMAND_GET_BUTTON_STATES,	// (`CU`	->	`WT`)	[ Req. parameters: `N/A`, res. parameters: `bbbbbbbb bbbbbbbb`, where `bbbbbbbb bbbbbbbb` are the eight button states from the `button_states` library. ]
+	DUP_COMMAND_BUTTON_STATES,			// (`CU`	->	`WT`)	[ Req. parameters: `N/A`, res. parameters: `bbbbbbbb bbbbbbbb`, where `bbbbbbbb bbbbbbbb` are the eight button states from the `button_states` library. ]
 	DUP_COMMAND_SET_PWM,						// (`CU`	->	`WT`)	[ Parameters: `vvvvvvvc`, where `vvvvvvv` is the PWM percentage value and `c` is the PWM channel. ]
 
 } dup_command_t;
