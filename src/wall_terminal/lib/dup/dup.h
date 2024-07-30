@@ -38,7 +38,7 @@
  */
 typedef enum __attribute__((packed)) {
 
-	DUP_COMMAND_POLL,							// (`CU`	->	`WT`) [ Default command when the `CU` polls the `WTs`. The requested `WT` can answer to the `CU` with an ACK to start a comunication. ]
+	DUP_COMMAND_POLL,							// (`CU`	->	`WT`) [ Default command when the `CU` polls the `WTs`. The requested `WT` can answer to the `CU` with an ACK to signal that it's processing the received command. ]
 
 	DUP_COMMAND_ACK,							// (`CU`	<->	`WT`)
 	DUP_COMMAND_NACK,							// (`CU`	<->	`WT`)
