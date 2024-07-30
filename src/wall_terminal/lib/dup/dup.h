@@ -38,13 +38,13 @@
  */
 typedef enum __attribute__((packed)) {
 
-	DUP_COMMAND_PING,							// (`CU`	<->	`WT`)
+	DUP_COMMAND_POLL,							// (`CU`	->	`WT`) [ Default command when the `CU` polls the `WTs`. The requested `WT` can answer to the `CU` with an ACK to start a comunication. ]
 
 	DUP_COMMAND_ACK,							// (`CU`	<->	`WT`)
 	DUP_COMMAND_NACK,							// (`CU`	<->	`WT`)
 
-	DUP_COMMAND_BUTTON_STATES,		// (`CU`	<->	`WT`)	[ req. parameters: `N/A`, res. parameters: `bbbbbbbb bbbbbbbb`, where `bbbbbbbb bbbbbbbb` are the eight button states from the `button_states` library. ]
-	DUP_COMMAND_SET_PWM,					// (`CU`	->	`WT`)	[ parameters: `vvvvvvvc`, where `vvvvvvv` is the PWM percentage value and `c` is the PWM channel. ]
+	DUP_COMMAND_BUTTON_STATES,		// (`CU`	<->	`WT`)	[ Req. parameters: `N/A`, res. parameters: `bbbbbbbb bbbbbbbb`, where `bbbbbbbb bbbbbbbb` are the eight button states from the `button_states` library. ]
+	DUP_COMMAND_SET_PWM,					// (`CU`	->	`WT`)	[ Parameters: `vvvvvvvc`, where `vvvvvvv` is the PWM percentage value and `c` is the PWM channel. ]
 
 } dup_command_t;
 
