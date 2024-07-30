@@ -193,16 +193,12 @@ bool button_task(){
 		if(button_press_count == 2)
 			set_button_state(button, BUTTON_STATE_DOUBLE_PRESSED);
 
-		else if(button_press_count > CONF_TIME_BTN_HELD_TICKS)
+		else if(button_press_count == CONF_TIME_BTN_HELD_TICKS)
 			set_button_state(button, BUTTON_STATE_HELD);
 
 		// Debouncer.
 		ul_utils_delay_nonblock(CONF_TIME_BTN_DEBOUNCER_MS, millis, &uart_task_t0, uart_task);
 	}
-
-	// If no buttons are pressed, reset the press count.
-	else
-		button_press_count = 0;
 
 	// Continue eventual non-blocking delay.
 	return true;
@@ -227,18 +223,9 @@ bool uart_task(){
 
 		Serial.write(device_id);
 		uint16_t button_states = get_button_states();
+		Serial.write(ul_utils_cast_to_mem(button_states), sizeof(button_states));
 
-		// !!! SOSTITUIRE QUESTE DUE OPERAZIONI CON LA WRITE DEL BUFFER E RIMUOVERE DELAY.
-		// !!! IL DELAY C'E' PERCHE' DALL'ALTRA PARTE C'E' UNA SOFTWARE SERIAL.
-
-		// MSB
-		delay(1);
-		Serial.write((uint8_t)(button_states >> 8));
-
-		// LSB
-		delay(1);
-		Serial.write((uint8_t) button_states);
-
+		// Button states are now reset.
 		reset_button_states();
 
 		// !!! DEBUG
