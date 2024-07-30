@@ -159,7 +159,7 @@ void UART_setup(){
 
 bool button_task(){
 
-	static uint8_t button_press_count;
+	static uint8_t press_count;
 	button_id_t button = analog_button_read(CONF_GPIO_ADC);
 
 	// If a button was pressed.
@@ -172,7 +172,7 @@ bool button_task(){
 		switch(get_button_state(button)){
 			case BUTTON_STATE_IDLE:
 				set_button_state(button, BUTTON_STATE_PRESSED);
-				button_press_count = 1;
+				press_count = 1;
 
 				// !!! DEBUG
 				analogWrite(button-1, 40);
@@ -180,21 +180,33 @@ bool button_task(){
 
 			case BUTTON_STATE_PRESSED:
 			case BUTTON_STATE_DOUBLE_PRESSED:
-				button_press_count++;
-
-				// !!! DEBUG
-				analogWrite(button-1, 255);
+				press_count++;
 				break;
 
 			default:
 				break;
 		}
 
-		if(button_press_count == 2)
+		if(press_count == 2){
 			set_button_state(button, BUTTON_STATE_DOUBLE_PRESSED);
 
-		else if(button_press_count == CONF_TIME_BTN_HELD_TICKS)
+			// !!! DEBUG
+			analogWrite(button-1, 255);
+		}
+
+		else if(ul_utils_between(press_count, 3, CONF_TIME_BTN_HELD_TICKS - 1)){
+			set_button_state(button, BUTTON_STATE_PRESSED);
+
+			// !!! DEBUG
+			analogWrite(button-1, 40);
+		}
+
+		else if(press_count == CONF_TIME_BTN_HELD_TICKS){
 			set_button_state(button, BUTTON_STATE_HELD);
+
+			// !!! DEBUG
+			analogWrite(button-1, 255);
+		}
 
 		// Debouncer.
 		ul_utils_delay_nonblock(CONF_TIME_BTN_DEBOUNCER_MS, millis, &uart_task_t0, uart_task);
@@ -218,7 +230,7 @@ bool uart_task(){
 		Serial.available() &&
 		Serial.read() == device_id &&
 		get_button_states() != 0 &&
-		millis() - last_button_press_ms >= CONF_TIME_BTN_LOCK_TIME_MS
+		millis() - last_button_press_ms >= CONF_TIME_BTN_LOCK_MS
 	){
 
 		Serial.write(device_id);
