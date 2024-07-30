@@ -200,10 +200,8 @@ void UART_setup(){
 
 bool background_button_task(){
 
-	static button_id_t button;
 	static uint8_t button_press_count;
-
-	button = analog_button_read(CONF_GPIO_ADC);
+	button_id_t button = analog_button_read(CONF_GPIO_ADC);
 
 	// If a button was pressed.
 	if(button != BUTTON_NONE){
@@ -335,8 +333,8 @@ void state_send_button_states(){}
 
 button_id_t analog_button_read(analog_pin_t adc_pin){
 
-	static uint16_t adc_val;
-	static button_id_t button;
+	uint16_t adc_val;
+	button_id_t button;
 
 	adc_val = analogRead(adc_pin);
 	button = BUTTON_NONE;
