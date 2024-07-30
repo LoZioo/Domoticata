@@ -52,11 +52,6 @@ typedef enum __attribute__((packed)) {
 	BUTTON_STATE_HELD,
 } button_state_t;
 
-/**
- * @brief Raw button states from `get_button_states()` and `set_button_states()`.
- */
-typedef uint16_t raw_button_states_t;
-
 /************************************************************************************************************
 * Public Variables Prototypes
 ************************************************************************************************************/
@@ -87,12 +82,12 @@ extern void reset_button_states();
 /**
  * @return A copy of the current raw button states.
  */
-extern raw_button_states_t get_button_states();
+extern uint16_t get_button_states();
 
 /**
  * @brief Restore the button states to the specified values.
  * @param button_states Raw button states from `get_button_states()`.
  */
-extern void set_button_states(raw_button_states_t button_states);
+extern void set_button_states(uint16_t button_states);
 
 #endif  /* INC_BUTTON_STATES_H_ */
