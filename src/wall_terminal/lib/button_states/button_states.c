@@ -72,10 +72,10 @@ void reset_button_states(){
 	__button_states = 0;
 }
 
-raw_button_states_t save_button_states(){
+raw_button_states_t get_button_states(){
 	return __button_states;
 }
 
-void load_button_states(raw_button_states_t button_states){
+void set_button_states(raw_button_states_t button_states){
 	__button_states = button_states;
 }
