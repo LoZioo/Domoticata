@@ -226,8 +226,6 @@ bool uart_task(){
 	){
 
 		Serial.write(device_id);
-		set_button_state(BUTTON_5, BUTTON_STATE_HELD);
-		set_button_state(BUTTON_8, BUTTON_STATE_HELD);
 		uint16_t button_states = get_button_states();
 
 		// !!! SOSTITUIRE QUESTE DUE OPERAZIONI CON LA WRITE DEL BUFFER E RIMUOVERE DELAY.
