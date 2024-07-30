@@ -37,7 +37,6 @@ extern "C" {
 
 extern "C" {
 	#include <button_states.h>
-	#include <dup.h>
 }
 
 /* USER CODE END Includes */
@@ -45,22 +44,13 @@ extern "C" {
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-/**
- * @brief State machine states.
- */
-typedef enum : uint8_t {
-	STATE_IDLE,
-	STATE_HANDLE_COMMAND,
-	STATE_SEND_BUTTON_STATES
-} state_t;
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
 // !!! METTERE IN EEPROM
-#define local_device_id		0x01
+#define device_id		0x06
 
 /* USER CODE END PD */
 
@@ -72,11 +62,8 @@ typedef enum : uint8_t {
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
-// Current state.
-static state_t state = STATE_IDLE;
-
-// DUP decoded header temp buffer.
-static dup_decoded_header_t dup_header;
+// Last button press instant.
+static uint32_t last_button_press_ms = 0;
 
 /* USER CODE END PV */
 
@@ -97,28 +84,19 @@ void UART_setup();
 
 /* Background tasks */
 
-// static uint32_t background_button_task_t0;
-bool background_button_task();
+// static uint32_t button_task_t0;
+bool button_task();
 
-static uint32_t background_uart_task_t0;
-bool background_uart_task();
+static uint32_t uart_task_t0;
+bool uart_task();
 
 /* Generic functions */
-
-void state_handle_command();
-void state_send_button_states();
 
 /**
  * @brief Poll the ADC and convert the read value to a button ID.
  * @return A member of `button_id_t` from `button_states.h`: `BUTTON_1`, `BUTTON_2`, ...
  */
 button_id_t analog_button_read(analog_pin_t adc_pin);
-
-/**
- * @brief Send `DUP_COMMAND_ACK` to `DUP_ID_CU`.
- * @param nack If `true`, send a `DUP_COMMAND_ACK`; if `false`, send a `DUP_COMMAND_NACK`.
- */
-void send_ack(bool ack = true);
 
 /* USER CODE END PFP */
 
@@ -156,27 +134,8 @@ void loop(){
 	/* Infinite loop */
 	/* USER CODE BEGIN Loop */
 
-	// State machine.
-	switch(state){
-		case STATE_IDLE:
-			// Run only the background tasks.
-			break;
-
-		case STATE_HANDLE_COMMAND:
-			state_handle_command();
-			break;
-
-		case STATE_SEND_BUTTON_STATES:
-			state_send_button_states();
-			break;
-
-		default:
-			break;
-	}
-
-	// Always run them at the end of each loop.
-	background_button_task();
-	background_uart_task();
+	button_task();
+	uart_task();
 
 	/* USER CODE END Loop */
 }
@@ -198,13 +157,16 @@ void UART_setup(){
 		OSCCAL = cal;
 }
 
-bool background_button_task(){
+bool button_task(){
 
 	static uint8_t button_press_count;
 	button_id_t button = analog_button_read(CONF_GPIO_ADC);
 
 	// If a button was pressed.
 	if(button != BUTTON_NONE){
+
+		// Update the last button press instant.
+		last_button_press_ms = millis();
 
 		// Update the current button state based on it's previous state.
 		switch(get_button_state(button)){
@@ -213,7 +175,7 @@ bool background_button_task(){
 				button_press_count = 1;
 
 				// !!! DEBUG
-				// analogWrite(button-1, 40);
+				analogWrite(button-1, 40);
 				break;
 
 			case BUTTON_STATE_PRESSED:
@@ -221,7 +183,7 @@ bool background_button_task(){
 				button_press_count++;
 
 				// !!! DEBUG
-				// analogWrite(button-1, 255);
+				analogWrite(button-1, 255);
 				break;
 
 			default:
@@ -231,11 +193,11 @@ bool background_button_task(){
 		if(button_press_count == 2)
 			set_button_state(button, BUTTON_STATE_DOUBLE_PRESSED);
 
-		else if(button_press_count > CONF_HELD_BTN_TICKS)
+		else if(button_press_count > CONF_TIME_BTN_HELD_TICKS)
 			set_button_state(button, BUTTON_STATE_HELD);
 
-		// Stop the delay only if something is available on the UART.
-		return ul_utils_delay_nonblock(CONF_DEBOUNCE_TIME_MS, millis, &background_uart_task_t0, background_uart_task);
+		// Debouncer.
+		ul_utils_delay_nonblock(CONF_TIME_BTN_DEBOUNCER_MS, millis, &uart_task_t0, uart_task);
 	}
 
 	// If no buttons are pressed, reset the press count.
@@ -246,90 +208,49 @@ bool background_button_task(){
 	return true;
 }
 
-bool background_uart_task(){
+bool uart_task(){
 
-	if(Serial.available()){
-		dup_header = dup_decode_header(Serial.read());
+	/**
+	 * If:
+	 * 	-	It's my turn on the bus.
+	 * 	-	Some button was pressed.
+	 * 	-	The lock time elapsed after the last button press.
+	 *
+	 * Then send the button states.
+	 */
+	if(
+		Serial.available() &&
+		Serial.read() == device_id &&
+		get_button_states() != 0 &&
+		millis() - last_button_press_ms >= CONF_TIME_BTN_LOCK_TIME_MS
+	){
 
-		/**
-		 * Force the non-blocking delay interruption to handle the received command.
-		 * Only if the command is not a poll command.
-		 */
-		if(
-			(
-				dup_header.device_id == local_device_id ||
-				dup_header.device_id == DUP_ID_BROADCAST
-			)
-				&&		// Do not answer to these commands.
-			!ul_utils_in(
-				dup_header.command, 2,
-				DUP_COMMAND_ACK,
-				DUP_COMMAND_NACK
-			)
-		){
+		Serial.write(device_id);
+		set_button_state(BUTTON_5, BUTTON_STATE_HELD);
+		set_button_state(BUTTON_8, BUTTON_STATE_HELD);
+		uint16_t button_states = get_button_states();
 
-			// ACK to begin the communication.
-			send_ack();
+		// !!! SOSTITUIRE QUESTE DUE OPERAZIONI CON LA WRITE DEL BUFFER E RIMUOVERE DELAY.
+		// !!! IL DELAY C'E' PERCHE' DALL'ALTRA PARTE C'E' UNA SOFTWARE SERIAL.
 
-			// Specific command handling.
-			state = STATE_HANDLE_COMMAND;
-			return false;
-		}
+		// MSB
+		delay(1);
+		Serial.write((uint8_t)(button_states >> 8));
+
+		// LSB
+		delay(1);
+		Serial.write((uint8_t) button_states);
+
+		reset_button_states();
+
+		// !!! DEBUG
+		analogWrite(CONF_GPIO_PWM_A, 0);
+		analogWrite(CONF_GPIO_PWM_B, 0);
 	}
 
 	// Continue eventual non-blocking delay.
 	return true;
 }
-
-void state_handle_command(){
-
-	// Handle the received command.
-	switch(dup_header.command){
-		case DUP_COMMAND_BUTTON_STATES: {
-
-			// !!! CONTROLLARE SE SONO PASSATI 500MS DALL'ULTIMO TASTO PREMUTO
-
-			Serial.write(dup_encode_header((dup_decoded_header_t){
-				.device_id = DUP_ID_CU,
-				.command = DUP_COMMAND_BUTTON_STATES
-			}));
-
-			raw_button_states_t button_states = save_button_states();
-			Serial.write(ul_utils_cast_to_mem(button_states), sizeof(button_states));
-
-			reset_button_states();
-
-			// !!! DEBUG
-			// analogWrite(CONF_GPIO_PWM_A, 0);
-			// analogWrite(CONF_GPIO_PWM_B, 0);
-		} break;
-
-		case DUP_COMMAND_SET_PWM: {
-
-			uint8_t pwm_channel, pwm_percentage;
-			dup_decode_parameters_command_set_pwm(
-				Serial.read_blocking(),
-				&pwm_channel,
-				&pwm_percentage
-			);
-
-			analogWrite(
-				pwm_channel == 0 ? CONF_GPIO_PWM_A : CONF_GPIO_PWM_B,
-				ul_utils_map_int(
-					pwm_percentage <= 100 ? pwm_percentage : 100,
-					0, 100, 0, PWM_MAX
-				)
-			);
-		} break;
-
-		// Command not recognized.
-		default:
-			send_ack(false);
-			break;
-	}
-}
-
-void state_send_button_states(){}
 
 button_id_t analog_button_read(analog_pin_t adc_pin){
 
@@ -348,13 +269,6 @@ button_id_t analog_button_read(analog_pin_t adc_pin){
 	}
 
 	return button;
-}
-
-void send_ack(bool ack){
-	Serial.write(dup_encode_header((dup_decoded_header_t){
-		.device_id = DUP_ID_CU,
-		.command = (ack ? DUP_COMMAND_ACK : DUP_COMMAND_NACK)
-	}));
 }
 
 /* USER CODE END 2 */

@@ -37,9 +37,8 @@
 #define VAL_BTN_2_UPPER_THR			(CONF_BTN_2_MEAN + CONF_BTN_VALID_INTERVAL)
 
 // Timings
-
-// !!! METTERE IN EEPROM QUESTE COSTANTI; RISCRIVIBILI DA CENTRALINA
-#define CONF_DEBOUNCE_TIME_MS		200		// Button delay time after pressed.
-#define CONF_HELD_BTN_TICKS			4			// At this number of ticks, the button will be considered held; the minimum hold time is `CONF_HOLD_BTN_TICKS` * `CONF_DEBOUNCE_TIME_MS`.
+#define CONF_TIME_BTN_DEBOUNCER_MS		200		// Button delay time after pressed.
+#define CONF_TIME_BTN_HELD_TICKS			4			// At this number of ticks, the button will be considered held; the minimum hold time is `CONF_HOLD_BTN_TICKS` * `CONF_TIME_BTN_DEBOUNCER_MS`.
+#define CONF_TIME_BTN_LOCK_TIME_MS		1000	// Minimum time that must pass from the last button click to send the current button states.
 
 #endif  /* INC_UL_CONFIGS_H_ */
