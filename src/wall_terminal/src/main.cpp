@@ -61,6 +61,9 @@ extern "C" {
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
+// !!! RAGGRUPPARE TUTTE QUESTE MACRO DI PROTOCOLLO IN UN HEADER (ANCHE DALL'ALTRO SKETCH)
+// !!! AGGIUNGERE FUNZIONI SEND_TO_MASTER RECEIVE_FROM_MASTER / SEND_TO_SLAVE RECEIVE_FROM_SLAVE
+
 /**
  * @brief Check if the MSb is 1.
  */
@@ -70,6 +73,13 @@ extern "C" {
  * @brief Set the MSb to 0.
  */
 #define get_master_byte(b)	(b & 0x7F)
+
+/**
+ * @brief Helper.
+ */
+#define analog_button_if(dest_var, adc_val, btn_interval, btn_avg, button_id) \
+	if(ul_utils_between(adc_val, btn_avg - btn_interval, btn_avg + btn_interval)) \
+		dest_var = button_id
 
 /* USER CODE END PM */
 
@@ -273,13 +283,30 @@ button_id_t analog_button_read(analog_pin_t adc_pin){
 	button = BUTTON_NONE;
 
 	if(adc_val < CONF_BTN_VALID_EDGE){
-
-		// !!! METTERE IF COME DEFINE
-		if(ul_utils_between(adc_val, VAL_BTN_1_LOWER_THR, VAL_BTN_1_UPPER_THR))
-			button = BUTTON_1;
-
-		else if(ul_utils_between(adc_val, VAL_BTN_2_LOWER_THR, VAL_BTN_2_UPPER_THR))
-			button = BUTTON_2;
+		#ifdef CONF_BTN_1_AVG
+			analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_1_AVG, BUTTON_1);
+		#endif
+		#ifdef CONF_BTN_2_AVG
+			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_2_AVG, BUTTON_2);
+		#endif
+		#ifdef CONF_BTN_3_AVG
+			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_3_AVG, BUTTON_3);
+		#endif
+		#ifdef CONF_BTN_4_AVG
+			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_4_AVG, BUTTON_4);
+		#endif
+		#ifdef CONF_BTN_5_AVG
+			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_5_AVG, BUTTON_5);
+		#endif
+		#ifdef CONF_BTN_6_AVG
+			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_6_AVG, BUTTON_6);
+		#endif
+		#ifdef CONF_BTN_7_AVG
+			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_7_AVG, BUTTON_7);
+		#endif
+		#ifdef CONF_BTN_8_AVG
+			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_8_AVG, BUTTON_8);
+		#endif
 	}
 
 	return button;
