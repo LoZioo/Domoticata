@@ -21,6 +21,7 @@
 #define CONF_GPIO_PWM_B				1
 #define CONF_GPIO_ADC					A1
 #define CONF_GPIO_UART_DE_RE	-1
+#define CONF_GPIO_UART_RX_TX	4
 
 // UART
 #define CONF_UART_DEVICE_ID		0x06		// RS-485 ID.
