@@ -61,6 +61,9 @@ extern "C" {
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
+#define is_master_byte(b)		((b & 0x80) != 0)
+#define get_master_byte(b)	(b & 0x7F)
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -232,23 +235,28 @@ bool uart_task(){
 	 *
 	 * Then send the button states.
 	 */
-	if(
-		Serial.available() &&
-		Serial.read() == CONF_UART_DEVICE_RX_ID &&
-		get_button_states() != 0 &&
-		millis() - last_button_press_ms >= CONF_TIME_BTN_LOCK_MS
-	){
+	if(Serial.available()){
+		uint8_t b = Serial.read();
 
-		Serial.write(CONF_UART_DEVICE_TX_ID);
-		uint16_t button_states = get_button_states();
-		Serial.write(ul_utils_cast_to_mem(button_states), sizeof(button_states));
+		if(
+			is_master_byte(b) &&
+			get_master_byte(b) == get_master_byte(CONF_UART_DEVICE_ID) &&
+			get_button_states() != 0 &&
+			millis() - last_button_press_ms >= CONF_TIME_BTN_LOCK_MS
+		){
 
-		// Button states are now reset.
-		reset_button_states();
+			Serial.write(CONF_UART_DEVICE_ID);
+			uint16_t button_states = get_button_states();
+			Serial.write(ul_utils_cast_to_mem(button_states), sizeof(button_states));
+			// !!! TRASMETTERE 3 BYTES INVECE DI 2 CON L'MSb a 1
 
-		// !!! DEBUG
-		analogWrite(CONF_GPIO_PWM_A, 0);
-		analogWrite(CONF_GPIO_PWM_B, 0);
+			// Button states are now reset.
+			reset_button_states();
+
+			// !!! DEBUG
+			analogWrite(CONF_GPIO_PWM_A, 0);
+			analogWrite(CONF_GPIO_PWM_B, 0);
+		}
 	}
 
 	// Continue eventual non-blocking delay.

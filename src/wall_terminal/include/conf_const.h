@@ -25,10 +25,6 @@
 #define CONF_GPIO_UART_DE_RE	-1
 #define CONF_GPIO_UART_RX_TX	4
 
-// UART
-#define CONF_UART_DEVICE_RX_ID	(CONF_UART_DEVICE_ID & 0x7F)
-#define CONF_UART_DEVICE_TX_ID	(CONF_UART_DEVICE_ID | 0x80)
-
 // Timings
 #define CONF_TIME_BTN_DEBOUNCER_MS	200		// Button delay time after pressed.
 #define CONF_TIME_BTN_HELD_TICKS		5			// At this number of ticks, the button will be considered held; the minimum hold time is `CONF_HOLD_BTN_TICKS` * `CONF_TIME_BTN_DEBOUNCER_MS`.

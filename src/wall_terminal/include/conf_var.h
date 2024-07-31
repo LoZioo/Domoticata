@@ -16,7 +16,8 @@
 
 /**
  * RS-485 ID up to 127 or 0x7F.
- * The MSb is used to distinguish between RX from the control unit and TX to the control unit.
+ * - MSb = 1: byte from the master.
+ * - MSb = 0: byte from a slave.
  */
 #define CONF_UART_DEVICE_ID		0x06
 
