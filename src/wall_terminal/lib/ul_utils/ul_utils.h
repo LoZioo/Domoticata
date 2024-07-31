@@ -85,7 +85,7 @@
 )
 
 /**
- * @brief Set a specific group of bits to a number.
+ * @brief Set a specific group of bits of a number.
  * @param n The source number.
  * @param v The new bits saved from the LSb to the bit of index `s`.
  * @param s Size of the group.
