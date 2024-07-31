@@ -283,9 +283,9 @@ void send_button_states(){
 	// Reply with my ID to get the master's attention.
 	Serial.write(CONF_UART_DEVICE_ID);
 
-	// Encoding in 3 bytes instead of 2 (the MSb of every byte must be 0 because a slave is talking).
 	uint16_t button_states = get_button_states();
 
+	// Encoding in 3 bytes instead of 2 (the MSb of every byte must be 0 because a slave is talking).
 	for(uint8_t i=0; i<3; i++)
 		Serial.write(ul_utils_get_bit_group(button_states, 7, i));
 
