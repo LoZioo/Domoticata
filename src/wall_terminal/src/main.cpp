@@ -33,7 +33,8 @@ extern "C" {
 }
 
 // Project libraries.
-#include <const.h>
+#include <conf_const.h>
+#include <conf_var.h>
 
 extern "C" {
 	#include <button_states.h>
