@@ -71,6 +71,32 @@
 	) \
 )
 
+/* Bitwise */
+
+/**
+ * @brief Get a specific group of bits from a number.
+ * @param n The source number.
+ * @param s Size of the group.
+ * @param i Get the i-th group (from left to right).
+ * @return The extracted bits saved from the LSb to the bit of index `s`.
+ */
+#define ul_utils_get_bit_group(n, s, i)( \
+	((n) >> ((s) * (i))) & ((1U << (s)) - 1) \
+)
+
+/**
+ * @brief Set a specific group of bits to a number.
+ * @param n The source number.
+ * @param v The new bits saved from the LSb to the bit of index `s`.
+ * @param s Size of the group.
+ * @param i Save into the i-th group (from left to right).
+ * @return `v` with the specified group of bits altered.
+ */
+#define ul_utils_set_bit_group(n, v, s, i) ( \
+	((n) & ~(((1U << (s)) - 1) << ((s) * (i)))) | \
+	(((v) & ((1U << (s)) - 1)) << ((s) * (i))) \
+)
+
 /* Contition statements */
 
 /**
