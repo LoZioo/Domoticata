@@ -61,7 +61,14 @@ extern "C" {
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
+/**
+ * @brief Check if the MSb is 1.
+ */
 #define is_master_byte(b)		((b & 0x80) != 0)
+
+/**
+ * @brief Set the MSb to 0.
+ */
 #define get_master_byte(b)	(b & 0x7F)
 
 /* USER CODE END PM */
