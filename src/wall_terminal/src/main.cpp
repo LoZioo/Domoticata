@@ -105,6 +105,11 @@ bool uart_task();
  */
 button_id_t analog_button_read(analog_pin_t adc_pin);
 
+/**
+ * @brief Send the button states to the control unit.
+ */
+void send_button_states();
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -227,36 +232,25 @@ bool button_task(){
 
 bool uart_task(){
 
-	/**
-	 * If:
-	 * 	-	It's my turn on the bus.
-	 * 	-	Some button was pressed.
-	 * 	-	The lock time elapsed after the last button press.
-	 *
-	 * Then send the button states.
-	 */
 	if(Serial.available()){
 		uint8_t b = Serial.read();
 
+		/**
+		 * If:
+		 * 	-	I read a master byte.
+		 * 	-	It's my turn on the bus.
+		 * 	-	Some button was pressed.
+		 * 	-	The lock time elapsed after the last button press.
+		 *
+		 * Then send the button states.
+		 */
 		if(
 			is_master_byte(b) &&
 			get_master_byte(b) == get_master_byte(CONF_UART_DEVICE_ID) &&
 			get_button_states() != 0 &&
 			millis() - last_button_press_ms >= CONF_TIME_BTN_LOCK_MS
-		){
-
-			Serial.write(CONF_UART_DEVICE_ID);
-			uint16_t button_states = get_button_states();
-			Serial.write(ul_utils_cast_to_mem(button_states), sizeof(button_states));
-			// !!! TRASMETTERE 3 BYTES INVECE DI 2 CON L'MSb a 1
-
-			// Button states are now reset.
-			reset_button_states();
-
-			// !!! DEBUG
-			analogWrite(CONF_GPIO_PWM_A, 0);
-			analogWrite(CONF_GPIO_PWM_B, 0);
-		}
+		)
+			send_button_states();
 	}
 
 	// Continue eventual non-blocking delay.
@@ -282,6 +276,25 @@ button_id_t analog_button_read(analog_pin_t adc_pin){
 	}
 
 	return button;
+}
+
+void send_button_states(){
+
+	// Reply with my ID to get the master's attention.
+	Serial.write(CONF_UART_DEVICE_ID);
+
+	// Encoding in 3 bytes instead of 2 (the MSb of every byte must be 0 because a slave is talking).
+	uint16_t button_states = get_button_states();
+
+	for(uint8_t i=0; i<3; i++)
+		Serial.write(ul_utils_get_bit_group(button_states, 7, i));
+
+	// Button states are now reset.
+	reset_button_states();
+
+	// !!! DEBUG
+	analogWrite(CONF_GPIO_PWM_A, 0);
+	analogWrite(CONF_GPIO_PWM_B, 0);
 }
 
 /* USER CODE END 2 */
