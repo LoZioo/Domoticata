@@ -13,16 +13,15 @@
 #define INC_CONF_VAR_H_
 
 // UART
-#define CONF_UART_DEVICE_ID		0x06		// RS-485 ID.
+
+/**
+ * RS-485 ID up to 127 or 0x7F.
+ * The MSb is used to distinguish between RX from the control unit and TX to the control unit.
+ */
+#define CONF_UART_DEVICE_ID		0x06
 
 // Averages from `analog_button_tuner.cpp`.
 #define CONF_BTN_1_AVG	79
 #define CONF_BTN_2_AVG	143
-
-#define VAL_BTN_1_LOWER_THR			(CONF_BTN_1_AVG - CONF_BTN_VALID_INTERVAL)
-#define VAL_BTN_1_UPPER_THR			(CONF_BTN_1_AVG + CONF_BTN_VALID_INTERVAL)
-
-#define VAL_BTN_2_LOWER_THR			(CONF_BTN_2_AVG - CONF_BTN_VALID_INTERVAL)
-#define VAL_BTN_2_UPPER_THR			(CONF_BTN_2_AVG + CONF_BTN_VALID_INTERVAL)
 
 #endif  /* INC_CONF_VAR_H_ */

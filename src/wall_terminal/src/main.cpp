@@ -40,10 +40,6 @@ extern "C" {
 	#include <button_states.h>
 }
 
-// !!! AGGIUNGERE DETECT DEL BIT PIU' SIGNIFICATIVO PER CAPIRE SE NEL BUS C'E' LA RICHIESTA DEL MIO ID
-// O SE QUALCUNO STA RISPONDENDO ED IL DATO CHE STA' INVIANDO E' CASUALMENTE UGUALE AL MIO ID
-// (IN QUESTO CASO, GENEREREI UNA COLLISIONE E NON VA' BENE)
-
 // !!! VEDERE SE SI PUO' INSERIRE IL CONTROLLO DI PARITA' O UN QUALSIASI CONTROLLO ERRORI SOFTWARE.
 
 // !!! SPIEGARE NELL'HEADER DEL MAIN COMU USARE IL PROGETTO
@@ -238,12 +234,12 @@ bool uart_task(){
 	 */
 	if(
 		Serial.available() &&
-		Serial.read() == CONF_UART_DEVICE_ID &&
+		Serial.read() == CONF_UART_DEVICE_RX_ID &&
 		get_button_states() != 0 &&
 		millis() - last_button_press_ms >= CONF_TIME_BTN_LOCK_MS
 	){
 
-		Serial.write(CONF_UART_DEVICE_ID);
+		Serial.write(CONF_UART_DEVICE_TX_ID);
 		uint16_t button_states = get_button_states();
 		Serial.write(ul_utils_cast_to_mem(button_states), sizeof(button_states));
 
@@ -268,6 +264,8 @@ button_id_t analog_button_read(analog_pin_t adc_pin){
 	button = BUTTON_NONE;
 
 	if(adc_val < CONF_BTN_VALID_EDGE){
+
+		// !!! METTERE IF COME DEFINE
 		if(ul_utils_between(adc_val, VAL_BTN_1_LOWER_THR, VAL_BTN_1_UPPER_THR))
 			button = BUTTON_1;
 
