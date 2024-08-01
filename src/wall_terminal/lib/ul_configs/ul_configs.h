@@ -16,6 +16,6 @@
 * ul_errors.h
 ************************************************************************************************************/
 
-#define UL_CONF_ERRORS_PRINT_DEBUG										// Comment to disable the text debug output.
+// #define UL_CONF_ERRORS_PRINT_DEBUG										// Comment to disable the text debug output.
 
 #endif  /* INC_UL_CONFIGS_H_ */

@@ -38,6 +38,7 @@ extern "C" {
 
 extern "C" {
 	#include <button_states.h>
+	#include <master_slave.h>
 }
 
 // !!! VEDERE SE SI PUO' INSERIRE IL CONTROLLO DI PARITA' O UN QUALSIASI CONTROLLO ERRORI SOFTWARE.
@@ -45,6 +46,8 @@ extern "C" {
 // !!! SPIEGARE NELL'HEADER DEL MAIN COMU USARE IL PROGETTO
 // (FLASH BOOTLOADER, CALIBRAZIONE OSCCAL, RILEVAZIONE VALORI BOTTONI,
 // INSERIMENTO NUMERO BOTTONI DESIDERATI IN CONST E IN analog_button_read ED INFINE FLASH DEL MAIN).
+
+// !!! METTERE UN QUALCHE TIPO DI PREFISSO ALLE FUNZIONI DI BUTTON STATES
 
 /* USER CODE END Includes */
 
@@ -60,19 +63,6 @@ extern "C" {
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
-// !!! RAGGRUPPARE TUTTE QUESTE MACRO DI PROTOCOLLO IN UN HEADER (ANCHE DALL'ALTRO SKETCH)
-// !!! AGGIUNGERE FUNZIONI SEND_TO_MASTER RECEIVE_FROM_MASTER / SEND_TO_SLAVE RECEIVE_FROM_SLAVE
-
-/**
- * @brief Check if the MSb is 1.
- */
-#define is_master_byte(b)		((b & 0x80) != 0)
-
-/**
- * @brief Set the MSb to 0.
- */
-#define get_master_byte(b)	(b & 0x7F)
 
 /**
  * @brief Helper.
@@ -263,7 +253,7 @@ bool uart_task(){
 		 */
 		if(
 			is_master_byte(b) &&
-			get_master_byte(b) == get_master_byte(CONF_UART_DEVICE_ID) &&
+			decode_master_byte(b) == decode_master_byte(CONF_UART_DEVICE_ID) &&
 			get_button_states() != 0 &&
 			millis() - last_button_press_ms >= CONF_TIME_BTN_LOCK_MS
 		)
