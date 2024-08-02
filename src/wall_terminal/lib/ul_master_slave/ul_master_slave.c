@@ -69,6 +69,8 @@ ul_err_t __encode_message(uint8_t *dest_buf, uint8_t *src_buf, UL_MS_BUF_SIZE_T 
 	uint8_t encoded_byte, j;
 	UL_MS_BUF_SIZE_T i, dest_buf_size = ul_ms_compute_encoded_size(src_buf_size);
 
+	memset(dest_buf, 0, dest_buf_size);
+
 	for(i=0; i<dest_buf_size; i++){
 		encoded_byte = 0;
 
@@ -94,6 +96,8 @@ ul_err_t __decode_message(uint8_t *dest_buf, uint8_t *src_buf, UL_MS_BUF_SIZE_T 
 	uint32_t bit_index = 0;
 	uint8_t decoded_byte, j;
 	UL_MS_BUF_SIZE_T i, dest_buf_size = ul_ms_compute_decoded_size(src_buf_size);
+
+	memset(dest_buf, 0, dest_buf_size);
 
 	for(i=0; i<src_buf_size; i++)
 		for(j=0; j<7; j++)
