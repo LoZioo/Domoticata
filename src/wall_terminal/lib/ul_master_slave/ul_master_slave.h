@@ -3,12 +3,13 @@
  *          Davide Scalisi
  *
  * 					Description:	Minimal library implementing a simple non-ambiguous
- * 												data encoding which can be sent on an half-duplex
- * 												shared bus, like half-duplex RS-485.
+ * 												data encoding which can be sent over an half-duplex
+ * 												shared physical bus, like half-duplex RS-485.
  *
- * 					Note:					The encoding simply consists forcing the MSb of every byte
- * 												to 1 when the master is transmitting and to 0 when a slave
- * 												is transmitting.
+ * 					Note:					The library encodes data from 8 bits per byte to
+ * 												7 bits per byte, using the MSb to distinguish
+ * 												transmissions from the master (MSb = 1) from
+ * 												transmissions from slaves (MSb = 0).
  *
  * @copyright [2024] Davide Scalisi *
  * @copyright All Rights Reserved. *
