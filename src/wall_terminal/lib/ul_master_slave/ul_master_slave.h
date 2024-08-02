@@ -5,7 +5,7 @@
  * 					Description:	Minimal library implementing a simple non-ambiguous
  * 												data encoding which can be sent on an half-duplex
  * 												shared bus, like half-duplex RS-485.
- * 
+ *
  * 					Note:					The encoding simply consists forcing the MSb of every byte
  * 												to 1 when the master is transmitting and to 0 when a slave
  * 												is transmitting.
@@ -25,6 +25,7 @@
 // Standard libraries.
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 // UniLibC.
 #include <ul_configs.h>
@@ -46,6 +47,26 @@
  * @brief Check if the given byte was encoded using `ul_ms_encode_master_message()`.
  */
 #define ul_ms_is_master_byte(b)	((b & 0x80) != 0)
+
+/**
+ * @brief Forces the MSb to 1.
+ */
+#define ul_ms_encode_master_byte(b)	(b | 0x80)
+
+/**
+ * @brief Forces the MSb to 0.
+ */
+#define ul_ms_decode_master_byte(b)	(b & 0x7F)
+
+/**
+ * @brief Forces the MSb to 0.
+ */
+#define ul_ms_encode_slave_byte(b)	ul_ms_decode_master_byte(b)
+
+/**
+ * @brief Forces the MSb to 0.
+ */
+#define ul_ms_decode_slave_byte(b)	ul_ms_decode_master_byte(b)
 
 /************************************************************************************************************
 * Public Types Definitions
