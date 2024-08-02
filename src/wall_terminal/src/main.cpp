@@ -30,16 +30,13 @@
 extern "C" {
 	#include <ul_errors.h>
 	#include <ul_utils.h>
+	#include <ul_button_states.h>
+	#include <ul_master_slave.h>
 }
 
 // Project libraries.
 #include <conf_const.h>
 #include <conf_var.h>
-
-extern "C" {
-	#include <ul_button_states.h>
-	#include <ul_master_slave.h>
-}
 
 // !!! VEDERE SE SI PUO' INSERIRE IL CONTROLLO DI PARITA' O UN QUALSIASI CONTROLLO ERRORI SOFTWARE.
 
