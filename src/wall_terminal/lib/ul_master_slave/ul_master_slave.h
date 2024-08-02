@@ -45,27 +45,32 @@
 #endif
 
 /**
- * @brief Check if the given byte was encoded using `ul_ms_encode_master_message()`.
+ * @brief Check if the MSb is 1.
  */
-#define ul_ms_is_master_byte(b)	((b & 0x80) != 0)
+#define ul_ms_is_master_byte(b)			((b & 0x80) != 0)
 
 /**
- * @brief Forces the MSb to 1.
+ * @brief Check if the MSb is 0.
+ */
+#define ul_ms_is_slave_byte(b)			((b & 0x80) == 0)
+
+/**
+ * @brief Force the MSb to 1.
  */
 #define ul_ms_encode_master_byte(b)	(b | 0x80)
 
 /**
- * @brief Forces the MSb to 0.
+ * @brief Force the MSb to 0.
  */
 #define ul_ms_decode_master_byte(b)	(b & 0x7F)
 
 /**
- * @brief Forces the MSb to 0.
+ * @brief Force the MSb to 0.
  */
 #define ul_ms_encode_slave_byte(b)	ul_ms_decode_master_byte(b)
 
 /**
- * @brief Forces the MSb to 0.
+ * @brief Force the MSb to 0.
  */
 #define ul_ms_decode_slave_byte(b)	ul_ms_decode_master_byte(b)
 
