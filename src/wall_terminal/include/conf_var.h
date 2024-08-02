@@ -14,11 +14,7 @@
 
 // UART
 
-/**
- * RS-485 ID up to 127 or 0x7F.
- * - MSb = 1: byte from the master.
- * - MSb = 0: byte from a slave.
- */
+// RS-485 ID up to 127 or 0x7F.
 #define CONF_UART_DEVICE_ID		0x06
 
 /**

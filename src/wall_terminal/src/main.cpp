@@ -38,7 +38,7 @@ extern "C" {
 
 extern "C" {
 	#include <button_states.h>
-	#include <master_slave.h>
+	#include <ul_master_slave.h>
 }
 
 // !!! VEDERE SE SI PUO' INSERIRE IL CONTROLLO DI PARITA' O UN QUALSIASI CONTROLLO ERRORI SOFTWARE.
@@ -252,8 +252,8 @@ bool uart_task(){
 		 * Then send the button states.
 		 */
 		if(
-			is_master_byte(b) &&
-			decode_master_byte(b) == decode_master_byte(CONF_UART_DEVICE_ID) &&
+			ul_ms_is_master_byte(b) &&
+			ul_ms_decode_master_byte(b) == ul_ms_decode_master_byte(CONF_UART_DEVICE_ID) &&
 			get_button_states() != 0 &&
 			millis() - last_button_press_ms >= CONF_TIME_BTN_LOCK_MS
 		)
@@ -309,7 +309,10 @@ void send_button_states(){
 
 	uint16_t button_states = get_button_states();
 
-	// Encoding in 3 bytes instead of 2 (the MSb of every byte must be 0 because a slave is talking).
+	/**
+	 * Encoding in 3 bytes instead of 2 (the MSb of every byte must be 0 because a slave is talking).
+	 * Equivalent of a low memory version of `ul_ms_encode_slave_message()` from `ul_master_slave.h`.
+	 */
 	for(uint8_t i=0; i<3; i++)
 		Serial.write(ul_utils_get_bit_group(button_states, 7, i));
 
