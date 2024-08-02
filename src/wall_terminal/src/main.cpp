@@ -44,8 +44,6 @@ extern "C" {
 // (FLASH BOOTLOADER, CALIBRAZIONE OSCCAL, RILEVAZIONE VALORI BOTTONI,
 // INSERIMENTO NUMERO BOTTONI DESIDERATI IN CONST E IN analog_button_read ED INFINE FLASH DEL MAIN).
 
-// !!! METTERE UN QUALCHE TIPO DI PREFISSO ALLE FUNZIONI DI BUTTON STATES
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

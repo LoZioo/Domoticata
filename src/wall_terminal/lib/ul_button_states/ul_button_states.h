@@ -62,15 +62,15 @@ typedef enum __attribute__((packed)) {
 
 /**
  * @brief Get the button state of the specified button.
- * @param button A member of `button_id_t`: `BUTTON_1`, `BUTTON_2`, ...
- * @return A member of `button_state_t`: `BUTTON_STATE_PRESSED`, `BUTTON_STATE_DOUBLE_PRESSED`, ...
+ * @param button A member of `ul_bs_button_id_t`: `BUTTON_1`, `BUTTON_2`, ...
+ * @return A member of `ul_bs_button_state_t`: `BUTTON_STATE_PRESSED`, `BUTTON_STATE_DOUBLE_PRESSED`, ...
  */
 extern ul_bs_button_state_t ul_bs_get_button_state(ul_bs_button_id_t button);
 
 /**
  * @brief Set the button state of the specified button.
- * @param button A member of `button_id_t`: `BUTTON_1`, `BUTTON_2`, ...
- * @param state A member of `button_state_t`: `BUTTON_STATE_PRESSED`, `BUTTON_STATE_DOUBLE_PRESSED`, ...
+ * @param button A member of `ul_bs_button_id_t`: `BUTTON_1`, `BUTTON_2`, ...
+ * @param state A member of `ul_bs_button_state_t`: `BUTTON_STATE_PRESSED`, `BUTTON_STATE_DOUBLE_PRESSED`, ...
  */
 extern void ul_bs_set_button_state(ul_bs_button_id_t button, ul_bs_button_state_t state);
 
@@ -86,7 +86,7 @@ extern uint16_t ul_bs_get_button_states();
 
 /**
  * @brief Restore the button states to the specified values.
- * @param button_states Raw button states from `get_button_states()`.
+ * @param button_states Raw button states from `ul_bs_get_button_states()`.
  */
 extern void ul_bs_set_button_states(uint16_t button_states);
 
