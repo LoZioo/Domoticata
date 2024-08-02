@@ -37,7 +37,7 @@ extern "C" {
 #include <conf_var.h>
 
 extern "C" {
-	#include <button_states.h>
+	#include <ul_button_states.h>
 	#include <ul_master_slave.h>
 }
 
@@ -108,9 +108,9 @@ bool uart_task();
 
 /**
  * @brief Poll the ADC and convert the read value to a button ID.
- * @return A member of `button_id_t` from `button_states.h`: `BUTTON_1`, `BUTTON_2`, ...
+ * @return A member of `ul_bs_button_id_t` from `button_states.h`: `BUTTON_1`, `BUTTON_2`, ...
  */
-button_id_t analog_button_read(analog_pin_t adc_pin);
+ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin);
 
 /**
  * @brief Send the button states to the control unit.
@@ -181,7 +181,7 @@ void UART_setup(){
 bool button_task(){
 
 	static uint8_t press_count;
-	button_id_t button = analog_button_read(CONF_GPIO_ADC);
+	ul_bs_button_id_t button = analog_button_read(CONF_GPIO_ADC);
 
 	// If a button was pressed.
 	if(button != BUTTON_NONE){
@@ -190,9 +190,9 @@ bool button_task(){
 		last_button_press_ms = millis();
 
 		// Update the current button state based on it's previous state.
-		switch(get_button_state(button)){
+		switch(ul_bs_get_button_state(button)){
 			case BUTTON_STATE_IDLE:
-				set_button_state(button, BUTTON_STATE_PRESSED);
+				ul_bs_set_button_state(button, BUTTON_STATE_PRESSED);
 				press_count = 1;
 
 				// !!! DEBUG
@@ -209,21 +209,21 @@ bool button_task(){
 		}
 
 		if(press_count == 2){
-			set_button_state(button, BUTTON_STATE_DOUBLE_PRESSED);
+			ul_bs_set_button_state(button, BUTTON_STATE_DOUBLE_PRESSED);
 
 			// !!! DEBUG
 			analogWrite(button-1, 255);
 		}
 
 		else if(ul_utils_between(press_count, 3, CONF_TIME_BTN_HELD_TICKS - 1)){
-			set_button_state(button, BUTTON_STATE_PRESSED);
+			ul_bs_set_button_state(button, BUTTON_STATE_PRESSED);
 
 			// !!! DEBUG
 			analogWrite(button-1, 40);
 		}
 
 		else if(press_count == CONF_TIME_BTN_HELD_TICKS){
-			set_button_state(button, BUTTON_STATE_HELD);
+			ul_bs_set_button_state(button, BUTTON_STATE_HELD);
 
 			// !!! DEBUG
 			analogWrite(button-1, 255);
@@ -254,7 +254,7 @@ bool uart_task(){
 		if(
 			ul_ms_is_master_byte(b) &&
 			ul_ms_decode_master_byte(b) == ul_ms_decode_master_byte(CONF_UART_DEVICE_ID) &&
-			get_button_states() != 0 &&
+			ul_bs_get_button_states() != 0 &&
 			millis() - last_button_press_ms >= CONF_TIME_BTN_LOCK_MS
 		)
 			send_button_states();
@@ -264,10 +264,10 @@ bool uart_task(){
 	return true;
 }
 
-button_id_t analog_button_read(analog_pin_t adc_pin){
+ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin){
 
 	uint16_t adc_val;
-	button_id_t button;
+	ul_bs_button_id_t button;
 
 	adc_val = analogRead(adc_pin);
 	button = BUTTON_NONE;
@@ -307,7 +307,7 @@ void send_button_states(){
 	// Reply with my ID to get the master's attention.
 	Serial.write(ul_ms_encode_slave_byte(CONF_UART_DEVICE_ID));
 
-	uint16_t button_states = get_button_states();
+	uint16_t button_states = ul_bs_get_button_states();
 
 	/**
 	 * Encoding in 3 bytes instead of 2 (the MSb of every byte must be 0 because a slave is talking).
@@ -321,7 +321,7 @@ void send_button_states(){
 		);
 
 	// Button states are now reset.
-	reset_button_states();
+	ul_bs_reset_button_states();
 
 	// !!! DEBUG
 	analogWrite(CONF_GPIO_PWM_A, 0);

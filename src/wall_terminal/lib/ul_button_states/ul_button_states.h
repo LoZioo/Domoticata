@@ -1,4 +1,4 @@
-/** @file button_states.h
+/** @file ul_button_states.h
  *  @brief  Created on: July 29, 2024
  *          Davide Scalisi
  *
@@ -40,7 +40,7 @@ typedef enum __attribute__((packed)) {
 	BUTTON_6,
 	BUTTON_7,
 	BUTTON_8
-} button_id_t;
+} ul_bs_button_id_t;
 
 /**
  * @brief Button states (2-bits).
@@ -50,7 +50,7 @@ typedef enum __attribute__((packed)) {
 	BUTTON_STATE_PRESSED,
 	BUTTON_STATE_DOUBLE_PRESSED,
 	BUTTON_STATE_HELD,
-} button_state_t;
+} ul_bs_button_state_t;
 
 /************************************************************************************************************
 * Public Variables Prototypes
@@ -65,29 +65,29 @@ typedef enum __attribute__((packed)) {
  * @param button A member of `button_id_t`: `BUTTON_1`, `BUTTON_2`, ...
  * @return A member of `button_state_t`: `BUTTON_STATE_PRESSED`, `BUTTON_STATE_DOUBLE_PRESSED`, ...
  */
-extern button_state_t get_button_state(button_id_t button);
+extern ul_bs_button_state_t ul_bs_get_button_state(ul_bs_button_id_t button);
 
 /**
  * @brief Set the button state of the specified button.
  * @param button A member of `button_id_t`: `BUTTON_1`, `BUTTON_2`, ...
  * @param state A member of `button_state_t`: `BUTTON_STATE_PRESSED`, `BUTTON_STATE_DOUBLE_PRESSED`, ...
  */
-extern void set_button_state(button_id_t button, button_state_t state);
+extern void ul_bs_set_button_state(ul_bs_button_id_t button, ul_bs_button_state_t state);
 
 /**
  * @brief Reset all the button states to `BUTTON_STATE_IDLE`.
  */
-extern void reset_button_states();
+extern void ul_bs_reset_button_states();
 
 /**
  * @return A copy of the current raw button states.
  */
-extern uint16_t get_button_states();
+extern uint16_t ul_bs_get_button_states();
 
 /**
  * @brief Restore the button states to the specified values.
  * @param button_states Raw button states from `get_button_states()`.
  */
-extern void set_button_states(uint16_t button_states);
+extern void ul_bs_set_button_states(uint16_t button_states);
 
 #endif  /* INC_BUTTON_STATES_H_ */

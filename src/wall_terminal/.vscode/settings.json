@@ -4,6 +4,7 @@
 		"stdlib.h": "c",
 		"ul_configs.h": "c",
 		"ul_utils.h": "c",
-		"ul_errors.h": "c"
+		"ul_errors.h": "c",
+		"ul_button_states.h": "c"
 	}
 }
