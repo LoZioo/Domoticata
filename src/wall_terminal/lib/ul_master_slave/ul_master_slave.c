@@ -72,7 +72,7 @@
 * Public Functions Definitions
  ************************************************************************************************************/
 
-uint32_t ul_ms_compute_encoded_size(uint32_t src_buf_size){
+UL_MS_BUF_SIZE_T ul_ms_compute_encoded_size(UL_MS_BUF_SIZE_T src_buf_size){
 	__size_assert();
 
 	// Bit size.
@@ -84,38 +84,37 @@ uint32_t ul_ms_compute_encoded_size(uint32_t src_buf_size){
 	);
 }
 
-uint32_t ul_ms_compute_decoded_size(uint32_t src_buf_size){
+UL_MS_BUF_SIZE_T ul_ms_compute_decoded_size(UL_MS_BUF_SIZE_T src_buf_size){
 	__size_assert();
 	return ((src_buf_size * 7) / 8);
 }
 
-ul_err_t ul_ms_encode_master_message(uint8_t *dest_buf, uint8_t *src_buf, uint32_t src_buf_size){
+ul_err_t ul_ms_encode_master_message(uint8_t *dest_buf, uint8_t *src_buf, UL_MS_BUF_SIZE_T src_buf_size){
 	__size_assert();
 	__ptr_asserts();
 
-	uint8_t tmp;
-	for(uint32_t i=0; i<ul_ms_compute_encoded_size(src_buf_size); i++){
-		tmp = ul_utils_get_bit_group()
+	uint32_t j = 0;
+	for(uint32_t i=0; i<src_buf_size; i++){
 	}
 
 	return UL_OK;
 }
 
-ul_err_t ul_ms_decode_master_message(uint8_t *dest_buf, uint8_t *src_buf, uint32_t src_buf_size){
+ul_err_t ul_ms_decode_master_message(uint8_t *dest_buf, uint8_t *src_buf, UL_MS_BUF_SIZE_T src_buf_size){
 	__size_assert();
 	__ptr_asserts();
 
 	return UL_OK;
 }
 
-ul_err_t ul_ms_encode_slave_message(uint8_t *dest_buf, uint8_t *src_buf, uint32_t src_buf_size){
+ul_err_t ul_ms_encode_slave_message(uint8_t *dest_buf, uint8_t *src_buf, UL_MS_BUF_SIZE_T src_buf_size){
 	__size_assert();
 	__ptr_asserts();
 
 	return UL_OK;
 }
 
-ul_err_t ul_ms_decode_slave_message(uint8_t *dest_buf, uint8_t *src_buf, uint32_t src_buf_size){
+ul_err_t ul_ms_decode_slave_message(uint8_t *dest_buf, uint8_t *src_buf, UL_MS_BUF_SIZE_T src_buf_size){
 	__size_assert();
 	__ptr_asserts();
 

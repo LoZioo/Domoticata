@@ -3,6 +3,7 @@
 		"button_states.h": "c",
 		"stdlib.h": "c",
 		"ul_configs.h": "c",
-		"ul_utils.h": "c"
+		"ul_utils.h": "c",
+		"ul_errors.h": "c"
 	}
 }
