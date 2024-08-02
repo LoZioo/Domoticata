@@ -305,7 +305,7 @@ button_id_t analog_button_read(analog_pin_t adc_pin){
 void send_button_states(){
 
 	// Reply with my ID to get the master's attention.
-	Serial.write(CONF_UART_DEVICE_ID);
+	Serial.write(ul_ms_encode_slave_byte(CONF_UART_DEVICE_ID));
 
 	uint16_t button_states = get_button_states();
 
@@ -314,7 +314,11 @@ void send_button_states(){
 	 * Equivalent of a low memory version of `ul_ms_encode_slave_message()` from `ul_master_slave.h`.
 	 */
 	for(uint8_t i=0; i<3; i++)
-		Serial.write(ul_utils_get_bit_group(button_states, 7, i));
+		Serial.write(
+			ul_ms_encode_slave_byte(
+				ul_utils_get_bit_group(button_states, 7, i)
+			)
+		);
 
 	// Button states are now reset.
 	reset_button_states();
