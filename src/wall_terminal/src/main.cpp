@@ -14,6 +14,25 @@
 	* If no LICENSE file comes with this software, it is provided AS-IS.
 	*
 	******************************************************************************
+	* 
+	*	To use this source code, you need to follow these steps first:
+	*		- Open the Arduino IDE.
+	*		- Flash the bootloader with "9.6 MHz internal osc." selected.
+	*		- Select the `env:oscillator_tuner` PlatformIO environment.
+	*		- Upload the sketch.
+	*		- Open the serial monitor and spam 'x' to detect the right `OSCCAL`.
+	*		- Select the `env:analog_button_tuner` PlatformIO environment.
+	*		- Upload the sketch.
+	*		- Press the physical button to obtain on the serial monitor, the corresponding ADC value.
+	*		- For each read physical button, go to the `conf_var.h` header.
+	*		- In that header, define the `CONF_BTN_x_AVG` as the read ADC value.
+	*		- Note: keep a distance of at least `CONF_BTN_VALID_INTERVAL` between the values.
+	*		- In the same header, update the `CONF_UART_DEVICE_ID`.
+	*		- Select the `env:main` PlatformIO environment.
+	*		- Upload the sketch.
+	*		- Enjoy.
+	*
+	******************************************************************************
 	*/
 /* USER CODE END Header */
 
@@ -38,10 +57,6 @@ extern "C" {
 // Project libraries.
 #include <conf_const.h>
 #include <conf_var.h>
-
-// !!! SPIEGARE NELL'HEADER DEL MAIN COMU USARE IL PROGETTO
-// (FLASH BOOTLOADER, CALIBRAZIONE OSCCAL, RILEVAZIONE VALORI BOTTONI,
-// INSERIMENTO NUMERO BOTTONI DESIDERATI IN CONST E IN analog_button_read ED INFINE FLASH DEL MAIN).
 
 /* USER CODE END Includes */
 

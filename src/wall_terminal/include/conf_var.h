@@ -1,4 +1,4 @@
-/** @file const.h
+/** @file conf_var.h
  *  @brief  Created on: July 28, 2024
  *          Davide Scalisi
  *
