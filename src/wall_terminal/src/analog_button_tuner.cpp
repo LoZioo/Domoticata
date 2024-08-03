@@ -28,8 +28,9 @@
 
 // UniLibC libraries.
 
-// Headers.
-#include <const.h>
+// Project libraries.
+#include <conf_const.h>
+#include <conf_var.h>
 
 /* USER CODE END Includes */
 
