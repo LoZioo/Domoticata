@@ -8,8 +8,8 @@
  *
  * 					Note:					The library encodes data from 8 bits per byte to
  * 												7 bits per byte, using the MSb to distinguish
- * 												transmissions from the master (MSb = 1) from
- * 												transmissions from slaves (MSb = 0).
+ * 												transmissions from the master device (MSb = 1)
+ * 												from transmissions from slaves (MSb = 0).
  *
  * @copyright [2024] Davide Scalisi *
  * @copyright All Rights Reserved. *
