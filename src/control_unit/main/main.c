@@ -105,7 +105,7 @@ void app_main(){
 
 	/* USER CODE BEGIN 1 */
 
-	ESP_LOGI(TAG, "polling slaves");
+	ESP_LOGI(TAG, "polling slave devices");
 
 	/* Infinite loop */
 	for(;;){
@@ -120,7 +120,8 @@ void app_main(){
 
 esp_err_t UART_poll(){
 
-	static uint8_t poll_device_id = 0x00;
+	static uint8_t poll_device_id = CONFIG_APP_SLAVE_COUNT - 1;
+	poll_device_id = (poll_device_id + 1) % CONFIG_APP_SLAVE_COUNT;
 
 	return ESP_OK;
 }
