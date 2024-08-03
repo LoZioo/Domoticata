@@ -120,7 +120,7 @@ esp_err_t UART_setup(){
 	ESP_RETURN_ON_ERROR(
 		uart_driver_install(
 			CONFIG_UART_PORT,
-			UART_HW_FIFO_LEN(2),
+			UART_HW_FIFO_LEN(2) * 2,
 			0,
 			0,
 			NULL,
