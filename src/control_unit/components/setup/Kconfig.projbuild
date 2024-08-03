@@ -1,0 +1,107 @@
+##########################################################################
+#	Configurations under "Project configurations" on menuconfig.
+#
+#	Note:	if you want to store your configuration under "Component config"
+# 			on menuconfig, just rename this file "Kconfig".
+##########################################################################
+
+menu "Project configurations"
+	menu "GPIO mapping"
+		config GPIO_UART_TX
+			int "RS-485 UART TX"
+			default 2
+
+		config GPIO_UART_RX
+			int "RS-485 UART RX"
+			default 34
+
+		config GPIO_UART_DE_RE
+			int "RS-485 UART DE/~RE"
+			default 0
+
+		config GPIO_ALARM
+			int "Alarm"
+			default 14
+
+		config GPIO_FAN
+			int "Fan"
+			default 33
+
+		config GPIO_TEMP
+			int "Temperature"
+			default 35
+
+		config GPIO_AC_V
+			int "AC voltage"
+			default 36
+
+		config GPIO_AC_I
+			int "AC current"
+			default 39
+
+		config GPIO_LED_1
+			int "LED 1"
+			default 4
+
+		config GPIO_LED_2
+			int "LED 2"
+			default 13
+
+		config GPIO_LED_3
+			int "LED 3"
+			default 16
+
+		config GPIO_LED_4
+			int "LED 4"
+			default 17
+
+		config GPIO_LED_5
+			int "LED 5"
+			default 18
+
+		config GPIO_LED_6
+			int "LED 6"
+			default 19
+
+		config GPIO_LED_7
+			int "LED 7"
+			default 21
+
+		config GPIO_LED_8
+			int "LED 8"
+			default 22
+
+		config GPIO_LED_9
+			int "LED 9"
+			default 23
+
+		config GPIO_LED_10
+			int "LED 10"
+			default 25
+
+		config GPIO_LED_11
+			int "LED 11"
+			default 15
+
+		config GPIO_LED_12
+			int "LED 12"
+			default 5
+
+		config GPIO_RELAY_1
+			int "Relay 1"
+			default 26
+
+		config GPIO_RELAY_2
+			int "Relay 2"
+			default 27
+
+		config GPIO_RELAY_3
+			int "Relay 3"
+			default 32
+
+		config GPIO_RELAY_4
+			int "Relay 4"
+			default 12
+
+	endmenu
+endmenu
