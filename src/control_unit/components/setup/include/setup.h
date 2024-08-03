@@ -20,6 +20,9 @@
 
 // Platform libraries.
 #include <esp_err.h>
+#include <esp_check.h>
+
+#include <driver/gpio.h>
 
 /************************************************************************************************************
 * Public Defines
@@ -38,5 +41,6 @@
 ************************************************************************************************************/
 
 extern esp_err_t GPIO_setup();
+extern esp_err_t UART_setup();
 
 #endif  /* INC_SETUP_H_ */

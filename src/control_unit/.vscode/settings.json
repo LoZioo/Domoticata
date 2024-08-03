@@ -19,6 +19,7 @@
 	"files.associations": {
 		"ul_errors.h": "c",
 		"cstdlib": "c",
-		"setup.h": "c"
+		"setup.h": "c",
+		"gpio.h": "c"
 	}
 }

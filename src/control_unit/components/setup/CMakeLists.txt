@@ -1,2 +1,3 @@
-idf_component_register(INCLUDE_DIRS "include"
-                       SRC_DIRS "src")
+idf_component_register(SRC_DIRS "src"
+                       REQUIRES driver
+                       INCLUDE_DIRS "include")
