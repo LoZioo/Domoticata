@@ -78,6 +78,7 @@ void app_main(){
 	/* USER CODE BEGIN SysInit */
 
 	ESP_ERROR_CHECK(GPIO_setup());
+	ESP_ERROR_CHECK(UART_setup());
 
 	/* USER CODE END SysInit */
 

@@ -402,6 +402,13 @@ CONFIG_GPIO_RELAY_2=27
 CONFIG_GPIO_RELAY_3=32
 CONFIG_GPIO_RELAY_4=12
 # end of GPIO mapping
+
+#
+# UART configurations
+#
+CONFIG_UART_PORT=1
+CONFIG_UART_BAUD_RATE=115200
+# end of UART configurations
 # end of Project configurations
 
 #

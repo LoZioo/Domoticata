@@ -104,4 +104,14 @@ menu "Project configurations"
 			default 12
 
 	endmenu
+
+	menu "UART configurations"
+		config UART_PORT
+			int "RS-485 UART port number"
+			default 1
+
+		config UART_BAUD_RATE
+			int "RS-485 UART Baud Rate"
+			default 115200
+	endmenu
 endmenu

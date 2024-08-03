@@ -23,6 +23,7 @@
 #include <esp_check.h>
 
 #include <driver/gpio.h>
+#include <driver/uart.h>
 
 /************************************************************************************************************
 * Public Defines
