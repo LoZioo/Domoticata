@@ -373,6 +373,7 @@ CONFIG_PARTITION_TABLE_MD5=y
 #
 # Project configurations
 #
+CONFIG_APP_SLAVES_NUMBER=12
 
 #
 # GPIO mapping

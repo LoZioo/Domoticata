@@ -6,6 +6,11 @@
 ##########################################################################
 
 menu "Project configurations"
+
+	config APP_SLAVES_NUMBER
+		int "Number of slaves on the RS-485 bus"
+		default 12
+
 	menu "GPIO mapping"
 		config GPIO_UART_TX
 			int "RS-485 UART TX"
