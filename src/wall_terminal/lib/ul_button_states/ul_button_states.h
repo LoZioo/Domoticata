@@ -31,25 +31,25 @@
  * @brief Button IDs.
  */
 typedef enum __attribute__((packed)) {
-	BUTTON_NONE = 0,
-	BUTTON_1,
-	BUTTON_2,
-	BUTTON_3,
-	BUTTON_4,
-	BUTTON_5,
-	BUTTON_6,
-	BUTTON_7,
-	BUTTON_8
+	UL_BS_BUTTON_NONE = 0,
+	UL_BS_BUTTON_1,
+	UL_BS_BUTTON_2,
+	UL_BS_BUTTON_3,
+	UL_BS_BUTTON_4,
+	UL_BS_BUTTON_5,
+	UL_BS_BUTTON_6,
+	UL_BS_BUTTON_7,
+	UL_BS_BUTTON_8
 } ul_bs_button_id_t;
 
 /**
  * @brief Button states (2-bits).
  */
 typedef enum __attribute__((packed)) {
-	BUTTON_STATE_IDLE = 0,
-	BUTTON_STATE_PRESSED,
-	BUTTON_STATE_DOUBLE_PRESSED,
-	BUTTON_STATE_HELD,
+	UL_BS_BUTTON_STATE_IDLE = 0,
+	UL_BS_BUTTON_STATE_PRESSED,
+	UL_BS_BUTTON_STATE_DOUBLE_PRESSED,
+	UL_BS_BUTTON_STATE_HELD,
 } ul_bs_button_state_t;
 
 /************************************************************************************************************
