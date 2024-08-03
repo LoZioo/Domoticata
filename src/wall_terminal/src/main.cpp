@@ -25,9 +25,9 @@
 	*		- Upload the sketch.
 	*		- Press the physical button to obtain on the serial monitor, the corresponding ADC value.
 	*		- For each read physical button, go to the `conf_var.h` header.
-	*		- In that header, define the `CONF_BTN_x_AVG` as the read ADC value.
-	*		- Note: keep a distance of at least `CONF_BTN_VALID_INTERVAL` between the values.
-	*		- In the same header, update the `CONF_UART_DEVICE_ID`.
+	*		- In that header, define the `CONFIG_BTN_x_AVG` as the read ADC value.
+	*		- Note: keep a distance of at least `CONFIG_BTN_VALID_INTERVAL` between the values.
+	*		- In the same header, update the `CONFIG_UART_DEVICE_ID`.
 	*		- Select the `env:main` PlatformIO environment.
 	*		- Upload the sketch.
 	*		- Enjoy.
@@ -169,10 +169,10 @@ void loop(){
 /* USER CODE BEGIN 2 */
 
 void GPIO_setup(){
-	pinMode(CONF_GPIO_PWM_A, OUTPUT);
-	pinMode(CONF_GPIO_PWM_B, OUTPUT);
-	pinMode(CONF_GPIO_UART_RX_TX, OUTPUT);
-	// !!! pinMode(CONF_GPIO_UART_DE_RE, OUTPUT);
+	pinMode(CONFIG_GPIO_PWM_A, OUTPUT);
+	pinMode(CONFIG_GPIO_PWM_B, OUTPUT);
+	pinMode(CONFIG_GPIO_UART_RX_TX, OUTPUT);
+	// !!! pinMode(CONFIG_GPIO_UART_DE_RE, OUTPUT);
 }
 
 void UART_setup(){
@@ -187,7 +187,7 @@ void UART_setup(){
 bool button_task(){
 
 	static uint8_t press_count;
-	ul_bs_button_id_t button = analog_button_read(CONF_GPIO_ADC);
+	ul_bs_button_id_t button = analog_button_read(CONFIG_GPIO_ADC);
 
 	// If a button was pressed.
 	if(button != BUTTON_NONE){
@@ -221,14 +221,14 @@ bool button_task(){
 			analogWrite(button-1, 255);
 		}
 
-		else if(ul_utils_between(press_count, 3, CONF_TIME_BTN_HELD_TICKS - 1)){
+		else if(ul_utils_between(press_count, 3, CONFIG_TIME_BTN_HELD_TICKS - 1)){
 			ul_bs_set_button_state(button, BUTTON_STATE_PRESSED);
 
 			// !!! DEBUG
 			analogWrite(button-1, 40);
 		}
 
-		else if(press_count == CONF_TIME_BTN_HELD_TICKS){
+		else if(press_count == CONFIG_TIME_BTN_HELD_TICKS){
 			ul_bs_set_button_state(button, BUTTON_STATE_HELD);
 
 			// !!! DEBUG
@@ -236,7 +236,7 @@ bool button_task(){
 		}
 
 		// Debouncer.
-		ul_utils_delay_nonblock(CONF_TIME_BTN_DEBOUNCER_MS, millis, &uart_task_t0, uart_task);
+		ul_utils_delay_nonblock(CONFIG_TIME_BTN_DEBOUNCER_MS, millis, &uart_task_t0, uart_task);
 	}
 
 	// Continue eventual non-blocking delay.
@@ -259,9 +259,9 @@ bool uart_task(){
 		 */
 		if(
 			ul_ms_is_master_byte(b) &&
-			ul_ms_decode_master_byte(b) == ul_ms_decode_master_byte(CONF_UART_DEVICE_ID) &&
+			ul_ms_decode_master_byte(b) == ul_ms_decode_master_byte(CONFIG_UART_DEVICE_ID) &&
 			ul_bs_get_button_states() != 0 &&
-			millis() - last_button_press_ms >= CONF_TIME_BTN_LOCK_MS
+			millis() - last_button_press_ms >= CONFIG_TIME_BTN_LOCK_MS
 		)
 			send_button_states();
 	}
@@ -278,30 +278,30 @@ ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin){
 	adc_val = analogRead(adc_pin);
 	button = BUTTON_NONE;
 
-	if(adc_val < CONF_BTN_VALID_EDGE){
-		#ifdef CONF_BTN_1_AVG
-			analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_1_AVG, BUTTON_1);
+	if(adc_val < CONFIG_BTN_VALID_EDGE){
+		#ifdef CONFIG_BTN_1_AVG
+			analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_1_AVG, BUTTON_1);
 		#endif
-		#ifdef CONF_BTN_2_AVG
-			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_2_AVG, BUTTON_2);
+		#ifdef CONFIG_BTN_2_AVG
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_2_AVG, BUTTON_2);
 		#endif
-		#ifdef CONF_BTN_3_AVG
-			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_3_AVG, BUTTON_3);
+		#ifdef CONFIG_BTN_3_AVG
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_3_AVG, BUTTON_3);
 		#endif
-		#ifdef CONF_BTN_4_AVG
-			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_4_AVG, BUTTON_4);
+		#ifdef CONFIG_BTN_4_AVG
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_4_AVG, BUTTON_4);
 		#endif
-		#ifdef CONF_BTN_5_AVG
-			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_5_AVG, BUTTON_5);
+		#ifdef CONFIG_BTN_5_AVG
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_5_AVG, BUTTON_5);
 		#endif
-		#ifdef CONF_BTN_6_AVG
-			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_6_AVG, BUTTON_6);
+		#ifdef CONFIG_BTN_6_AVG
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_6_AVG, BUTTON_6);
 		#endif
-		#ifdef CONF_BTN_7_AVG
-			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_7_AVG, BUTTON_7);
+		#ifdef CONFIG_BTN_7_AVG
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_7_AVG, BUTTON_7);
 		#endif
-		#ifdef CONF_BTN_8_AVG
-			else analog_button_if(button, adc_val, CONF_BTN_VALID_INTERVAL, CONF_BTN_8_AVG, BUTTON_8);
+		#ifdef CONFIG_BTN_8_AVG
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_8_AVG, BUTTON_8);
 		#endif
 	}
 
@@ -311,7 +311,7 @@ ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin){
 void send_button_states(){
 
 	// Reply with my ID to get the master's attention.
-	Serial.write(ul_ms_encode_slave_byte(CONF_UART_DEVICE_ID));
+	Serial.write(ul_ms_encode_slave_byte(CONFIG_UART_DEVICE_ID));
 
 	// button_states + CRC.
 	uint8_t data[3];
@@ -337,8 +337,8 @@ void send_button_states(){
 	ul_bs_reset_button_states();
 
 	// !!! DEBUG
-	analogWrite(CONF_GPIO_PWM_A, 0);
-	analogWrite(CONF_GPIO_PWM_B, 0);
+	analogWrite(CONFIG_GPIO_PWM_A, 0);
+	analogWrite(CONFIG_GPIO_PWM_B, 0);
 }
 
 /* USER CODE END 2 */

@@ -19,22 +19,22 @@
 #define PWM_MAX		0xFF
 
 // GPIO
-#define CONF_GPIO_PWM_A				0
-#define CONF_GPIO_PWM_B				1
-#define CONF_GPIO_ADC					A1
-#define CONF_GPIO_UART_RX_TX	4
-#define CONF_GPIO_UART_DE_RE	-1
+#define CONFIG_GPIO_PWM_A				0
+#define CONFIG_GPIO_PWM_B				1
+#define CONFIG_GPIO_ADC					A1
+#define CONFIG_GPIO_UART_RX_TX	4
+#define CONFIG_GPIO_UART_DE_RE	-1
 
 // Timings
-#define CONF_TIME_BTN_DEBOUNCER_MS	200		// Button delay time after pressed.
-#define CONF_TIME_BTN_HELD_TICKS		5			// At this number of ticks, the button will be considered held; the minimum hold time is `CONF_HOLD_BTN_TICKS` * `CONF_TIME_BTN_DEBOUNCER_MS`.
-#define CONF_TIME_BTN_LOCK_MS				400		// Minimum time that must pass from the last button click to send the current button states.
+#define CONFIG_TIME_BTN_DEBOUNCER_MS	200		// Button delay time after pressed.
+#define CONFIG_TIME_BTN_HELD_TICKS		5			// At this number of ticks, the button will be considered held; the minimum hold time is `CONFIG_HOLD_BTN_TICKS` * `CONFIG_TIME_BTN_DEBOUNCER_MS`.
+#define CONFIG_TIME_BTN_LOCK_MS				400		// Minimum time that must pass from the last button click to send the current button states.
 
 /**
  * Analog buttons
  * Note: used inside `analog_button_read()`.
  */
-#define CONF_BTN_VALID_EDGE				(ADC_MAX - 100)		// Threshold under where one button press is detected.
-#define CONF_BTN_VALID_INTERVAL		20								// Circular +-interval around the button mean value.
+#define CONFIG_BTN_VALID_EDGE				(ADC_MAX - 100)		// Threshold under where one button press is detected.
+#define CONFIG_BTN_VALID_INTERVAL		20								// Circular +-interval around the button mean value.
 
 #endif  /* INC_CONF_CONST_H_ */

@@ -98,7 +98,7 @@ void loop(){
 	/* Infinite loop */
 	/* USER CODE BEGIN Loop */
 
-	Serial.println(analogRead(CONF_GPIO_ADC));
+	Serial.println(analogRead(CONFIG_GPIO_ADC));
 	delay(10);
 
 	/* USER CODE END Loop */

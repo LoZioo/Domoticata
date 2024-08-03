@@ -15,13 +15,13 @@
 // UART
 
 // RS-485 ID up to 127 or 0x7F.
-#define CONF_UART_DEVICE_ID		0x06
+#define CONFIG_UART_DEVICE_ID		0x06
 
 /**
  * Averages from `analog_button_tuner.cpp`.
  * You can define up to 8 average values (up to 8 analog buttons).
  */
-#define CONF_BTN_1_AVG	79
-#define CONF_BTN_2_AVG	143
+#define CONFIG_BTN_1_AVG	79
+#define CONFIG_BTN_2_AVG	143
 
 #endif  /* INC_CONF_VAR_H_ */
