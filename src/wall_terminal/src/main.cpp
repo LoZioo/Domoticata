@@ -149,10 +149,6 @@ void setup(){
 	/* USER CODE BEGIN Init */
 
 	/* USER CODE END Init */
-
-	/* USER CODE BEGIN 1 */
-
-	/* USER CODE END 1 */
 }
 
 /**
