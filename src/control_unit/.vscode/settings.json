@@ -17,6 +17,8 @@
 	"idf.flashType": "UART",
 	"idf.flashBaudRate": "921600",
 	"files.associations": {
-		"ul_errors.h": "c"
+		"ul_errors.h": "c",
+		"cstdlib": "c",
+		"setup.h": "c"
 	}
 }

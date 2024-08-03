@@ -34,6 +34,9 @@
 #include <ul_errors.h>
 #include <ul_utils.h>
 
+// Project libraries.
+#include <setup.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,6 +76,8 @@ void app_main(){
 
 	/* MCU Configuration--------------------------------------------------------*/
 	/* USER CODE BEGIN SysInit */
+
+	ESP_ERROR_CHECK(GPIO_setup());
 
 	/* USER CODE END SysInit */
 
