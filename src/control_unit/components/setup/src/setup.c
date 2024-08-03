@@ -154,15 +154,15 @@ esp_err_t UART_setup(){
 		"Error on `uart_set_pin()`"
 	);
 
-	ESP_RETURN_ON_ERROR(
-		uart_set_mode(
-			CONFIG_UART_PORT,
-			UART_MODE_RS485_HALF_DUPLEX
-		),
+	// ESP_RETURN_ON_ERROR(
+	// 	uart_set_mode(
+	// 		CONFIG_UART_PORT,
+	// 		UART_MODE_RS485_HALF_DUPLEX
+	// 	),
 
-		TAG,
-		"Error on `uart_set_mode()`"
-	);
+	// 	TAG,
+	// 	"Error on `uart_set_mode()`"
+	// );
 
 	return ESP_OK;
 }

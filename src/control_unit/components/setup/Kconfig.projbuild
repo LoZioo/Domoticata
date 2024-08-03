@@ -14,6 +14,27 @@ menu "Project configurations"
 		help
 			Set to 0 to disable the RS-485 slave polling.
 
+	config APP_SLAVE_POLL_TIMEOUT_MS
+		int "Response timeout on the poll phase (milliseconds)"
+		range 1 3000
+		default 30
+
+	config APP_SLAVE_CONN_TIMEOUT_MS
+		int "Response timeout on the data exchange phase (milliseconds)"
+		range 1 3000
+		default 100
+
+	menu "UART configurations"
+		config UART_PORT
+			int "RS-485 UART port number"
+			default 1
+
+		config UART_BAUD_RATE
+			int "RS-485 UART Baud Rate"
+			default 115200
+
+	endmenu
+
 	menu "GPIO mapping"
 		config GPIO_UART_TX
 			int "RS-485 UART TX"
@@ -111,15 +132,5 @@ menu "Project configurations"
 			int "Relay 4"
 			default 12
 
-	endmenu
-
-	menu "UART configurations"
-		config UART_PORT
-			int "RS-485 UART port number"
-			default 1
-
-		config UART_BAUD_RATE
-			int "RS-485 UART Baud Rate"
-			default 115200
 	endmenu
 endmenu

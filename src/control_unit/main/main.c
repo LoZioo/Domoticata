@@ -40,6 +40,9 @@
 // UniLibC libraries.
 #include <ul_errors.h>
 #include <ul_utils.h>
+#include <ul_button_states.h>
+#include <ul_master_slave.h>
+#include <ul_crc.h>
 
 // Project libraries.
 #include <setup.h>
@@ -105,11 +108,11 @@ void app_main(){
 
 	/* USER CODE BEGIN 1 */
 
-	ESP_LOGI(TAG, "polling slave devices");
+	ESP_LOGI(TAG, "Polling slave devices");
 
 	/* Infinite loop */
 	for(;;){
-		UART_poll();
+		ESP_ERROR_CHECK_WITHOUT_ABORT(UART_poll());
 		delay(1);
 	}
 	/* USER CODE END 1 */
@@ -120,8 +123,153 @@ void app_main(){
 
 esp_err_t UART_poll(){
 
+	// Function disabled.
+	if(CONFIG_APP_SLAVE_COUNT == 0)
+		return ESP_OK;
+
+	// Slave ID increment.
 	static uint8_t poll_device_id = CONFIG_APP_SLAVE_COUNT - 1;
 	poll_device_id = (poll_device_id + 1) % CONFIG_APP_SLAVE_COUNT;
+
+	// Poll the slave device.
+	ESP_RETURN_ON_FALSE(
+		uart_write_bytes(
+			CONFIG_UART_PORT,
+			ul_utils_cast_to_mem(poll_device_id),
+			1
+		) >= 0,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error on `uart_write_bytes()`"
+	);
+
+	int read_bytes;
+	uint8_t read_device_id;
+
+	// Wait for the response.
+	read_bytes = uart_read_bytes(
+		CONFIG_UART_PORT,
+		ul_utils_cast_to_mem(read_device_id),
+		1,
+		pdMS_TO_TICKS(CONFIG_APP_SLAVE_POLL_TIMEOUT_MS)
+	);
+
+	// Error.
+	ESP_RETURN_ON_FALSE(
+		read_bytes >= 0,
+
+		ESP_ERR_TIMEOUT,
+		TAG,
+		"Error on `uart_read_bytes()`"
+	);
+
+	// Timeout.
+	if(read_bytes == 0)
+		return ESP_OK;
+
+	// Invalid response.
+	ESP_RETURN_ON_FALSE(
+		ul_ms_is_master_byte(read_device_id) ||
+		(
+			ul_ms_is_slave_byte(read_device_id) &&
+			ul_ms_decode_slave_byte(read_device_id) !=
+			ul_ms_decode_slave_byte(read_device_id)
+		),
+
+		ESP_ERR_INVALID_RESPONSE,
+		TAG,
+		"Error: slave device 0x%u answered with different ID 0x%u",
+		poll_device_id, read_device_id
+	);
+
+	// Encoded and decoded received data buffers.
+	uint8_t encoded_data[4], decoded_data[3];
+
+	// Wait for the remaining bytes.
+	read_bytes = uart_read_bytes(
+		CONFIG_UART_PORT,
+		encoded_data,
+		sizeof(encoded_data),
+		pdMS_TO_TICKS(CONFIG_APP_SLAVE_CONN_TIMEOUT_MS)
+	);
+
+	// Error.
+	ESP_RETURN_ON_FALSE(
+		read_bytes >= 0,
+
+		ESP_ERR_TIMEOUT,
+		TAG,
+		"Error on `uart_read_bytes()` for slave device 0x%u",
+		poll_device_id
+	);
+
+	// Timeout.
+	ESP_RETURN_ON_FALSE(
+		read_bytes > 0,
+
+		ESP_ERR_TIMEOUT,
+		TAG,
+		"Error: slave device 0x%u exceeded the prefixed %ums timeout for sending the button states",
+		poll_device_id, CONFIG_APP_SLAVE_CONN_TIMEOUT_MS
+	);
+
+	// Invalid response.
+	ESP_RETURN_ON_FALSE(
+		read_bytes == sizeof(encoded_data),
+
+		ESP_ERR_INVALID_RESPONSE,
+		TAG,
+		"Error: slave device 0x%u sent %u bytes; %u expected",
+		poll_device_id, read_bytes, sizeof(encoded_data)
+	);
+
+	// Decode the received bytes.
+	ul_err_t ret_val = ul_ms_decode_slave_message(
+		decoded_data,
+		encoded_data,
+		sizeof(encoded_data)
+	);
+
+	// `ul_ms_decode_slave_message()` failed.
+	ESP_RETURN_ON_FALSE(
+		ret_val == UL_OK,
+
+		ESP_FAIL,
+		TAG,
+		"Error #%u on `ul_ms_decode_slave_message()` for slave device 0x%u",
+		ret_val, poll_device_id
+	);
+
+	// CRC8 computation.
+	uint8_t crc8 = ul_crc_crc8(decoded_data, 2);
+
+	// CRC8 check.
+	ESP_RETURN_ON_FALSE(
+		crc8 == decoded_data[2],
+
+		ESP_ERR_INVALID_CRC,
+		TAG,
+		"Error: slave device 0x%u sent invalid data CRC 0x%u against computed 0x%u",
+		poll_device_id, decoded_data[2], crc8
+	);
+
+	// Update the button states.
+	ul_bs_set_button_states(
+		ul_utils_cast_to_type(decoded_data, uint16_t)
+	);
+
+	// !!! Print button states.
+	printf("\n");
+	for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_8; button++)
+		printf(
+			"Button %u: %u\n",
+			button,
+			ul_bs_get_button_state(
+				(ul_bs_button_id_t) button
+			)
+		);
+	printf("\n");
 
 	return ESP_OK;
 }

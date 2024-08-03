@@ -25,6 +25,8 @@
 		"esp_log_internal.h": "c",
 		"freertos.h": "c",
 		"*.tcc": "c",
-		"format": "c"
+		"format": "c",
+		"sstream": "c",
+		"regex": "c"
 	}
 }
