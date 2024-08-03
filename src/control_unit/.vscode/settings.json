@@ -15,5 +15,8 @@
   "idf.pythonBinPathWin": "d:\\LoZio\\Documenti\\ESP-IDF\\.espressif\\python_env\\idf5.2_py3.11_env\\Scripts\\python.exe",
 	"idf.toolsPathWin": "d:\\LoZio\\Documenti\\ESP-IDF\\.espressif",
 	"idf.flashType": "UART",
-	"idf.flashBaudRate": "921600"
+	"idf.flashBaudRate": "921600",
+	"files.associations": {
+		"ul_errors.h": "c"
+	}
 }
