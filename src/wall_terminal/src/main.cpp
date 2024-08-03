@@ -117,7 +117,7 @@ bool uart_task();
 
 /**
  * @brief Poll the ADC and convert the read value to a button ID.
- * @return A member of `ul_bs_button_id_t` from `button_states.h`: `BUTTON_1`, `BUTTON_2`, ...
+ * @return A member of `ul_bs_button_id_t` from `button_states.h`: `UL_BS_BUTTON_1`, `UL_BS_BUTTON_2`, ...
  */
 ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin);
 
@@ -190,23 +190,23 @@ bool button_task(){
 	ul_bs_button_id_t button = analog_button_read(CONFIG_GPIO_ADC);
 
 	// If a button was pressed.
-	if(button != BUTTON_NONE){
+	if(button != UL_BS_BUTTON_NONE){
 
 		// Update the last button press instant.
 		last_button_press_ms = millis();
 
 		// Update the current button state based on it's previous state.
 		switch(ul_bs_get_button_state(button)){
-			case BUTTON_STATE_IDLE:
-				ul_bs_set_button_state(button, BUTTON_STATE_PRESSED);
+			case UL_BS_BUTTON_STATE_IDLE:
+				ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_PRESSED);
 				press_count = 1;
 
 				// !!! DEBUG
 				analogWrite(button-1, 40);
 				break;
 
-			case BUTTON_STATE_PRESSED:
-			case BUTTON_STATE_DOUBLE_PRESSED:
+			case UL_BS_BUTTON_STATE_PRESSED:
+			case UL_BS_BUTTON_STATE_DOUBLE_PRESSED:
 				press_count++;
 				break;
 
@@ -215,21 +215,21 @@ bool button_task(){
 		}
 
 		if(press_count == 2){
-			ul_bs_set_button_state(button, BUTTON_STATE_DOUBLE_PRESSED);
+			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_DOUBLE_PRESSED);
 
 			// !!! DEBUG
 			analogWrite(button-1, 255);
 		}
 
 		else if(ul_utils_between(press_count, 3, CONFIG_TIME_BTN_HELD_TICKS - 1)){
-			ul_bs_set_button_state(button, BUTTON_STATE_PRESSED);
+			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_PRESSED);
 
 			// !!! DEBUG
 			analogWrite(button-1, 40);
 		}
 
 		else if(press_count == CONFIG_TIME_BTN_HELD_TICKS){
-			ul_bs_set_button_state(button, BUTTON_STATE_HELD);
+			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_HELD);
 
 			// !!! DEBUG
 			analogWrite(button-1, 255);
@@ -276,32 +276,32 @@ ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin){
 	ul_bs_button_id_t button;
 
 	adc_val = analogRead(adc_pin);
-	button = BUTTON_NONE;
+	button = UL_BS_BUTTON_NONE;
 
 	if(adc_val < CONFIG_BTN_VALID_EDGE){
 		#ifdef CONFIG_BTN_1_AVG
-			analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_1_AVG, BUTTON_1);
+			analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_1_AVG, UL_BS_BUTTON_1);
 		#endif
 		#ifdef CONFIG_BTN_2_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_2_AVG, BUTTON_2);
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_2_AVG, UL_BS_BUTTON_2);
 		#endif
 		#ifdef CONFIG_BTN_3_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_3_AVG, BUTTON_3);
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_3_AVG, UL_BS_BUTTON_3);
 		#endif
 		#ifdef CONFIG_BTN_4_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_4_AVG, BUTTON_4);
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_4_AVG, UL_BS_BUTTON_4);
 		#endif
 		#ifdef CONFIG_BTN_5_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_5_AVG, BUTTON_5);
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_5_AVG, UL_BS_BUTTON_5);
 		#endif
 		#ifdef CONFIG_BTN_6_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_6_AVG, BUTTON_6);
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_6_AVG, UL_BS_BUTTON_6);
 		#endif
 		#ifdef CONFIG_BTN_7_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_7_AVG, BUTTON_7);
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_7_AVG, UL_BS_BUTTON_7);
 		#endif
 		#ifdef CONFIG_BTN_8_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_8_AVG, BUTTON_8);
+			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_8_AVG, UL_BS_BUTTON_8);
 		#endif
 	}
 
