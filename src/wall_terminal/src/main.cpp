@@ -14,7 +14,7 @@
 	* If no LICENSE file comes with this software, it is provided AS-IS.
 	*
 	******************************************************************************
-	* 
+	*
 	*	To use this source code, you need to follow these steps first:
 	*		- Open the Arduino IDE.
 	*		- Flash the bootloader with "9.6 MHz internal osc." selected.
@@ -74,7 +74,7 @@ extern "C" {
 /* USER CODE BEGIN PM */
 
 /**
- * @brief Helper.
+ * @brief `analog_button_read()` Helper.
  */
 #define analog_button_if(dest_var, adc_val, btn_interval, btn_avg, button_id) \
 	if(ul_utils_between(adc_val, btn_avg - btn_interval, btn_avg + btn_interval)) \
@@ -174,8 +174,8 @@ void loop(){
 void GPIO_setup(){
 	pinMode(CONF_GPIO_PWM_A, OUTPUT);
 	pinMode(CONF_GPIO_PWM_B, OUTPUT);
-	// !!! pinMode(CONF_GPIO_UART_DE_RE, OUTPUT);
 	pinMode(CONF_GPIO_UART_RX_TX, OUTPUT);
+	// !!! pinMode(CONF_GPIO_UART_DE_RE, OUTPUT);
 }
 
 void UART_setup(){
