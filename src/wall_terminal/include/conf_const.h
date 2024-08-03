@@ -28,7 +28,7 @@
 // Timings
 #define CONF_TIME_BTN_DEBOUNCER_MS	200		// Button delay time after pressed.
 #define CONF_TIME_BTN_HELD_TICKS		5			// At this number of ticks, the button will be considered held; the minimum hold time is `CONF_HOLD_BTN_TICKS` * `CONF_TIME_BTN_DEBOUNCER_MS`.
-#define CONF_TIME_BTN_LOCK_MS				500		// Minimum time that must pass from the last button click to send the current button states.
+#define CONF_TIME_BTN_LOCK_MS				400		// Minimum time that must pass from the last button click to send the current button states.
 
 /**
  * Analog buttons

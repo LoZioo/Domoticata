@@ -32,13 +32,12 @@ extern "C" {
 	#include <ul_utils.h>
 	#include <ul_button_states.h>
 	#include <ul_master_slave.h>
+	#include <ul_crc.h>
 }
 
 // Project libraries.
 #include <conf_const.h>
 #include <conf_var.h>
-
-// !!! VEDERE SE SI PUO' INSERIRE IL CONTROLLO DI PARITA' O UN QUALSIASI CONTROLLO ERRORI SOFTWARE.
 
 // !!! SPIEGARE NELL'HEADER DEL MAIN COMU USARE IL PROGETTO
 // (FLASH BOOTLOADER, CALIBRAZIONE OSCCAL, RILEVAZIONE VALORI BOTTONI,
@@ -302,16 +301,23 @@ void send_button_states(){
 	// Reply with my ID to get the master's attention.
 	Serial.write(ul_ms_encode_slave_byte(CONF_UART_DEVICE_ID));
 
-	uint16_t button_states = ul_bs_get_button_states();
+	// button_states + CRC.
+	uint8_t data[3];
+
+	ul_utils_cast_to_type(data, uint16_t) = ul_bs_get_button_states();
+	data[sizeof(data) - 1] = ul_crc_crc8(data, 2);
 
 	/**
-	 * Encoding in 3 bytes instead of 2 (the MSb of every byte must be 0 because a slave is talking).
+	 * Encoding in 4 bytes instead of 3 (the MSb of every byte must be 0 because a slave is talking).
 	 * Equivalent of a low memory version of `ul_ms_encode_slave_message()` from `ul_master_slave.h`.
 	 */
-	for(uint8_t i=0; i<3; i++)
+	for(uint8_t i=0; i<4; i++)
 		Serial.write(
 			ul_ms_encode_slave_byte(
-				ul_utils_get_bit_group(button_states, 7, i)
+				ul_utils_get_bit_group(
+					ul_utils_cast_to_type(data, uint32_t),
+					7, i
+				)
 			)
 		);
 
