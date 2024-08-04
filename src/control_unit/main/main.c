@@ -77,7 +77,13 @@ static const char *TAG = "main";
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
 
-esp_err_t uart_poll();
+/**
+ * @brief Poll the RS-485 bus to check if some button was pressed on some wall terminal.
+ * @param device_id The device ID of the wall terminal (from `0x00` to `0x7F`); if `0xFF`, no one has pressed any button.
+ * @param button_states The raw button states; load them into the `ul_button_states.h` library by using `ul_bs_set_button_states()`.
+ * @note Must be called periodically to ensure a clean wall terminals polling loop.
+ */
+esp_err_t wall_terminals_poll(uint8_t *device_id, uint16_t *button_states);
 
 /* USER CODE END PFP */
 
@@ -114,13 +120,35 @@ void app_main(){
 	/* Infinite loop */
 	for(;;){
 
-		esp_err_t ret = uart_poll();
+		delay(1);
+
+		uint8_t device_id;
+		uint16_t button_states;
+
+		esp_err_t ret = wall_terminals_poll(&device_id, &button_states);
 		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
 
-		if(ret != ESP_OK)
+		if(ret != ESP_OK){
 			uart_flush(CONFIG_UART_PORT);
+			continue;
+		}
 
-		delay(1);
+		if(device_id == 0xFF)
+			continue;
+
+		// Update button states.
+		ul_bs_set_button_states(button_states);
+
+		// Print button states.
+		printf("\nDevice ID: 0x%02X\n", device_id);
+		for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_8; button++)
+			printf(
+				"Button %u: %u\n",
+				button,
+				ul_bs_get_button_state(
+					(ul_bs_button_id_t) button
+				)
+			);
 	}
 	/* USER CODE END 1 */
 }
@@ -128,11 +156,31 @@ void app_main(){
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 2 */
 
-esp_err_t uart_poll(){
+esp_err_t wall_terminals_poll(uint8_t *device_id, uint16_t *button_states){
 
 	// Function disabled.
 	if(CONFIG_APP_SLAVE_COUNT == 0)
 		return ESP_OK;
+
+	ESP_RETURN_ON_FALSE(
+		device_id != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `device_id` is NULL"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		button_states != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `button_states` is NULL"
+	);
+
+	// Default returned values.
+	*device_id = 0xFF;
+	*button_states = 0x0000;
 
 	// Slave ID increment.
 	static uint8_t poll_device_id = CONFIG_APP_SLAVE_COUNT - 1;
@@ -263,21 +311,9 @@ esp_err_t uart_poll(){
 		poll_device_id, decoded_data[2], crc8
 	);
 
-	// Update the button states.
-	ul_bs_set_button_states(
-		ul_utils_cast_to_type(decoded_data, uint16_t)
-	);
-
-	// !!! Print button states.
-	printf("\n");
-	for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_8; button++)
-		printf(
-			"Button %u: %u\n",
-			button,
-			ul_bs_get_button_state(
-				(ul_bs_button_id_t) button
-			)
-		);
+	// Returned values.
+	*device_id = poll_device_id;
+	*button_states = ul_utils_cast_to_type(decoded_data, uint16_t);
 
 	return ESP_OK;
 }
