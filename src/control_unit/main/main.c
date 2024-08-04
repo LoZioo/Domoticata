@@ -108,6 +108,7 @@ void app_main(){
 
 	/* USER CODE BEGIN 1 */
 
+	uart_flush(CONFIG_UART_PORT);
 	ESP_LOGI(TAG, "Polling slave devices");
 
 	/* Infinite loop */
@@ -258,7 +259,7 @@ esp_err_t uart_poll(){
 
 		ESP_ERR_INVALID_CRC,
 		TAG,
-		"Error: slave device 0x%02X sent invalid data CRC 0x%02X against computed 0x%02X",
+		"Error: invalid data CRC for slave device 0x%02X; sent CRC is 0x%02X but computed CRC is 0x%02X",
 		poll_device_id, decoded_data[2], crc8
 	);
 
