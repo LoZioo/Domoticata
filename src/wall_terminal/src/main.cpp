@@ -39,8 +39,6 @@
 /* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-// Standard libraries.
-
 // Platform libraries.
 #include <Arduino.h>
 #include <EEPROM.h>
@@ -126,6 +124,10 @@ ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin);
  */
 void send_button_states();
 
+bool uart_available();
+uint8_t uart_read_byte();
+void uart_write_byte(uint8_t b);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -171,8 +173,10 @@ void loop(){
 void GPIO_setup(){
 	pinMode(CONFIG_GPIO_PWM_A, OUTPUT);
 	pinMode(CONFIG_GPIO_PWM_B, OUTPUT);
-	pinMode(CONFIG_GPIO_UART_RX_TX, OUTPUT);
-	// !!! pinMode(CONFIG_GPIO_UART_DE_RE, OUTPUT);
+	pinMode(CONFIG_GPIO_UART_DE_RE, OUTPUT);
+
+	// RS-485 listen mode.
+	digitalWrite(CONFIG_GPIO_UART_DE_RE, LOW);
 }
 
 void UART_setup(){
@@ -245,8 +249,8 @@ bool button_task(){
 
 bool uart_task(){
 
-	if(Serial.available()){
-		uint8_t b = Serial.read();
+	if(uart_available()){
+		uint8_t b = uart_read_byte();
 
 		/**
 		 * If:
@@ -311,7 +315,7 @@ ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin){
 void send_button_states(){
 
 	// Reply with my ID to get the master's attention.
-	Serial.write(ul_ms_encode_slave_byte(CONFIG_UART_DEVICE_ID));
+	uart_write_byte(ul_ms_encode_slave_byte(CONFIG_UART_DEVICE_ID));
 
 	// button_states + CRC.
 	uint8_t data[3];
@@ -324,7 +328,7 @@ void send_button_states(){
 	 * Equivalent of a low memory version of `ul_ms_encode_slave_message()` from `ul_master_slave.h`.
 	 */
 	for(uint8_t i=0; i<4; i++)
-		Serial.write(
+		uart_write_byte(
 			ul_ms_encode_slave_byte(
 				ul_utils_get_bit_group(
 					ul_utils_cast_to_type(data, uint32_t),
@@ -339,6 +343,28 @@ void send_button_states(){
 	// !!! DEBUG
 	analogWrite(CONFIG_GPIO_PWM_A, 0);
 	analogWrite(CONFIG_GPIO_PWM_B, 0);
+}
+
+bool uart_available(){
+	#ifdef INTERRUPT_SERIAL_RX
+		return purx_dataready();
+	#else
+		return false;
+	#endif
+}
+
+uint8_t uart_read_byte(){
+	#ifdef INTERRUPT_SERIAL_RX
+		return pu_read();
+	#else
+		return purx();
+	#endif
+}
+
+void uart_write_byte(uint8_t b){
+	digitalWrite(CONFIG_GPIO_UART_DE_RE, HIGH);
+	putx(b);
+	digitalWrite(CONFIG_GPIO_UART_DE_RE, LOW);
 }
 
 /* USER CODE END 2 */

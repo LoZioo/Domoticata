@@ -77,7 +77,7 @@ static const char *TAG = "main";
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
 
-esp_err_t UART_poll();
+esp_err_t uart_poll();
 
 /* USER CODE END PFP */
 
@@ -112,7 +112,7 @@ void app_main(){
 
 	/* Infinite loop */
 	for(;;){
-		ESP_ERROR_CHECK_WITHOUT_ABORT(UART_poll());
+		ESP_ERROR_CHECK_WITHOUT_ABORT(uart_poll());
 		delay(1);
 	}
 	/* USER CODE END 1 */
@@ -121,7 +121,7 @@ void app_main(){
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 2 */
 
-esp_err_t UART_poll(){
+esp_err_t uart_poll(){
 
 	// Function disabled.
 	if(CONFIG_APP_SLAVE_COUNT == 0)
@@ -131,11 +131,13 @@ esp_err_t UART_poll(){
 	static uint8_t poll_device_id = CONFIG_APP_SLAVE_COUNT - 1;
 	poll_device_id = (poll_device_id + 1) % CONFIG_APP_SLAVE_COUNT;
 
+	uint8_t tmp = ul_ms_encode_master_byte(poll_device_id);
+
 	// Poll the slave device.
 	ESP_RETURN_ON_FALSE(
 		uart_write_bytes(
 			CONFIG_UART_PORT,
-			ul_utils_cast_to_mem(poll_device_id),
+			ul_utils_cast_to_mem(tmp),
 			1
 		) >= 0,
 
@@ -145,12 +147,11 @@ esp_err_t UART_poll(){
 	);
 
 	int read_bytes;
-	uint8_t read_device_id;
 
 	// Wait for the response.
 	read_bytes = uart_read_bytes(
 		CONFIG_UART_PORT,
-		ul_utils_cast_to_mem(read_device_id),
+		ul_utils_cast_to_mem(tmp),
 		1,
 		pdMS_TO_TICKS(CONFIG_APP_SLAVE_POLL_TIMEOUT_MS)
 	);
@@ -168,13 +169,14 @@ esp_err_t UART_poll(){
 	if(read_bytes == 0)
 		return ESP_OK;
 
+	// Decode the device ID.
+	uint8_t read_device_id = ul_ms_decode_slave_byte(tmp);
+
 	// Invalid response.
 	ESP_RETURN_ON_FALSE(
-		ul_ms_is_master_byte(read_device_id) ||
 		(
-			ul_ms_is_slave_byte(read_device_id) &&
-			ul_ms_decode_slave_byte(read_device_id) !=
-			ul_ms_decode_slave_byte(read_device_id)
+			ul_ms_is_slave_byte(tmp) &&
+			read_device_id == poll_device_id
 		),
 
 		ESP_ERR_INVALID_RESPONSE,
@@ -190,7 +192,7 @@ esp_err_t UART_poll(){
 	read_bytes = uart_read_bytes(
 		CONFIG_UART_PORT,
 		encoded_data,
-		sizeof(encoded_data),
+		4,
 		pdMS_TO_TICKS(CONFIG_APP_SLAVE_CONN_TIMEOUT_MS)
 	);
 
@@ -216,19 +218,19 @@ esp_err_t UART_poll(){
 
 	// Invalid response.
 	ESP_RETURN_ON_FALSE(
-		read_bytes == sizeof(encoded_data),
+		read_bytes == 4,
 
 		ESP_ERR_INVALID_RESPONSE,
 		TAG,
-		"Error: slave device 0x%u sent %u bytes; %u expected",
-		poll_device_id, read_bytes, sizeof(encoded_data)
+		"Error: slave device 0x%u sent %u bytes; 4 expected",
+		poll_device_id, read_bytes
 	);
 
 	// Decode the received bytes.
 	ul_err_t ret_val = ul_ms_decode_slave_message(
 		decoded_data,
 		encoded_data,
-		sizeof(encoded_data)
+		4
 	);
 
 	// `ul_ms_decode_slave_message()` failed.

@@ -23,7 +23,7 @@
 #define CONFIG_GPIO_PWM_B				1
 #define CONFIG_GPIO_ADC					A1
 #define CONFIG_GPIO_UART_RX_TX	4
-#define CONFIG_GPIO_UART_DE_RE	-1
+#define CONFIG_GPIO_UART_DE_RE	3
 
 // Timings
 #define CONFIG_TIME_BTN_DEBOUNCER_MS	200		// Button delay time after pressed.
