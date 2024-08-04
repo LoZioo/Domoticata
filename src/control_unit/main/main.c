@@ -112,7 +112,13 @@ void app_main(){
 
 	/* Infinite loop */
 	for(;;){
-		ESP_ERROR_CHECK_WITHOUT_ABORT(uart_poll());
+
+		esp_err_t ret = uart_poll();
+		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
+
+		if(ret != ESP_OK)
+			uart_flush(CONFIG_UART_PORT);
+
 		delay(1);
 	}
 	/* USER CODE END 1 */
@@ -181,7 +187,7 @@ esp_err_t uart_poll(){
 
 		ESP_ERR_INVALID_RESPONSE,
 		TAG,
-		"Error: slave device 0x%u answered with different ID 0x%u",
+		"Error: slave device 0x%02X answered with different ID 0x%02X",
 		poll_device_id, read_device_id
 	);
 
@@ -202,7 +208,7 @@ esp_err_t uart_poll(){
 
 		ESP_ERR_TIMEOUT,
 		TAG,
-		"Error on `uart_read_bytes()` for slave device 0x%u",
+		"Error on `uart_read_bytes()` for slave device 0x%02X",
 		poll_device_id
 	);
 
@@ -212,7 +218,7 @@ esp_err_t uart_poll(){
 
 		ESP_ERR_TIMEOUT,
 		TAG,
-		"Error: slave device 0x%u exceeded the prefixed %ums timeout for sending the button states",
+		"Error: slave device 0x%02X exceeded the prefixed %ums timeout for sending the button states",
 		poll_device_id, CONFIG_APP_SLAVE_CONN_TIMEOUT_MS
 	);
 
@@ -222,7 +228,7 @@ esp_err_t uart_poll(){
 
 		ESP_ERR_INVALID_RESPONSE,
 		TAG,
-		"Error: slave device 0x%u sent %u bytes; 4 expected",
+		"Error: slave device 0x%02X sent %u bytes; 4 expected",
 		poll_device_id, read_bytes
 	);
 
@@ -239,7 +245,7 @@ esp_err_t uart_poll(){
 
 		ESP_FAIL,
 		TAG,
-		"Error #%u on `ul_ms_decode_slave_message()` for slave device 0x%u",
+		"Error #%u on `ul_ms_decode_slave_message()` for slave device 0x%02X",
 		ret_val, poll_device_id
 	);
 
@@ -252,7 +258,7 @@ esp_err_t uart_poll(){
 
 		ESP_ERR_INVALID_CRC,
 		TAG,
-		"Error: slave device 0x%u sent invalid data CRC 0x%u against computed 0x%u",
+		"Error: slave device 0x%02X sent invalid data CRC 0x%02X against computed 0x%02X",
 		poll_device_id, decoded_data[2], crc8
 	);
 
@@ -271,7 +277,6 @@ esp_err_t uart_poll(){
 				(ul_bs_button_id_t) button
 			)
 		);
-	printf("\n");
 
 	return ESP_OK;
 }

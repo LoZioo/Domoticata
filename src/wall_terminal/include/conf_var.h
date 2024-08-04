@@ -15,7 +15,7 @@
 // UART
 
 // RS-485 ID up to 127 or 0x7F.
-#define CONFIG_UART_DEVICE_ID		0x06
+#define CONFIG_UART_DEVICE_ID		0x05
 
 /**
  * Averages from `analog_button_tuner.cpp`.

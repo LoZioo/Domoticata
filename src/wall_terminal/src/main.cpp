@@ -72,11 +72,21 @@ extern "C" {
 /* USER CODE BEGIN PM */
 
 /**
- * @brief `analog_button_read()` Helper.
+ * @brief `analog_button_read()` helper.
  */
 #define analog_button_if(dest_var, adc_val, btn_interval, btn_avg, button_id) \
 	if(ul_utils_between(adc_val, btn_avg - btn_interval, btn_avg + btn_interval)) \
 		dest_var = button_id
+
+#ifdef INTERRUPT_SERIAL_RX
+	#define uart_available()	purx_dataready()
+	#define uart_read_byte()	pu_read()
+#else
+	#define uart_available()	false
+	#define uart_read_byte()	purx()
+#endif
+
+#define uart_write_byte(b)	putx(b)
 
 /* USER CODE END PM */
 
@@ -113,6 +123,9 @@ bool uart_task();
 
 /* Generic functions */
 
+void uart_rx_mode();
+void uart_tx_mode();
+
 /**
  * @brief Poll the ADC and convert the read value to a button ID.
  * @return A member of `ul_bs_button_id_t` from `button_states.h`: `UL_BS_BUTTON_1`, `UL_BS_BUTTON_2`, ...
@@ -123,10 +136,6 @@ ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin);
  * @brief Send the button states to the control unit.
  */
 void send_button_states();
-
-bool uart_available();
-uint8_t uart_read_byte();
-void uart_write_byte(uint8_t b);
 
 /* USER CODE END PFP */
 
@@ -174,9 +183,6 @@ void GPIO_setup(){
 	pinMode(CONFIG_GPIO_PWM_A, OUTPUT);
 	pinMode(CONFIG_GPIO_PWM_B, OUTPUT);
 	pinMode(CONFIG_GPIO_UART_DE_RE, OUTPUT);
-
-	// RS-485 listen mode.
-	digitalWrite(CONFIG_GPIO_UART_DE_RE, LOW);
 }
 
 void UART_setup(){
@@ -186,6 +192,9 @@ void UART_setup(){
 
 	if(cal < 0x80)
 		OSCCAL = cal;
+
+	// RS-485 listen mode.
+	uart_rx_mode();
 }
 
 bool button_task(){
@@ -274,6 +283,15 @@ bool uart_task(){
 	return true;
 }
 
+void uart_rx_mode(){
+	digitalWrite(CONFIG_GPIO_UART_DE_RE, LOW);
+}
+
+void uart_tx_mode(){
+	digitalWrite(CONFIG_GPIO_UART_DE_RE, HIGH);
+	delayMicroseconds(CONFIG_UART_TX_MODE_DELAY_US);
+}
+
 ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin){
 
 	uint16_t adc_val;
@@ -314,6 +332,8 @@ ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin){
 
 void send_button_states(){
 
+	uart_tx_mode();
+
 	// Reply with my ID to get the master's attention.
 	uart_write_byte(ul_ms_encode_slave_byte(CONFIG_UART_DEVICE_ID));
 
@@ -337,34 +357,14 @@ void send_button_states(){
 			)
 		);
 
+	uart_rx_mode();
+
 	// Button states are now reset.
 	ul_bs_reset_button_states();
 
 	// !!! DEBUG
 	analogWrite(CONFIG_GPIO_PWM_A, 0);
 	analogWrite(CONFIG_GPIO_PWM_B, 0);
-}
-
-bool uart_available(){
-	#ifdef INTERRUPT_SERIAL_RX
-		return purx_dataready();
-	#else
-		return false;
-	#endif
-}
-
-uint8_t uart_read_byte(){
-	#ifdef INTERRUPT_SERIAL_RX
-		return pu_read();
-	#else
-		return purx();
-	#endif
-}
-
-void uart_write_byte(uint8_t b){
-	digitalWrite(CONFIG_GPIO_UART_DE_RE, HIGH);
-	putx(b);
-	digitalWrite(CONFIG_GPIO_UART_DE_RE, LOW);
 }
 
 /* USER CODE END 2 */
