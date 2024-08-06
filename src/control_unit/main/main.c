@@ -133,9 +133,9 @@ void app_main(){
 	return;
 
 	/* Infinite loop */
-	for(;;){
-		delay(1);
-	}
+	// for(;;){
+	// 	delay(1);
+	// }
 	/* USER CODE END 1 */
 }
 
