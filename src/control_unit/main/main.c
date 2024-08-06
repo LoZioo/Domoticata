@@ -88,6 +88,10 @@
 TaskHandle_t rs485_task_handle;
 void rs485_task(void *parameters);
 
+QueueHandle_t pwm_queue;
+TaskHandle_t pwm_task_handle;
+void pwm_task(void *parameters);
+
 /* Generic functions */
 
 /**
@@ -98,6 +102,13 @@ void rs485_task(void *parameters);
  * @note Must be called periodically to ensure a clean wall terminals polling loop.
  */
 esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *button_states);
+
+/**
+ * @brief Send `pwm_data` to `pwm_task` via `pwm_queue`.
+ * @param TAG The `esp_log.h` tag.
+ * @param index 0: Fan controller, 1-12: LEDs.
+ */
+esp_err_t pwm_write(const char *TAG, uint8_t index, uint8_t duty_target_perc, uint16_t fade_time_ms);
 
 /* USER CODE END PFP */
 
@@ -130,6 +141,9 @@ void app_main(){
 
 	/* USER CODE BEGIN Init */
 
+	ESP_LOGI(TAG, "QUEUES_setup()");
+	ESP_ERROR_CHECK(QUEUES_setup(TAG));
+
 	ESP_LOGI(TAG, "TASKS_setup()");
 	ESP_ERROR_CHECK(TASKS_setup(TAG));
 
@@ -138,12 +152,16 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
-	return;
+	// return;
 
 	/* Infinite loop */
-	// for(;;){
-	// 	delay(1);
-	// }
+	for(;;){
+		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write(TAG, 2, 100, 1000));
+		delay(2000);
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write(TAG, 2, 0, 1000));
+		delay(2000);
+	}
 	/* USER CODE END 1 */
 }
 
@@ -198,7 +216,49 @@ void rs485_task(void *parameters){
 	}
 }
 
+void pwm_task(void *parameters){
+
+	const char *TAG = "pwm_task";
+	ESP_LOGI(TAG, "Started");
+
+	/* Variables */
+
+	pwm_data_t pwm;
+
+	/* Code */
+
+	/* Infinite loop */
+	for(;;){
+
+		// Waiting for `pwm_write()` requests.
+		if(xQueueReceive(pwm_queue, &pwm, portMAX_DELAY) == pdFALSE)
+			continue;
+
+		// Set PWM parameters.
+		ESP_ERROR_CHECK_WITHOUT_ABORT(
+			ledc_set_fade_with_time(
+				pwm_get_port(pwm.index),
+				pwm_get_channel(pwm.index),
+				pwm.duty_target,
+				pwm.fade_time_ms
+			)
+		);
+
+		// Fade start.
+		ESP_ERROR_CHECK_WITHOUT_ABORT(
+			ledc_fade_start(
+				pwm_get_port(pwm.index),
+				pwm_get_channel(pwm.index),
+				LEDC_FADE_NO_WAIT
+			)
+		);
+	}
+}
+
 esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *button_states){
+
+	if(TAG == NULL)
+		return ESP_ERR_INVALID_ARG;
 
 	// Function disabled.
 	if(CONFIG_RS485_WALL_TERMINAL_COUNT == 0)
@@ -360,6 +420,36 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 	return ESP_OK;
 }
 
+esp_err_t pwm_write(const char *TAG, uint8_t index, uint8_t duty_target_perc, uint16_t fade_time_ms){
+
+	if(TAG == NULL)
+		return ESP_ERR_INVALID_ARG;
+
+	if(duty_target_perc > 100)
+		duty_target_perc = 100;
+
+	pwm_data_t pwm_data = {
+		.index = index,
+		.duty_target =
+			ul_utils_map_int(
+				duty_target_perc,
+				0, 100, 0, 128
+			),
+
+		.fade_time_ms = fade_time_ms
+	};
+
+	ESP_RETURN_ON_FALSE(
+		xQueueSend(pwm_queue, &pwm_data, 0) == pdTRUE,
+
+		ESP_ERR_INVALID_STATE,
+		TAG,
+		"Error: `pwm_queue` is full"
+	);
+
+	return ESP_OK;
+}
+
 /* USER CODE END 2 */
 
 /* Private user code for ISR (Interrupt Service Routines) --------------------*/
@@ -377,17 +467,4 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 // 	ledc_update_duty(pwm_get_port(i), pwm_get_channel(i)),
 // 	TAG,
 // 	"Error on `ledc_update_duty()`"
-// );
-
-// ledc_set_fade_with_time(
-// 	pwm_get_port(2),
-// 	pwm_get_channel(2),
-// 	256,
-// 	2000
-// );
-
-// ledc_fade_start(
-// 	pwm_get_port(2),
-// 	pwm_get_channel(2),
-// 	LEDC_FADE_WAIT_DONE
 // );

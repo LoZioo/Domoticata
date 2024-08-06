@@ -1,5 +1,9 @@
-
-// !!! RENDERE CONFIGURABILI A RUNTIME TUTTE QUESTE CONFIGURAZIONI E RIMUOVERE QUESTO HEADER
+/**
+ * !!! RENDERE CONFIGURABILI A RUNTIME TUTTE QUESTE CONFIGURAZIONI E RIMUOVERE QUESTO HEADER
+ * Possibili configurazioni da aggiungere:
+ * 	-	Frequenza PWM
+ * 	-	Fade time
+ */
 
 /**
  * Number of slave on the RS-485 bus (from 0 to 127).

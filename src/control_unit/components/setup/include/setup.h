@@ -40,7 +40,7 @@
 
 /**
  * @return `ledc_mode_t`
- * @note 0: Fan controller, 1-12: LEDs
+ * @note 0: Fan controller, 1-12: LEDs.
  */
 #define pwm_get_port(i)( \
 	i < LEDC_CHANNEL_MAX ? \
@@ -50,7 +50,7 @@
 
 /**
  * @return `ledc_channel_t`
- * @note 0: Fan controller, 1-12: LEDs
+ * @note 0: Fan controller, 1-12: LEDs.
  */
 #define pwm_get_channel(i)( \
 	(ledc_channel_t) (i % LEDC_CHANNEL_MAX) \
@@ -59,6 +59,15 @@
 /************************************************************************************************************
 * Public Types Definitions
 ************************************************************************************************************/
+
+typedef struct {
+
+	// 0: Fan controller, 1-12: LEDs.
+	uint8_t index;
+	uint8_t duty_target;
+	uint16_t fade_time_ms;
+
+} pwm_data_t;
 
 /************************************************************************************************************
 * Public Variables Prototypes
@@ -71,6 +80,8 @@
 extern esp_err_t GPIO_setup(const char *TAG);
 extern esp_err_t LEDC_setup(const char *TAG);
 extern esp_err_t UART_setup(const char *TAG);
+
+extern esp_err_t QUEUES_setup(const char *TAG);
 extern esp_err_t TASKS_setup(const char *TAG);
 
 #endif  /* INC_SETUP_H_ */

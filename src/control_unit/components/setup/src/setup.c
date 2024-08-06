@@ -76,6 +76,9 @@
 
 esp_err_t GPIO_setup(const char *TAG){
 
+	if(TAG == NULL)
+		return ESP_ERR_INVALID_ARG;
+
 	// Shared configs.
 	gpio_config_t io_config = {
 		.intr_type = GPIO_INTR_DISABLE,
@@ -108,11 +111,14 @@ esp_err_t GPIO_setup(const char *TAG){
 
 esp_err_t LEDC_setup(const char *TAG){
 
+	if(TAG == NULL)
+		return ESP_ERR_INVALID_ARG;
+
 	/* LEDC base config */
 
 	ledc_timer_config_t ledc_tim_config = {
 		.freq_hz = 30000,
-		.duty_resolution = LEDC_TIMER_8_BIT,
+		.duty_resolution = LEDC_TIMER_7_BIT,
 		.timer_num = LEDC_TIMER_1,
 		.clk_cfg = LEDC_AUTO_CLK
 	};
@@ -169,6 +175,9 @@ esp_err_t LEDC_setup(const char *TAG){
 }
 
 esp_err_t UART_setup(const char *TAG){
+
+	if(TAG == NULL)
+		return ESP_ERR_INVALID_ARG;
 
 	uart_config_t uart_config = {
 		.baud_rate = CONFIG_UART_BAUD_RATE,
@@ -230,16 +239,40 @@ esp_err_t UART_setup(const char *TAG){
 	return ESP_OK;
 }
 
+esp_err_t QUEUES_setup(const char *TAG){
+
+	if(TAG == NULL)
+		return ESP_ERR_INVALID_ARG;
+
+	/* pwm_task */
+
+	extern QueueHandle_t pwm_queue;
+	pwm_queue = xQueueCreate(10, sizeof(pwm_data_t));
+
+	ESP_RETURN_ON_FALSE(
+		pwm_queue != NULL,
+
+		ESP_ERR_NO_MEM,
+		TAG,
+		"Error: unable to allocate the \"pwm_queue\""
+	);
+
+	return ESP_OK;
+}
+
 esp_err_t TASKS_setup(const char *TAG){
 
-	BaseType_t task_creation_ret;
+	if(TAG == NULL)
+		return ESP_ERR_INVALID_ARG;
+
+	BaseType_t ret_val;
 
 	/* rs485_task */
 
 	extern TaskHandle_t rs485_task_handle;
 	extern void rs485_task(void *parameters);
 
-	task_creation_ret = xTaskCreatePinnedToCore(
+	ret_val = xTaskCreatePinnedToCore(
 		rs485_task,
 		"rs485_task",
 		4096,
@@ -250,12 +283,35 @@ esp_err_t TASKS_setup(const char *TAG){
 	);
 
 	ESP_RETURN_ON_FALSE(
-		task_creation_ret == pdPASS,
+		ret_val == pdPASS,
 
 		ESP_ERR_INVALID_STATE,
 		TAG,
 		"Error %d: unable to spawn the \"rs485_task\"",
-		task_creation_ret
+		ret_val
+	);
+
+	/* pwm_task */
+
+	extern TaskHandle_t pwm_task_handle;
+	extern void pwm_task(void *parameters);
+
+	ret_val = xTaskCreate(
+		pwm_task,
+		"pwm_task",
+		4096,
+		NULL,
+		tskIDLE_PRIORITY,
+		&pwm_task_handle
+	);
+
+	ESP_RETURN_ON_FALSE(
+		ret_val == pdPASS,
+
+		ESP_ERR_INVALID_STATE,
+		TAG,
+		"Error %d: unable to spawn the \"pwm_task\"",
+		ret_val
 	);
 
 	return ESP_OK;
