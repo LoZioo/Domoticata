@@ -6,24 +6,6 @@
 ##########################################################################
 
 menu "Project configurations"
-
-	config APP_SLAVE_COUNT
-		int "Number of slave on the RS-485 bus"
-		range 0 127
-		default 12
-		help
-			Set to 0 to disable the RS-485 slave polling.
-
-	config APP_SLAVE_POLL_TIMEOUT_MS
-		int "Response timeout on the poll phase (milliseconds)"
-		range 1 3000
-		default 30
-
-	config APP_SLAVE_CONN_TIMEOUT_MS
-		int "Response timeout on the data exchange phase (milliseconds)"
-		range 1 3000
-		default 100
-
 	menu "UART configurations"
 		config UART_PORT
 			int "RS-485 UART port number"

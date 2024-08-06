@@ -52,6 +52,9 @@
 // Project libraries.
 #include <setup.h>
 
+// !!! RIMUOVERE
+#include <temp_configs.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -198,7 +201,7 @@ void rs485_task(void *parameters){
 esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *button_states){
 
 	// Function disabled.
-	if(CONFIG_APP_SLAVE_COUNT == 0)
+	if(CONFIG_RS485_WALL_TERMINAL_COUNT == 0)
 		return ESP_OK;
 
 	ESP_RETURN_ON_FALSE(
@@ -222,8 +225,8 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 	*button_states = 0x0000;
 
 	// Slave ID increment.
-	static uint8_t poll_device_id = CONFIG_APP_SLAVE_COUNT - 1;
-	poll_device_id = (poll_device_id + 1) % CONFIG_APP_SLAVE_COUNT;
+	static uint8_t poll_device_id = CONFIG_RS485_WALL_TERMINAL_COUNT - 1;
+	poll_device_id = (poll_device_id + 1) % CONFIG_RS485_WALL_TERMINAL_COUNT;
 
 	uint8_t tmp = ul_ms_encode_master_byte(poll_device_id);
 
@@ -247,7 +250,7 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 		CONFIG_UART_PORT,
 		ul_utils_cast_to_mem(tmp),
 		1,
-		pdMS_TO_TICKS(CONFIG_APP_SLAVE_POLL_TIMEOUT_MS)
+		pdMS_TO_TICKS(CONFIG_RS485_WALL_TERMINAL_POLL_TIMEOUT_MS)
 	);
 
 	// Error.
@@ -287,7 +290,7 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 		CONFIG_UART_PORT,
 		encoded_data,
 		4,
-		pdMS_TO_TICKS(CONFIG_APP_SLAVE_CONN_TIMEOUT_MS)
+		pdMS_TO_TICKS(CONFIG_RS485_WALL_TERMINAL_CONN_TIMEOUT_MS)
 	);
 
 	// Error.
@@ -307,7 +310,7 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 		ESP_ERR_TIMEOUT,
 		TAG,
 		"Error: slave device 0x%02X exceeded the prefixed %ums timeout for sending the button states",
-		poll_device_id, CONFIG_APP_SLAVE_CONN_TIMEOUT_MS
+		poll_device_id, CONFIG_RS485_WALL_TERMINAL_CONN_TIMEOUT_MS
 	);
 
 	// Invalid response.
