@@ -159,6 +159,9 @@ void setup(){
 
 	/* USER CODE BEGIN Init */
 
+	// Stabilize the peripherals.
+	delay(500);
+
 	/* USER CODE END Init */
 }
 
