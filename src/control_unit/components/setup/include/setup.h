@@ -17,6 +17,9 @@
 ************************************************************************************************************/
 
 // Standard libraries.
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 // Platform libraries.
 #include <esp_err.h>
@@ -25,6 +28,7 @@
 #include <freertos/FreeRTOS.h>
 
 #include <driver/gpio.h>
+#include <driver/ledc.h>
 #include <driver/uart.h>
 
 /************************************************************************************************************
@@ -33,6 +37,24 @@
 
 #define ESP_PROTOCOL_CORE			0
 #define ESP_APPLICATION_CORE	1
+
+/**
+ * @return `ledc_mode_t`
+ * @note 0: Fan controller, 1-12: LEDs
+ */
+#define pwm_get_port(i)( \
+	i < LEDC_CHANNEL_MAX ? \
+	LEDC_HIGH_SPEED_MODE : \
+	LEDC_LOW_SPEED_MODE \
+)
+
+/**
+ * @return `ledc_channel_t`
+ * @note 0: Fan controller, 1-12: LEDs
+ */
+#define pwm_get_channel(i)( \
+	(ledc_channel_t) (i % LEDC_CHANNEL_MAX) \
+)
 
 /************************************************************************************************************
 * Public Types Definitions
@@ -46,8 +68,9 @@
 * Public Functions Prototypes
 ************************************************************************************************************/
 
-extern esp_err_t GPIO_setup();
-extern esp_err_t UART_setup();
-extern esp_err_t TASKS_setup();
+extern esp_err_t GPIO_setup(const char *TAG);
+extern esp_err_t LEDC_setup(const char *TAG);
+extern esp_err_t UART_setup(const char *TAG);
+extern esp_err_t TASKS_setup(const char *TAG);
 
 #endif  /* INC_SETUP_H_ */

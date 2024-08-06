@@ -19,6 +19,7 @@
 
 // !!! SISTEMARE IL REBOOT IN CASO DI CRASH NEL MENUCONFIG SOTTO IL MENU Trace memory
 // !!! SISTEMARE PRIORITA' TASKS E STACK ALLOCATO
+// !!! RIMETTERE IL PINOUT APPOSTO DAL MENUCONFIG
 
 /* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -38,6 +39,7 @@
 #include <freertos/FreeRTOS.h>
 
 #include <driver/gpio.h>
+#include <driver/ledc.h>
 #include <driver/uart.h>
 
 // UniLibC libraries.
@@ -113,17 +115,20 @@ void app_main(){
 	ESP_LOGI(TAG, "Started");
 
 	ESP_LOGI(TAG, "GPIO_setup()");
-	ESP_ERROR_CHECK(GPIO_setup());
+	ESP_ERROR_CHECK(GPIO_setup(TAG));
+
+	ESP_LOGI(TAG, "LEDC_setup()");
+	ESP_ERROR_CHECK(LEDC_setup(TAG));
 
 	ESP_LOGI(TAG, "UART_setup()");
-	ESP_ERROR_CHECK(UART_setup());
+	ESP_ERROR_CHECK(UART_setup(TAG));
 
 	/* USER CODE END SysInit */
 
 	/* USER CODE BEGIN Init */
 
 	ESP_LOGI(TAG, "TASKS_setup()");
-	ESP_ERROR_CHECK(TASKS_setup());
+	ESP_ERROR_CHECK(TASKS_setup(TAG));
 
 	/* USER CODE END Init */
 
@@ -358,3 +363,15 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 /* USER CODE BEGIN ISR */
 
 /* USER CODE END ISR */
+
+// ESP_RETURN_ON_ERROR(
+// 	ledc_set_duty(pwm_get_port(i), pwm_get_channel(i), 127),
+// 	TAG,
+// 	"Error on `ledc_set_duty()`"
+// );
+
+// ESP_RETURN_ON_ERROR(
+// 	ledc_update_duty(pwm_get_port(i), pwm_get_channel(i)),
+// 	TAG,
+// 	"Error on `ledc_update_duty()`"
+// );

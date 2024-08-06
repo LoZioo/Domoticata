@@ -25,19 +25,6 @@
 // `gpio_config_t::pin_bit_mask` for output GPIOs.
 #define GPIO_OUT_BIT_MASK	( \
 	__to_bit_mask(CONFIG_GPIO_ALARM) | \
-	__to_bit_mask(CONFIG_GPIO_FAN) | \
-	__to_bit_mask(CONFIG_GPIO_LED_1) | \
-	__to_bit_mask(CONFIG_GPIO_LED_2) | \
-	__to_bit_mask(CONFIG_GPIO_LED_3) | \
-	__to_bit_mask(CONFIG_GPIO_LED_4) | \
-	__to_bit_mask(CONFIG_GPIO_LED_5) | \
-	__to_bit_mask(CONFIG_GPIO_LED_6) | \
-	__to_bit_mask(CONFIG_GPIO_LED_7) | \
-	__to_bit_mask(CONFIG_GPIO_LED_8) | \
-	__to_bit_mask(CONFIG_GPIO_LED_9) | \
-	__to_bit_mask(CONFIG_GPIO_LED_10) | \
-	__to_bit_mask(CONFIG_GPIO_LED_11) | \
-	__to_bit_mask(CONFIG_GPIO_LED_12) | \
 	__to_bit_mask(CONFIG_GPIO_RELAY_1) | \
 	__to_bit_mask(CONFIG_GPIO_RELAY_2) | \
 	__to_bit_mask(CONFIG_GPIO_RELAY_3) | \
@@ -51,6 +38,22 @@
 	__to_bit_mask(CONFIG_GPIO_AC_I) \
 )
 
+#define PWM_CH_TO_GPIO_INIT	{ \
+	CONFIG_GPIO_FAN, \
+	CONFIG_GPIO_LED_1, \
+	CONFIG_GPIO_LED_2, \
+	CONFIG_GPIO_LED_3, \
+	CONFIG_GPIO_LED_4, \
+	CONFIG_GPIO_LED_5, \
+	CONFIG_GPIO_LED_6, \
+	CONFIG_GPIO_LED_7, \
+	CONFIG_GPIO_LED_8, \
+	CONFIG_GPIO_LED_9, \
+	CONFIG_GPIO_LED_10, \
+	CONFIG_GPIO_LED_11, \
+	CONFIG_GPIO_LED_12 \
+}
+
 /************************************************************************************************************
 * Private Types Definitions
  ************************************************************************************************************/
@@ -58,8 +61,6 @@
 /************************************************************************************************************
 * Private Variables
  ************************************************************************************************************/
-
-static const char *TAG = "setup";
 
 /************************************************************************************************************
 * Private Functions Prototypes
@@ -73,7 +74,7 @@ static const char *TAG = "setup";
 * Public Functions Definitions
  ************************************************************************************************************/
 
-esp_err_t GPIO_setup(){
+esp_err_t GPIO_setup(const char *TAG){
 
 	// Shared configs.
 	gpio_config_t io_config = {
@@ -105,7 +106,63 @@ esp_err_t GPIO_setup(){
 	return ESP_OK;
 }
 
-esp_err_t UART_setup(){
+esp_err_t LEDC_setup(const char *TAG){
+
+	ledc_timer_config_t ledc_tim_config = {
+		.freq_hz = 30000,
+		.duty_resolution = LEDC_TIMER_8_BIT,
+		.timer_num = LEDC_TIMER_1,
+		.clk_cfg = LEDC_AUTO_CLK
+	};
+
+	/**
+	 * LEDC hardware:
+	 * 	-	One peripheral.
+	 * 	-	Two ports (high/low speed).
+	 * 	-	Eight PWM channel per port.
+	 */
+	ledc_channel_config_t ledc_ch_config = {
+		.intr_type = LEDC_INTR_DISABLE,
+		.timer_sel = LEDC_TIMER_1,
+		.duty = 0,
+		.hpoint = 0,
+		.flags.output_invert = false
+	};
+
+	// Timer setup for both ports.
+	for(uint8_t i=0; i<LEDC_SPEED_MODE_MAX; i++){
+
+		ledc_tim_config.speed_mode = i;
+
+		ESP_RETURN_ON_ERROR(
+			ledc_timer_config(&ledc_tim_config),
+			TAG,
+			"Error on `ledc_timer_config({.speed_mode = %u})`",
+			i
+		);
+	}
+
+	uint8_t pwm_ch_to_gpio[] = PWM_CH_TO_GPIO_INIT;
+
+	// Channel setup for both ports.
+	for(uint8_t i=0; i<sizeof(pwm_ch_to_gpio); i++){
+
+		ledc_ch_config.gpio_num = pwm_ch_to_gpio[i];
+		ledc_ch_config.speed_mode = pwm_get_port(i);
+		ledc_ch_config.channel = pwm_get_channel(i);
+
+		ESP_RETURN_ON_ERROR(
+			ledc_channel_config(&ledc_ch_config),
+			TAG,
+			"Error on `ledc_channel_config({.gpio_num = %u})`",
+			pwm_ch_to_gpio[i]
+		);
+	}
+
+	return ESP_OK;
+}
+
+esp_err_t UART_setup(const char *TAG){
 
 	uart_config_t uart_config = {
 		.baud_rate = CONFIG_UART_BAUD_RATE,
@@ -167,7 +224,7 @@ esp_err_t UART_setup(){
 	return ESP_OK;
 }
 
-esp_err_t TASKS_setup(){
+esp_err_t TASKS_setup(const char *TAG){
 
 	BaseType_t task_creation_ret;
 

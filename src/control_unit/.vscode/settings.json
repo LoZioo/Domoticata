@@ -28,6 +28,10 @@
 		"format": "c",
 		"sstream": "c",
 		"regex": "c",
-		"xtensa_api.h": "c"
+		"xtensa_api.h": "c",
+		"soc_caps.h": "c",
+		"stdbool.h": "c",
+		"clk_tree_defs.h": "c",
+		"stdint.h": "c"
 	}
 }
