@@ -108,6 +108,8 @@ esp_err_t GPIO_setup(const char *TAG){
 
 esp_err_t LEDC_setup(const char *TAG){
 
+	/* LEDC base config */
+
 	ledc_timer_config_t ledc_tim_config = {
 		.freq_hz = 30000,
 		.duty_resolution = LEDC_TIMER_8_BIT,
@@ -158,6 +160,10 @@ esp_err_t LEDC_setup(const char *TAG){
 			pwm_ch_to_gpio[i]
 		);
 	}
+
+	/* LEDC fade config */
+
+	ledc_fade_func_install(0);
 
 	return ESP_OK;
 }

@@ -375,3 +375,16 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 // 	TAG,
 // 	"Error on `ledc_update_duty()`"
 // );
+
+// ledc_set_fade_with_time(
+// 	pwm_get_port(2),
+// 	pwm_get_channel(2),
+// 	256,
+// 	2000
+// );
+
+// ledc_fade_start(
+// 	pwm_get_port(2),
+// 	pwm_get_channel(2),
+// 	LEDC_FADE_WAIT_DONE
+// );

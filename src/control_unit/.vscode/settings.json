@@ -32,6 +32,15 @@
 		"soc_caps.h": "c",
 		"stdbool.h": "c",
 		"clk_tree_defs.h": "c",
-		"stdint.h": "c"
+		"stdint.h": "c",
+		"esp_intr_alloc.h": "c",
+		"array": "c",
+		"memory": "c",
+		"future": "c",
+		"istream": "c",
+		"functional": "c",
+		"tuple": "c",
+		"utility": "c",
+		"variant": "c"
 	}
 }
