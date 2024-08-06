@@ -130,14 +130,12 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
-	// return;
+	return;
 
 	/* Infinite loop */
-	for(;;){
-
-		// The task must be kept alive because the drivers use it as their base task.
-		delay(1000);
-	}
+	// for(;;){
+	// 	delay(1);
+	// }
 	/* USER CODE END 1 */
 }
 
@@ -179,7 +177,7 @@ void rs485_task(void *parameters){
 		// Update button states.
 		ul_bs_set_button_states(button_states);
 
-		// Print button states.
+		// !!! Print button states.
 		printf("\nDevice ID: 0x%02X\n", device_id);
 		for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_8; button++)
 			printf(
