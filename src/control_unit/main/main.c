@@ -130,17 +130,67 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
-	return;
+	// return;
 
 	/* Infinite loop */
-	// for(;;){
-	// 	delay(1);
-	// }
+	for(;;){
+
+		// The task must be kept alive because the drivers use it as their base task.
+		delay(1000);
+	}
 	/* USER CODE END 1 */
 }
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 2 */
+
+void rs485_task(void *parameters){
+
+	const char *TAG = "rs485_task";
+	ESP_LOGI(TAG, "Started");
+
+	/* Variables */
+
+	uint8_t device_id;
+	uint16_t button_states;
+	esp_err_t ret;
+
+	/* Code */
+
+	ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_UART_PORT));
+	ESP_LOGI(TAG, "Polling slave devices");
+
+	/* Infinite loop */
+	for(;;){
+
+		delay(1);
+
+		ret = wall_terminals_poll(TAG, &device_id, &button_states);
+		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
+
+		if(ret != ESP_OK){
+			ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_UART_PORT));
+			continue;
+		}
+
+		if(device_id == 0xFF)
+			continue;
+
+		// Update button states.
+		ul_bs_set_button_states(button_states);
+
+		// Print button states.
+		printf("\nDevice ID: 0x%02X\n", device_id);
+		for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_8; button++)
+			printf(
+				"Button %u: %u\n",
+				button,
+				ul_bs_get_button_state(
+					(ul_bs_button_id_t) button
+				)
+			);
+	}
+}
 
 esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *button_states){
 
@@ -302,59 +352,6 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 	*button_states = ul_utils_cast_to_type(decoded_data, uint16_t);
 
 	return ESP_OK;
-}
-
-void rs485_task(void *parameters){
-
-	const char *TAG = "rs485_task";
-	ESP_LOGI(TAG, "Started");
-
-	// for(;;){
-	// 	ESP_LOGI(TAG, "Hello World!");
-	// 	delay(1000);
-	// }
-
-	/* Variables */
-
-	uint8_t device_id;
-	uint16_t button_states;
-	esp_err_t ret;
-
-	/* Code */
-
-	ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_UART_PORT));
-	ESP_LOGI(TAG, "Polling slave devices");
-
-	/* Infinite loop */
-	for(;;){
-
-		delay(1);
-
-		ret = wall_terminals_poll(TAG, &device_id, &button_states);
-		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
-
-		if(ret != ESP_OK){
-			ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_UART_PORT));
-			continue;
-		}
-
-		if(device_id == 0xFF)
-			continue;
-
-		// Update button states.
-		ul_bs_set_button_states(button_states);
-
-		// Print button states.
-		printf("\nDevice ID: 0x%02X\n", device_id);
-		for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_8; button++)
-			printf(
-				"Button %u: %u\n",
-				button,
-				ul_bs_get_button_state(
-					(ul_bs_button_id_t) button
-				)
-			);
-	}
 }
 
 /* USER CODE END 2 */

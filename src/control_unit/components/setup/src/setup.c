@@ -179,7 +179,7 @@ esp_err_t TASKS_setup(){
 	task_creation_ret = xTaskCreatePinnedToCore(
 		rs485_task,
 		"rs485_task",
-		1024,
+		4096,
 		NULL,
 		tskIDLE_PRIORITY,
 		&rs485_task_handle,
