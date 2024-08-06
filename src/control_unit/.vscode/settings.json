@@ -27,6 +27,7 @@
 		"*.tcc": "c",
 		"format": "c",
 		"sstream": "c",
-		"regex": "c"
+		"regex": "c",
+		"xtensa_api.h": "c"
 	}
 }

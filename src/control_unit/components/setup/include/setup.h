@@ -22,12 +22,17 @@
 #include <esp_err.h>
 #include <esp_check.h>
 
+#include <freertos/FreeRTOS.h>
+
 #include <driver/gpio.h>
 #include <driver/uart.h>
 
 /************************************************************************************************************
 * Public Defines
 ************************************************************************************************************/
+
+#define ESP_PROTOCOL_CORE			0
+#define ESP_APPLICATION_CORE	1
 
 /************************************************************************************************************
 * Public Types Definitions
@@ -43,5 +48,6 @@
 
 extern esp_err_t GPIO_setup();
 extern esp_err_t UART_setup();
+extern esp_err_t TASKS_setup();
 
 #endif  /* INC_SETUP_H_ */

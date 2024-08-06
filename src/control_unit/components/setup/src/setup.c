@@ -166,3 +166,34 @@ esp_err_t UART_setup(){
 
 	return ESP_OK;
 }
+
+esp_err_t TASKS_setup(){
+
+	BaseType_t task_creation_ret;
+
+	/* rs485_task */
+
+	extern TaskHandle_t rs485_task_handle;
+	extern void rs485_task(void *parameters);
+
+	task_creation_ret = xTaskCreatePinnedToCore(
+		rs485_task,
+		"rs485_task",
+		1024,
+		NULL,
+		tskIDLE_PRIORITY,
+		&rs485_task_handle,
+		ESP_APPLICATION_CORE
+	);
+
+	ESP_RETURN_ON_FALSE(
+		task_creation_ret == pdPASS,
+
+		ESP_ERR_INVALID_STATE,
+		TAG,
+		"Error %d: unable to spawn the \"rs485_task\"",
+		task_creation_ret
+	);
+
+	return ESP_OK;
+}
