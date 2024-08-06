@@ -159,8 +159,9 @@ void setup(){
 
 	/* USER CODE BEGIN Init */
 
-	// Stabilize the peripherals.
-	delay(500);
+	// Stabilize the ADC.
+	while(millis() < 500)
+		analogRead(CONFIG_GPIO_ADC);
 
 	/* USER CODE END Init */
 }
