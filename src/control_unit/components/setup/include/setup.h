@@ -27,7 +27,9 @@
 
 #include <freertos/FreeRTOS.h>
 
+#include <soc/soc_caps.h>
 #include <esp_adc/adc_continuous.h>
+
 #include <driver/gpio.h>
 #include <driver/ledc.h>
 #include <driver/uart.h>
@@ -82,7 +84,7 @@ typedef struct {
 extern esp_err_t GPIO_setup(const char *TAG);
 extern esp_err_t LEDC_setup(const char *TAG);
 extern esp_err_t UART_setup(const char *TAG);
-extern esp_err_t ADC_setup(const char *TAG);
+extern esp_err_t ADC_setup(const char *TAG, adc_continuous_handle_t *adc_handle);
 
 extern esp_err_t QUEUES_setup(const char *TAG);
 extern esp_err_t TASKS_setup(const char *TAG);

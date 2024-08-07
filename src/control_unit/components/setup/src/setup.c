@@ -20,22 +20,29 @@
 /**
  * @brief Helper.
  */
-#define __to_bit_mask(x)	(1ULL << x)
+#define __gpio_to_bit_mask(x)	(1ULL << x)
+
+/**
+ * @return `adc_samples_per_channel` * 2 channels * 2 bytes/sample
+ */
+#define __adc_compute_conv_frame_size(adc_samples_per_channel)( \
+	adc_samples_per_channel * 4 \
+)
+
+/**
+ * @return `adc_samples_per_channel` * 2 channels * 2 bytes/sample * 2
+ */
+#define __adc_compute_max_store_buf_size(adc_samples_per_channel)( \
+	__adc_compute_conv_frame_size(adc_samples_per_channel) * 2 \
+)
 
 // `gpio_config_t::pin_bit_mask` for output GPIOs.
 #define GPIO_OUT_BIT_MASK	( \
-	__to_bit_mask(CONFIG_GPIO_ALARM) | \
-	__to_bit_mask(CONFIG_GPIO_RELAY_1) | \
-	__to_bit_mask(CONFIG_GPIO_RELAY_2) | \
-	__to_bit_mask(CONFIG_GPIO_RELAY_3) | \
-	__to_bit_mask(CONFIG_GPIO_RELAY_4) \
-)
-
-// `gpio_config_t::pin_bit_mask` for input GPIOs.
-#define GPIO_IN_BIT_MASK	( \
-	__to_bit_mask(CONFIG_GPIO_TEMP) | \
-	__to_bit_mask(CONFIG_GPIO_AC_V) | \
-	__to_bit_mask(CONFIG_GPIO_AC_I) \
+	__gpio_to_bit_mask(CONFIG_GPIO_ALARM) | \
+	__gpio_to_bit_mask(CONFIG_GPIO_RELAY_1) | \
+	__gpio_to_bit_mask(CONFIG_GPIO_RELAY_2) | \
+	__gpio_to_bit_mask(CONFIG_GPIO_RELAY_3) | \
+	__gpio_to_bit_mask(CONFIG_GPIO_RELAY_4) \
 )
 
 #define PWM_CH_TO_GPIO_INIT	{ \
@@ -53,6 +60,60 @@
 	CONFIG_GPIO_LED_11, \
 	CONFIG_GPIO_LED_12 \
 }
+
+#if defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_0)
+	#define ADC1_CH_V		ADC_CHANNEL_0
+#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_1)
+	#define ADC1_CH_V		ADC_CHANNEL_1
+#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_2)
+	#define ADC1_CH_V		ADC_CHANNEL_2
+#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_3)
+	#define ADC1_CH_V		ADC_CHANNEL_3
+#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_4)
+	#define ADC1_CH_V		ADC_CHANNEL_4
+#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_5)
+	#define ADC1_CH_V		ADC_CHANNEL_5
+#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_6)
+	#define ADC1_CH_V		ADC_CHANNEL_6
+#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_7)
+	#define ADC1_CH_V		ADC_CHANNEL_7
+#endif
+
+#if defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_0)
+	#define ADC1_CH_I		ADC_CHANNEL_0
+#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_1)
+	#define ADC1_CH_I		ADC_CHANNEL_1
+#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_2)
+	#define ADC1_CH_I		ADC_CHANNEL_2
+#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_3)
+	#define ADC1_CH_I		ADC_CHANNEL_3
+#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_4)
+	#define ADC1_CH_I		ADC_CHANNEL_4
+#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_5)
+	#define ADC1_CH_I		ADC_CHANNEL_5
+#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_6)
+	#define ADC1_CH_I		ADC_CHANNEL_6
+#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_7)
+	#define ADC1_CH_I		ADC_CHANNEL_7
+#endif
+
+#if defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_0)
+	#define ADC1_CH_TEMP	ADC_CHANNEL_0
+#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_1)
+	#define ADC1_CH_TEMP	ADC_CHANNEL_1
+#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_2)
+	#define ADC1_CH_TEMP	ADC_CHANNEL_2
+#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_3)
+	#define ADC1_CH_TEMP	ADC_CHANNEL_3
+#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_4)
+	#define ADC1_CH_TEMP	ADC_CHANNEL_4
+#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_5)
+	#define ADC1_CH_TEMP	ADC_CHANNEL_5
+#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_6)
+	#define ADC1_CH_TEMP	ADC_CHANNEL_6
+#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_7)
+	#define ADC1_CH_TEMP	ADC_CHANNEL_7
+#endif
 
 /************************************************************************************************************
 * Private Types Definitions
@@ -79,26 +140,13 @@ esp_err_t GPIO_setup(const char *TAG){
 	if(TAG == NULL)
 		return ESP_ERR_INVALID_ARG;
 
-	// Shared configs.
 	gpio_config_t io_config = {
+		.pin_bit_mask = GPIO_OUT_BIT_MASK,
+		.mode = GPIO_MODE_OUTPUT,
 		.intr_type = GPIO_INTR_DISABLE,
 		.pull_up_en = 0,
 		.pull_down_en = 0
 	};
-
-	// Output.
-	io_config.mode = GPIO_MODE_OUTPUT;
-	io_config.pin_bit_mask = GPIO_OUT_BIT_MASK;
-
-	ESP_RETURN_ON_ERROR(
-		gpio_config(&io_config),
-		TAG,
-		"Error on `gpio_config()`"
-	);
-
-	// Input.
-	io_config.mode = GPIO_MODE_INPUT;
-	io_config.pin_bit_mask = GPIO_IN_BIT_MASK;
 
 	ESP_RETURN_ON_ERROR(
 		gpio_config(&io_config),
@@ -239,23 +287,52 @@ esp_err_t UART_setup(const char *TAG){
 	return ESP_OK;
 }
 
-esp_err_t ADC_setup(const char *TAG){
+esp_err_t ADC_setup(const char *TAG, adc_continuous_handle_t *adc_handle){
 
 	if(TAG == NULL)
 		return ESP_ERR_INVALID_ARG;
 
-	// adc_continuous_handle_t adc_handle = NULL;
-	// adc_continuous_handle_cfg_t adc_config = {
-	// 	.max_store_buf_size = 1000,
-	// 	.conv_frame_size = 1024,
-	// };
+	adc_continuous_handle_t adc_handle_ret = NULL;
+	adc_continuous_handle_cfg_t adc_memory_config = {
+		.max_store_buf_size = __adc_compute_max_store_buf_size(CONFIG_ADC_SAMPLES),
+		.conv_frame_size = __adc_compute_conv_frame_size(CONFIG_ADC_SAMPLES),
+	};
 
-	// ESP_RETURN_ON_ERROR(
-	// 	adc_continuous_new_handle(&adc_config, &adc_handle),
-	// 	TAG,
-	// 	"Error on `adc_continuous_new_handle()`"
-	// );
+	adc_digi_pattern_config_t adc_channel_config[] = {
+		{ .channel = ADC1_CH_V },
+		{ .channel = ADC1_CH_I }
+	};
 
+	uint8_t adc_channel_config_size =
+		sizeof(adc_channel_config) / sizeof(adc_digi_pattern_config_t);
+
+	for(uint8_t i=0; i<adc_channel_config_size; i++){
+		adc_channel_config[i].atten = ADC_ATTEN_DB_0;
+		adc_channel_config[i].unit = ADC_UNIT_1;
+		adc_channel_config[i].bit_width = ADC_BITWIDTH_12;
+	}
+
+	adc_continuous_config_t adc_digital_config = {
+		.sample_freq_hz = CONFIG_ADC_SAMPLE_RATE,
+		.conv_mode = ADC_CONV_SINGLE_UNIT_1,
+		.format = ADC_DIGI_OUTPUT_FORMAT_TYPE1,
+		.pattern_num = 2,
+		.adc_pattern = adc_channel_config
+	};
+
+	ESP_RETURN_ON_ERROR(
+		adc_continuous_new_handle(&adc_memory_config, &adc_handle_ret),
+		TAG,
+		"Error on `adc_continuous_new_handle()`"
+	);
+
+	ESP_RETURN_ON_ERROR(
+		adc_continuous_config(adc_handle_ret, &adc_digital_config),
+		TAG,
+		"Error on `adc_continuous_config()`"
+	);
+
+	*adc_handle = adc_handle_ret;
 	return ESP_OK;
 }
 

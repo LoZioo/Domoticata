@@ -79,6 +79,8 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
+adc_continuous_handle_t adc_handle;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -142,7 +144,7 @@ void app_main(){
 	ESP_ERROR_CHECK(UART_setup(TAG));
 
 	ESP_LOGI(TAG, "ADC_setup()");
-	ESP_ERROR_CHECK(ADC_setup(TAG));
+	ESP_ERROR_CHECK(ADC_setup(TAG, &adc_handle));
 
 	/* USER CODE END SysInit */
 

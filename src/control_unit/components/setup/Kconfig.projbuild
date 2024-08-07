@@ -32,6 +32,11 @@ menu "Project configurations"
 	endmenu
 
 	menu "ADC"
+		config ADC_SAMPLE_RATE
+			int "Sample rate (Hz)"
+			range 20000 2000000
+			default 20000
+
 		config ADC_SAMPLES
 			int "Number samples per channel"
 			default 1000
@@ -134,6 +139,96 @@ menu "Project configurations"
 		config GPIO_RELAY_4
 			int "Relay 4"
 			default 12
+
+		choice ADC_CHANNEL_V
+			prompt "ADC1 AC voltage GPIO"
+			default ADC_CHANNEL_V_TO_ADC_CHANNEL_0
+
+			config ADC_CHANNEL_V_TO_ADC_CHANNEL_4
+				bool "GPIO32"
+
+			config ADC_CHANNEL_V_TO_ADC_CHANNEL_5
+				bool "GPIO33"
+
+			config ADC_CHANNEL_V_TO_ADC_CHANNEL_6
+				bool "GPIO34"
+
+			config ADC_CHANNEL_V_TO_ADC_CHANNEL_7
+				bool "GPIO35"
+
+			config ADC_CHANNEL_V_TO_ADC_CHANNEL_0
+				bool "GPIO36"
+
+			config ADC_CHANNEL_V_TO_ADC_CHANNEL_1
+				bool "GPIO37"
+
+			config ADC_CHANNEL_V_TO_ADC_CHANNEL_2
+				bool "GPIO38"
+
+			config ADC_CHANNEL_V_TO_ADC_CHANNEL_3
+				bool "GPIO39"
+
+		endchoice
+
+		choice ADC_CHANNEL_I
+			prompt "ADC1 AC current GPIO"
+			default ADC_CHANNEL_I_TO_ADC_CHANNEL_3
+
+			config ADC_CHANNEL_I_TO_ADC_CHANNEL_4
+				bool "GPIO32"
+
+			config ADC_CHANNEL_I_TO_ADC_CHANNEL_5
+				bool "GPIO33"
+
+			config ADC_CHANNEL_I_TO_ADC_CHANNEL_6
+				bool "GPIO34"
+
+			config ADC_CHANNEL_I_TO_ADC_CHANNEL_7
+				bool "GPIO35"
+
+			config ADC_CHANNEL_I_TO_ADC_CHANNEL_0
+				bool "GPIO36"
+
+			config ADC_CHANNEL_I_TO_ADC_CHANNEL_1
+				bool "GPIO37"
+
+			config ADC_CHANNEL_I_TO_ADC_CHANNEL_2
+				bool "GPIO38"
+
+			config ADC_CHANNEL_I_TO_ADC_CHANNEL_3
+				bool "GPIO39"
+
+		endchoice
+
+		choice ADC_CHANNEL_TEMP
+			prompt "ADC1 temperature GPIO"
+			default ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_7
+
+			config ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_4
+				bool "GPIO32"
+
+			config ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_5
+				bool "GPIO33"
+
+			config ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_6
+				bool "GPIO34"
+
+			config ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_7
+				bool "GPIO35"
+
+			config ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_0
+				bool "GPIO36"
+
+			config ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_1
+				bool "GPIO37"
+
+			config ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_2
+				bool "GPIO38"
+
+			config ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_3
+				bool "GPIO39"
+
+		endchoice
 
 	endmenu
 endmenu
