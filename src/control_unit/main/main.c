@@ -38,6 +38,7 @@
 
 #include <freertos/FreeRTOS.h>
 
+#include <esp_adc/adc_continuous.h>
 #include <driver/gpio.h>
 #include <driver/ledc.h>
 #include <driver/uart.h>
@@ -139,6 +140,9 @@ void app_main(){
 
 	ESP_LOGI(TAG, "UART_setup()");
 	ESP_ERROR_CHECK(UART_setup(TAG));
+
+	ESP_LOGI(TAG, "ADC_setup()");
+	ESP_ERROR_CHECK(ADC_setup(TAG));
 
 	/* USER CODE END SysInit */
 

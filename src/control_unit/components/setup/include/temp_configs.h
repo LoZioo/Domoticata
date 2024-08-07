@@ -3,6 +3,7 @@
  * Possibili configurazioni da aggiungere:
  * 	-	Frequenza PWM
  * 	-	Fade time
+ * 	-	Soglia potenza cicalino
  */
 
 /**

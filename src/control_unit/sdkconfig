@@ -375,11 +375,24 @@ CONFIG_PARTITION_TABLE_MD5=y
 #
 
 #
-# UART configurations
+# UART
 #
 CONFIG_UART_PORT=1
 CONFIG_UART_BAUD_RATE=115200
-# end of UART configurations
+# end of UART
+
+#
+# LEDC
+#
+CONFIG_LEDC_PWM_FREQUENCY_HZ=30000
+CONFIG_LEDC_BIT_RES=7
+# end of LEDC
+
+#
+# ADC
+#
+CONFIG_ADC_SAMPLES=1000
+# end of ADC
 
 #
 # GPIO mapping

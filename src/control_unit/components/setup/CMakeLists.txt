@@ -1,3 +1,3 @@
 idf_component_register(SRC_DIRS "src"
-                       REQUIRES driver
-                       INCLUDE_DIRS "include")
+                       INCLUDE_DIRS "include"
+                       REQUIRES driver esp_adc)

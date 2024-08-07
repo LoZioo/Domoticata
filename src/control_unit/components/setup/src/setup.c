@@ -117,8 +117,8 @@ esp_err_t LEDC_setup(const char *TAG){
 	/* LEDC base config */
 
 	ledc_timer_config_t ledc_tim_config = {
-		.freq_hz = 30000,
-		.duty_resolution = LEDC_TIMER_7_BIT,
+		.freq_hz = CONFIG_LEDC_PWM_FREQUENCY_HZ,
+		.duty_resolution = (ledc_timer_bit_t) CONFIG_LEDC_BIT_RES,
 		.timer_num = LEDC_TIMER_1,
 		.clk_cfg = LEDC_AUTO_CLK
 	};
@@ -235,6 +235,26 @@ esp_err_t UART_setup(const char *TAG){
 		TAG,
 		"Error on `uart_set_mode()`"
 	);
+
+	return ESP_OK;
+}
+
+esp_err_t ADC_setup(const char *TAG){
+
+	if(TAG == NULL)
+		return ESP_ERR_INVALID_ARG;
+
+	// adc_continuous_handle_t adc_handle = NULL;
+	// adc_continuous_handle_cfg_t adc_config = {
+	// 	.max_store_buf_size = 1000,
+	// 	.conv_frame_size = 1024,
+	// };
+
+	// ESP_RETURN_ON_ERROR(
+	// 	adc_continuous_new_handle(&adc_config, &adc_handle),
+	// 	TAG,
+	// 	"Error on `adc_continuous_new_handle()`"
+	// );
 
 	return ESP_OK;
 }
