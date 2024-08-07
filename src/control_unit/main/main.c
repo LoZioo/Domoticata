@@ -80,8 +80,6 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
-adc_continuous_handle_t adc_handle;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -96,6 +94,7 @@ QueueHandle_t pwm_queue;
 TaskHandle_t pwm_task_handle;
 void pwm_task(void *parameters);
 
+adc_continuous_handle_t adc_handle;
 TaskHandle_t pm_task_handle;
 void pm_task(void *parameters);
 
@@ -149,7 +148,7 @@ void app_main(){
 	ESP_ERROR_CHECK(UART_setup(TAG));
 
 	ESP_LOGI(TAG, "ADC_setup()");
-	ESP_ERROR_CHECK(ADC_setup(TAG, &adc_handle));
+	ESP_ERROR_CHECK(ADC_setup(TAG));
 
 	/* USER CODE END SysInit */
 
@@ -272,11 +271,58 @@ void pm_task(void *parameters){
 
 	/* Variables */
 
+	uint16_t samples[10];
+	uint16_t samples_size = sizeof(samples) / sizeof(uint16_t);
+	uint32_t read_samples_size;
+
+	esp_err_t ret;
+
 	/* Code */
+
+	ESP_ERROR_CHECK(
+		adc_continuous_start(adc_handle)
+	);
+
+	ESP_LOGI(TAG, "Sampling from ADC");
 
 	/* Infinite loop */
 	for(;;){
-		delay(1);
+
+		// Wait for the ISR and then clear the notification (`pdTRUE`).
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+		ret = adc_continuous_read(adc_handle, (uint8_t*) samples, samples_size, &read_samples_size, 40);
+		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
+
+		if(ret != ESP_OK){
+			delay(1000);
+			continue;
+		}
+
+		ret = adc_continuous_flush_pool(adc_handle);
+		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
+
+		if(ret != ESP_OK){
+			delay(1000);
+			continue;
+		}
+
+		char str[100] = "{ ", tmp[30];
+		for(int i=0; i<samples_size; i++){
+			sprintf(tmp, "%u", samples[i]);
+
+			if(i < samples_size - 1)
+				sprintf(tmp, ", ");
+
+			strcat(str, tmp);
+		}
+		sprintf(str, " }");
+
+		ESP_LOGI(TAG, "read_samples_size: %lu", read_samples_size);
+		ESP_LOGI(TAG, "samples_size: %u", samples_size);
+		ESP_LOGI(TAG, "samples: %s", str);
+
+		delay(1000);
 	}
 }
 
