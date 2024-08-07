@@ -386,10 +386,10 @@ esp_err_t TASKS_setup(const char *TAG){
 		pwm_task_handle,
 		pm_task_handle;
 
-	TaskHandle_t task_handles[] = {
-		rs485_task_handle,
-		pwm_task_handle,
-		pm_task_handle
+	TaskHandle_t *task_handles[] = {
+		&rs485_task_handle,
+		&pwm_task_handle,
+		&pm_task_handle
 	};
 
 	extern void
@@ -420,7 +420,7 @@ esp_err_t TASKS_setup(const char *TAG){
 			4096,
 			NULL,
 			tskIDLE_PRIORITY,
-			&task_handles[i],
+			task_handles[i],
 			ESP_APPLICATION_CORE
 		);
 
