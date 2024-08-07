@@ -35,6 +35,7 @@
 #include <esp_err.h>
 #include <esp_check.h>
 #include <esp_log.h>
+#include <esp_attr.h>
 
 #include <freertos/FreeRTOS.h>
 
@@ -115,6 +116,10 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
  * @param index 0: Fan controller, 1-12: LEDs.
  */
 esp_err_t pwm_write(const char *TAG, uint8_t index, uint8_t duty_target_perc, uint16_t fade_time_ms);
+
+/* ISR */
+
+bool IRAM_ATTR adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data);
 
 /* USER CODE END PFP */
 
@@ -474,6 +479,14 @@ esp_err_t pwm_write(const char *TAG, uint8_t index, uint8_t duty_target_perc, ui
 
 /* Private user code for ISR (Interrupt Service Routines) --------------------*/
 /* USER CODE BEGIN ISR */
+
+bool adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data){
+
+	BaseType_t must_yield = pdFALSE;
+	vTaskNotifyGiveFromISR(pm_task_handle, &must_yield);
+
+	return (must_yield == pdTRUE);
+}
 
 /* USER CODE END ISR */
 

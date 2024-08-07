@@ -292,6 +292,12 @@ esp_err_t ADC_setup(const char *TAG, adc_continuous_handle_t *adc_handle){
 	if(TAG == NULL)
 		return ESP_ERR_INVALID_ARG;
 
+	extern bool IRAM_ATTR adc_conversion_done(
+		adc_continuous_handle_t adc_handle,
+		const adc_continuous_evt_data_t *edata,
+		void *user_data
+	);
+
 	adc_continuous_handle_t adc_handle_ret = NULL;
 	adc_continuous_handle_cfg_t adc_memory_config = {
 		.max_store_buf_size = __adc_compute_max_store_buf_size(CONFIG_ADC_SAMPLES),
@@ -320,6 +326,10 @@ esp_err_t ADC_setup(const char *TAG, adc_continuous_handle_t *adc_handle){
 		.adc_pattern = adc_channel_config
 	};
 
+	adc_continuous_evt_cbs_t adc_callbacks = {
+		.on_conv_done = adc_conversion_done
+	};
+
 	ESP_RETURN_ON_ERROR(
 		adc_continuous_new_handle(&adc_memory_config, &adc_handle_ret),
 		TAG,
@@ -330,6 +340,15 @@ esp_err_t ADC_setup(const char *TAG, adc_continuous_handle_t *adc_handle){
 		adc_continuous_config(adc_handle_ret, &adc_digital_config),
 		TAG,
 		"Error on `adc_continuous_config()`"
+	);
+
+	ESP_RETURN_ON_ERROR(
+		adc_continuous_register_event_callbacks(
+			adc_handle_ret, &adc_callbacks, NULL
+		),
+
+		TAG,
+		"Error on `adc_continuous_register_event_callbacks()`"
 	);
 
 	*adc_handle = adc_handle_ret;
