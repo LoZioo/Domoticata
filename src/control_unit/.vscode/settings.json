@@ -11,7 +11,7 @@
   "idf.openOcdConfigs": [
     "board/esp32-wrover-kit-3.3v.cfg"
   ],
-  "idf.portWin": "COM13",
+  "idf.portWin": "COM6",
   "idf.pythonBinPathWin": "d:\\LoZio\\Documenti\\ESP-IDF\\.espressif\\python_env\\idf5.2_py3.11_env\\Scripts\\python.exe",
 	"idf.toolsPathWin": "d:\\LoZio\\Documenti\\ESP-IDF\\.espressif",
 	"idf.flashType": "UART",
@@ -41,6 +41,10 @@
 		"functional": "c",
 		"tuple": "c",
 		"utility": "c",
-		"variant": "c"
+		"variant": "c",
+		"bitset": "c",
+		"string_view": "c",
+		"initializer_list": "c",
+		"span": "c"
 	}
 }

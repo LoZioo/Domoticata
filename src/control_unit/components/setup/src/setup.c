@@ -265,54 +265,58 @@ esp_err_t TASKS_setup(const char *TAG){
 	if(TAG == NULL)
 		return ESP_ERR_INVALID_ARG;
 
+	extern TaskHandle_t
+		rs485_task_handle,
+		pwm_task_handle,
+		pm_task_handle;
+
+	TaskHandle_t task_handles[] = {
+		rs485_task_handle,
+		pwm_task_handle,
+		pm_task_handle
+	};
+
+	extern void
+		rs485_task(void *parameters),
+		pwm_task(void *parameters),
+		pm_task(void *parameters);
+
+	TaskFunction_t task_routines[] = {
+		rs485_task,
+		pwm_task,
+		pm_task
+	};
+
+	char task_names[][12] = {
+		"rs485_task",
+		"pwm_task",
+		"pm_task"
+	};
+
+	uint8_t tasks = sizeof(task_handles) / sizeof(TaskHandle_t);
 	BaseType_t ret_val;
 
-	/* rs485_task */
+	for(uint8_t i=0; i<tasks; i++){
 
-	extern TaskHandle_t rs485_task_handle;
-	extern void rs485_task(void *parameters);
+		ret_val = xTaskCreatePinnedToCore(
+			task_routines[i],
+			task_names[i],
+			4096,
+			NULL,
+			tskIDLE_PRIORITY,
+			&task_handles[i],
+			ESP_APPLICATION_CORE
+		);
 
-	ret_val = xTaskCreatePinnedToCore(
-		rs485_task,
-		"rs485_task",
-		4096,
-		NULL,
-		tskIDLE_PRIORITY,
-		&rs485_task_handle,
-		ESP_APPLICATION_CORE
-	);
+		ESP_RETURN_ON_FALSE(
+			ret_val == pdPASS,
 
-	ESP_RETURN_ON_FALSE(
-		ret_val == pdPASS,
-
-		ESP_ERR_INVALID_STATE,
-		TAG,
-		"Error %d: unable to spawn the \"rs485_task\"",
-		ret_val
-	);
-
-	/* pwm_task */
-
-	extern TaskHandle_t pwm_task_handle;
-	extern void pwm_task(void *parameters);
-
-	ret_val = xTaskCreate(
-		pwm_task,
-		"pwm_task",
-		4096,
-		NULL,
-		tskIDLE_PRIORITY,
-		&pwm_task_handle
-	);
-
-	ESP_RETURN_ON_FALSE(
-		ret_val == pdPASS,
-
-		ESP_ERR_INVALID_STATE,
-		TAG,
-		"Error %d: unable to spawn the \"pwm_task\"",
-		ret_val
-	);
+			ESP_ERR_INVALID_STATE,
+			TAG,
+			"Error %d: unable to spawn the \"%s\"",
+			ret_val, task_names[i]
+		);
+	}
 
 	return ESP_OK;
 }

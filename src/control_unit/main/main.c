@@ -92,6 +92,9 @@ QueueHandle_t pwm_queue;
 TaskHandle_t pwm_task_handle;
 void pwm_task(void *parameters);
 
+TaskHandle_t pm_task_handle;
+void pm_task(void *parameters);
+
 /* Generic functions */
 
 /**
@@ -152,16 +155,12 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
-	// return;
+	return;
 
 	/* Infinite loop */
-	for(;;){
-		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write(TAG, 2, 100, 1000));
-		delay(2000);
-
-		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write(TAG, 2, 0, 1000));
-		delay(2000);
-	}
+	// for(;;){
+	// 	delay(1);
+	// }
 	/* USER CODE END 1 */
 }
 
@@ -252,6 +251,21 @@ void pwm_task(void *parameters){
 				LEDC_FADE_NO_WAIT
 			)
 		);
+	}
+}
+
+void pm_task(void *parameters){
+
+	const char *TAG = "pm_task";
+	ESP_LOGI(TAG, "Started");
+
+	/* Variables */
+
+	/* Code */
+
+	/* Infinite loop */
+	for(;;){
+		delay(1);
 	}
 }
 
