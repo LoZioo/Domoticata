@@ -177,7 +177,7 @@ void app_main(){
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 2 */
 
-// !!! SISTEMARE TUTTI I TASK CON for(;;) CON GOTO_ON_ERROR/FALSE
+// !!! SISTEMARE TUTTI I TASK CON for(;;) CON PATTERN GOTO_ON_ERROR/FALSE
 
 void rs485_task(void *parameters){
 
@@ -277,8 +277,7 @@ void pm_task(void *parameters){
 	esp_err_t ret;
 
 	// Must be multiple of 4.
-	uint16_t samples[12];
-	uint32_t samples_size = sizeof(samples) / sizeof(uint16_t);
+	static uint16_t samples[pm_samples_len_to_buf_size(CONFIG_ADC_SAMPLES)];
 	uint32_t read_samples_size;
 
 	/* Code */
@@ -291,9 +290,10 @@ void pm_task(void *parameters){
 		// Reset the return code.
 		ret = ESP_OK;
 
-		// Flush old data.
+		// Flush old samples.
 		ESP_GOTO_ON_ERROR(
 			adc_continuous_flush_pool(adc_handle),
+
 			pm_task_continue,
 			TAG,
 			"Error on `adc_continuous_flush_pool()`"
@@ -302,6 +302,7 @@ void pm_task(void *parameters){
 		// Start the sample acquisition.
 		ESP_GOTO_ON_ERROR(
 			adc_continuous_start(adc_handle),
+
 			pm_task_continue,
 			TAG,
 			"Error on `adc_continuous_start()`"
@@ -312,26 +313,33 @@ void pm_task(void *parameters){
 
 		// Read the acquired samples from the driver.
 		ESP_GOTO_ON_ERROR(
-			adc_continuous_read(adc_handle, (uint8_t*) samples, samples_size, &read_samples_size, 40),
+			adc_continuous_read(
+				adc_handle,
+				(uint8_t*) samples,
+				pm_samples_len_to_buf_size(CONFIG_ADC_SAMPLES),
+				&read_samples_size,
+				40
+			),
+
 			pm_task_continue,
 			TAG,
 			"Error on `adc_continuous_read()`"
 		);
 
 		printf("samples: { ");
-		for(uint32_t i=0; i<read_samples_size; i++){
+		for(uint32_t i=0; i<16; i++){
 
 			printf("(%d, %d)",
 				((adc_digi_output_data_t*) &samples[i])->type1.channel,
 				((adc_digi_output_data_t*) &samples[i])->type1.data
 			);
 
-			if(i < samples_size - 1)
+			if(i < 15)
 				printf(", ");
 		}
 		printf(" }\n");
 		printf("read_samples_size: %lu\n", read_samples_size);
-		printf("samples_size: %lu\n", samples_size);
+		printf("samples_size: %u\n", pm_samples_len_to_buf_size(CONFIG_ADC_SAMPLES));
 		printf("\n");
 
 		pm_task_continue:

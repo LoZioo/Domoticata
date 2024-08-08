@@ -22,20 +22,6 @@
  */
 #define __gpio_to_bit_mask(x)	(1ULL << x)
 
-/**
- * @return `adc_samples_per_channel` * 2 channels * 2 bytes/sample
- */
-#define __adc_compute_conv_frame_size(adc_samples_per_channel)( \
-	adc_samples_per_channel * 4 \
-)
-
-/**
- * @return `adc_samples_per_channel` * 2 channels * 2 bytes/sample * 2
- */
-#define __adc_compute_max_store_buf_size(adc_samples_per_channel)( \
-	__adc_compute_conv_frame_size(adc_samples_per_channel) * 2 \
-)
-
 // `gpio_config_t::pin_bit_mask` for output GPIOs.
 #define GPIO_OUT_BIT_MASK	( \
 	__gpio_to_bit_mask(CONFIG_GPIO_ALARM) | \
@@ -247,11 +233,11 @@ esp_err_t ADC_setup(const char *TAG){
 
 	/**
 	 * Driver pre-initialization configurations.
-	 * Please read the descriprion of `adc_continuous.h`.
+	 * Please read the descriprion of `esp_adc/adc_continuous.h`.
 	 */
 	adc_continuous_handle_cfg_t adc_memory_config = {
-		.max_store_buf_size = __adc_compute_max_store_buf_size(CONFIG_ADC_SAMPLES),
-		.conv_frame_size = __adc_compute_conv_frame_size(CONFIG_ADC_SAMPLES),
+		.max_store_buf_size = pm_samples_len_to_buf_size(CONFIG_ADC_SAMPLES),
+		.conv_frame_size = pm_samples_len_to_buf_size(CONFIG_ADC_SAMPLES),
 	};
 
 	ESP_RETURN_ON_ERROR(
