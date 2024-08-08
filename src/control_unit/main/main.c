@@ -36,6 +36,7 @@
 #include <esp_check.h>
 #include <esp_log.h>
 #include <esp_attr.h>
+#include <esp_timer.h>
 
 #include <freertos/FreeRTOS.h>
 
@@ -74,6 +75,13 @@
 
 #define delay(ms) \
 	vTaskDelay(pdMS_TO_TICKS(ms))
+
+#define micros() \
+	esp_timer_get_time()
+
+#define millis()( \
+	micros() / 1000 \
+)
 
 /* USER CODE END PM */
 
@@ -115,6 +123,11 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
  * @param index 0: Fan controller, 1-12: LEDs.
  */
 esp_err_t pwm_write(const char *TAG, uint8_t index, uint8_t duty_target_perc, uint16_t fade_time_ms);
+
+/**
+ * @brief `delay( ms - (millis() - initial_timestamp_ms) )`
+ */
+void delay_remainings(int32_t ms, int64_t initial_timestamp_ms);
 
 /* ISR */
 
@@ -276,9 +289,12 @@ void pm_task(void *parameters){
 	// `ESP_GOTO_ON_ERROR()` return code.
 	esp_err_t ret;
 
+	// Timings.
+	int64_t t0;
+
 	// Must be multiple of 4.
 	static uint16_t samples[pm_samples_len_to_buf_size(CONFIG_ADC_SAMPLES)];
-	uint32_t read_samples_size;
+	uint32_t read_size;
 
 	/* Code */
 
@@ -286,6 +302,9 @@ void pm_task(void *parameters){
 
 	/* Infinite loop */
 	for(;;){
+
+		// Save the current timestamp.
+		t0 = millis();
 
 		// Reset the return code.
 		ret = ESP_OK;
@@ -317,7 +336,7 @@ void pm_task(void *parameters){
 				adc_handle,
 				(uint8_t*) samples,
 				pm_samples_len_to_buf_size(CONFIG_ADC_SAMPLES),
-				&read_samples_size,
+				&read_size,
 				40
 			),
 
@@ -326,6 +345,7 @@ void pm_task(void *parameters){
 			"Error on `adc_continuous_read()`"
 		);
 
+		// !!! DEBUG
 		printf("samples: { ");
 		for(uint32_t i=0; i<16; i++){
 
@@ -338,9 +358,10 @@ void pm_task(void *parameters){
 				printf(", ");
 		}
 		printf(" }\n");
-		printf("read_samples_size: %lu\n", read_samples_size);
+		printf("read_size: %lu\n", read_size);
 		printf("samples_size: %u\n", pm_samples_len_to_buf_size(CONFIG_ADC_SAMPLES));
 		printf("\n");
+		// !!! DEBUG
 
 		pm_task_continue:
 
@@ -352,8 +373,7 @@ void pm_task(void *parameters){
 			adc_continuous_stop(adc_handle)
 		);
 
-		// !!! SISTEMARE RELATIVAMENTE AL TEMPO CHE MANCA PER ESSERE TRASCORSO UN SECONDO (METTERE ANCHE A COSTANTE)
-		delay(1000);
+		delay_remainings(1000, t0);
 	}
 }
 
@@ -550,6 +570,12 @@ esp_err_t pwm_write(const char *TAG, uint8_t index, uint8_t duty_target_perc, ui
 	);
 
 	return ESP_OK;
+}
+
+void delay_remainings(int32_t ms, int64_t initial_timestamp_ms){
+	ms -= millis() - initial_timestamp_ms;
+	if(ms > 0)
+		delay(ms);
 }
 
 /* USER CODE END 2 */
