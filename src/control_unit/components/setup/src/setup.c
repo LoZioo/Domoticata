@@ -299,6 +299,7 @@ esp_err_t ADC_setup(const char *TAG){
 		void *user_data
 	);
 
+	// Please read the descriprion of `adc_continuous.h`.
 	adc_continuous_handle_cfg_t adc_memory_config = {
 		.max_store_buf_size = __adc_compute_max_store_buf_size(CONFIG_ADC_SAMPLES),
 		.conv_frame_size = __adc_compute_conv_frame_size(CONFIG_ADC_SAMPLES),

@@ -177,6 +177,8 @@ void app_main(){
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 2 */
 
+// !!! SISTEMARE TUTTI I TASK CON for(;;) CON GOTO_ON_ERROR/FALSE
+
 void rs485_task(void *parameters){
 
 	const char *TAG = "rs485_task";
@@ -271,50 +273,78 @@ void pm_task(void *parameters){
 
 	/* Variables */
 
-	// Must be multiple of 4.
-	uint16_t samples[12];
-	uint16_t samples_size = sizeof(samples) / sizeof(uint16_t);
-	uint32_t read_samples_size;
-
+	// `ESP_GOTO_ON_ERROR()` return code.
 	esp_err_t ret;
 
-	/* Code */
+	// Must be multiple of 4.
+	uint16_t samples[12];
+	uint32_t samples_size = sizeof(samples) / sizeof(uint16_t);
+	uint32_t read_samples_size;
 
-	ESP_ERROR_CHECK(
-		adc_continuous_start(adc_handle)
-	);
+	/* Code */
 
 	ESP_LOGI(TAG, "Sampling from ADC");
 
 	/* Infinite loop */
 	for(;;){
 
+		// Reset the return code.
+		ret = ESP_OK;
+
+		// Flush old data.
+		ESP_GOTO_ON_ERROR(
+			adc_continuous_flush_pool(adc_handle),
+			pm_task_continue,
+			TAG,
+			"Error on `adc_continuous_flush_pool()`"
+		);
+
+		// Start the sample acquisition.
+		ESP_GOTO_ON_ERROR(
+			adc_continuous_start(adc_handle),
+			pm_task_continue,
+			TAG,
+			"Error on `adc_continuous_start()`"
+		);
+
 		// Wait for the ISR and then clear the notification (`pdTRUE`).
 		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-		ret = adc_continuous_read(adc_handle, (uint8_t*) samples, samples_size, &read_samples_size, 40);
-		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
+		// Read the acquired samples from the driver.
+		ESP_GOTO_ON_ERROR(
+			adc_continuous_read(adc_handle, (uint8_t*) samples, samples_size, &read_samples_size, 40),
+			pm_task_continue,
+			TAG,
+			"Error on `adc_continuous_read()`"
+		);
 
-		if(ret != ESP_OK){
-			delay(1000);
-			continue;
-		}
+		printf("samples: { ");
+		for(uint32_t i=0; i<read_samples_size; i++){
 
-		char str[100] = "{ ", tmp[30];
-		for(int i=0; i<samples_size; i++){
-			sprintf(tmp, "%u", samples[i]);
+			printf("(%u, %u)",
+				((adc_digi_output_data_t*) &samples[i])->type1.channel,
+				((adc_digi_output_data_t*) &samples[i])->type1.data
+			);
 
 			if(i < samples_size - 1)
-				strcat(tmp, ", ");
-
-			strcat(str, tmp);
+				printf(", ");
 		}
-		strcat(str, " }");
+		printf(" }\n");
+		printf("read_samples_size: %lu\n", read_samples_size);
+		printf("samples_size: %lu\n", samples_size);
+		printf("\n");
 
-		ESP_LOGI(TAG, "read_samples_size: %lu", read_samples_size);
-		ESP_LOGI(TAG, "samples_size: %u", samples_size);
-		ESP_LOGI(TAG, "samples: %s", str);
+		pm_task_continue:
 
+		// Check the return code.
+		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
+
+		// Before continuing, stop the sample acquisition.
+		ESP_ERROR_CHECK_WITHOUT_ABORT(
+			adc_continuous_stop(adc_handle)
+		);
+
+		// !!! SISTEMARE RELATIVAMENTE AL TEMPO CHE MANCA PER ESSERE TRASCORSO UN SECONDO (METTERE ANCHE A COSTANTE)
 		delay(1000);
 	}
 }

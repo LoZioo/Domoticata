@@ -52,6 +52,7 @@
 		"ledc.h": "c",
 		"uart.h": "c",
 		"esp_check.h": "c",
-		"esp_attr.h": "c"
+		"esp_attr.h": "c",
+		"string": "c"
 	}
 }
