@@ -271,7 +271,8 @@ void pm_task(void *parameters){
 
 	/* Variables */
 
-	uint16_t samples[10];
+	// Must be multiple of 4.
+	uint16_t samples[12];
 	uint16_t samples_size = sizeof(samples) / sizeof(uint16_t);
 	uint32_t read_samples_size;
 
@@ -299,24 +300,16 @@ void pm_task(void *parameters){
 			continue;
 		}
 
-		ret = adc_continuous_flush_pool(adc_handle);
-		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
-
-		if(ret != ESP_OK){
-			delay(1000);
-			continue;
-		}
-
 		char str[100] = "{ ", tmp[30];
 		for(int i=0; i<samples_size; i++){
 			sprintf(tmp, "%u", samples[i]);
 
 			if(i < samples_size - 1)
-				sprintf(tmp, ", ");
+				strcat(tmp, ", ");
 
 			strcat(str, tmp);
 		}
-		sprintf(str, " }");
+		strcat(str, " }");
 
 		ESP_LOGI(TAG, "read_samples_size: %lu", read_samples_size);
 		ESP_LOGI(TAG, "samples_size: %u", samples_size);
