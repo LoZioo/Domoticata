@@ -77,22 +77,19 @@ float ul_utils_normalize_angle(float rad){
 
 /* Time */
 
-bool ul_utils_delay_nonblock(uint16_t ms, millis_ret_t (*millis_routine)(), uint32_t *time_counter, bool (*background_routine)()){
+bool ul_utils_delay_nonblock(uint16_t ms, millis_ret_t (*millis_routine)(), bool (*background_routine)()){
+	uint32_t t0;
 
-	if(
-		millis_routine == NULL ||
-		time_counter == NULL ||
-		background_routine == NULL
-	)
+	if(ul_utils_either(millis_routine, background_routine, ==, NULL))
 		return false;
 
 	bool background_routine_return_value;
-	*time_counter = millis_routine();
+	t0 = millis_routine();
 
 	do background_routine_return_value = background_routine();
 	while(
 		background_routine_return_value &&
-		millis_routine() - (*time_counter) < ms
+		millis_routine() - t0 < ms
 	);
 
 	return background_routine_return_value;
