@@ -227,7 +227,7 @@ void rs485_task(void *parameters){
 		// Update button states.
 		ul_bs_set_button_states(button_states);
 
-		// !!! Print button states.
+		// !!! DEBUG
 		printf("\nDevice ID: 0x%02X\n", device_id);
 		for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_8; button++)
 			printf(
@@ -237,6 +237,7 @@ void rs485_task(void *parameters){
 					(ul_bs_button_id_t) button
 				)
 			);
+		// !!! DEBUG
 	}
 }
 
@@ -337,7 +338,7 @@ void pm_task(void *parameters){
 				(uint8_t*) samples,
 				pm_samples_len_to_buf_size(CONFIG_ADC_SAMPLES),
 				&read_size,
-				40
+				40	// Two 50Hz cycles.
 			),
 
 			pm_task_continue,
