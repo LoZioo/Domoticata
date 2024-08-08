@@ -61,60 +61,6 @@
 	CONFIG_GPIO_LED_12 \
 }
 
-#if defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_0)
-	#define ADC1_CH_V		ADC_CHANNEL_0
-#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_1)
-	#define ADC1_CH_V		ADC_CHANNEL_1
-#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_2)
-	#define ADC1_CH_V		ADC_CHANNEL_2
-#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_3)
-	#define ADC1_CH_V		ADC_CHANNEL_3
-#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_4)
-	#define ADC1_CH_V		ADC_CHANNEL_4
-#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_5)
-	#define ADC1_CH_V		ADC_CHANNEL_5
-#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_6)
-	#define ADC1_CH_V		ADC_CHANNEL_6
-#elif defined(CONFIG_ADC_CHANNEL_V_TO_ADC_CHANNEL_7)
-	#define ADC1_CH_V		ADC_CHANNEL_7
-#endif
-
-#if defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_0)
-	#define ADC1_CH_I		ADC_CHANNEL_0
-#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_1)
-	#define ADC1_CH_I		ADC_CHANNEL_1
-#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_2)
-	#define ADC1_CH_I		ADC_CHANNEL_2
-#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_3)
-	#define ADC1_CH_I		ADC_CHANNEL_3
-#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_4)
-	#define ADC1_CH_I		ADC_CHANNEL_4
-#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_5)
-	#define ADC1_CH_I		ADC_CHANNEL_5
-#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_6)
-	#define ADC1_CH_I		ADC_CHANNEL_6
-#elif defined(CONFIG_ADC_CHANNEL_I_TO_ADC_CHANNEL_7)
-	#define ADC1_CH_I		ADC_CHANNEL_7
-#endif
-
-#if defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_0)
-	#define ADC1_CH_TEMP	ADC_CHANNEL_0
-#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_1)
-	#define ADC1_CH_TEMP	ADC_CHANNEL_1
-#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_2)
-	#define ADC1_CH_TEMP	ADC_CHANNEL_2
-#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_3)
-	#define ADC1_CH_TEMP	ADC_CHANNEL_3
-#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_4)
-	#define ADC1_CH_TEMP	ADC_CHANNEL_4
-#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_5)
-	#define ADC1_CH_TEMP	ADC_CHANNEL_5
-#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_6)
-	#define ADC1_CH_TEMP	ADC_CHANNEL_6
-#elif defined(CONFIG_ADC_CHANNEL_TEMP_TO_ADC_CHANNEL_7)
-	#define ADC1_CH_TEMP	ADC_CHANNEL_7
-#endif
-
 /************************************************************************************************************
 * Private Types Definitions
  ************************************************************************************************************/
@@ -299,36 +245,13 @@ esp_err_t ADC_setup(const char *TAG){
 		void *user_data
 	);
 
-	// Please read the descriprion of `adc_continuous.h`.
+	/**
+	 * Driver pre-initialization configurations.
+	 * Please read the descriprion of `adc_continuous.h`.
+	 */
 	adc_continuous_handle_cfg_t adc_memory_config = {
 		.max_store_buf_size = __adc_compute_max_store_buf_size(CONFIG_ADC_SAMPLES),
 		.conv_frame_size = __adc_compute_conv_frame_size(CONFIG_ADC_SAMPLES),
-	};
-
-	adc_digi_pattern_config_t adc_channel_config[] = {
-		{ .channel = ADC1_CH_V },
-		{ .channel = ADC1_CH_I }
-	};
-
-	uint8_t adc_channel_config_size =
-		sizeof(adc_channel_config) / sizeof(adc_digi_pattern_config_t);
-
-	for(uint8_t i=0; i<adc_channel_config_size; i++){
-		adc_channel_config[i].atten = ADC_ATTEN_DB_0;
-		adc_channel_config[i].unit = ADC_UNIT_1;
-		adc_channel_config[i].bit_width = ADC_BITWIDTH_12;
-	}
-
-	adc_continuous_config_t adc_digital_config = {
-		.sample_freq_hz = CONFIG_ADC_SAMPLE_RATE,
-		.conv_mode = ADC_CONV_SINGLE_UNIT_1,
-		.format = ADC_DIGI_OUTPUT_FORMAT_TYPE1,
-		.pattern_num = 2,
-		.adc_pattern = adc_channel_config
-	};
-
-	adc_continuous_evt_cbs_t adc_callbacks = {
-		.on_conv_done = adc_conversion_done
 	};
 
 	ESP_RETURN_ON_ERROR(
@@ -337,11 +260,69 @@ esp_err_t ADC_setup(const char *TAG){
 		"Error on `adc_continuous_new_handle()`"
 	);
 
+	// ADC GPIO pads.
+	uint8_t adc_gpio[] = {
+		CONFIG_GPIO_AC_V,
+		CONFIG_GPIO_AC_I
+	};
+
+	// Corresponding ADC unit to `adc_gpio[i]` (must always be `ADC_UNIT_1`).
+	adc_unit_t adc_unit;
+
+	// Corresponding ADC channel to `adc_gpio[i]`.
+	adc_channel_t adc_channel;
+
+	// Configurations for every specified ADC channel.
+	adc_digi_pattern_config_t adc_channel_config[sizeof(adc_gpio)];
+
+	for(uint8_t i=0; i<sizeof(adc_gpio); i++){
+
+		ESP_RETURN_ON_ERROR(
+			adc_continuous_io_to_channel(
+				adc_gpio[i],
+				&adc_unit,
+				&adc_channel
+			),
+
+			TAG,
+			"Error on `adc_continuous_io_to_channel(%u)`",
+			i
+		);
+
+		ESP_RETURN_ON_FALSE(
+			adc_unit == ADC_UNIT_1,
+
+			ESP_ERR_NOT_SUPPORTED,
+			TAG,
+			"Error: `adc_unit` is not `ADC_UNIT_1` for item #%u",
+			i
+		);
+
+		// Channel configurations.
+		adc_channel_config[i].channel = adc_channel;
+		adc_channel_config[i].unit = ADC_UNIT_1;
+		adc_channel_config[i].atten = ADC_ATTEN_DB_0;
+		adc_channel_config[i].bit_width = ADC_BITWIDTH_12;
+	}
+
+	// Driver global configurations.
+	adc_continuous_config_t adc_digital_config = {
+		.sample_freq_hz = CONFIG_ADC_SAMPLE_RATE,
+		.conv_mode = ADC_CONV_SINGLE_UNIT_1,
+		.format = ADC_DIGI_OUTPUT_FORMAT_TYPE1,
+		.pattern_num = sizeof(adc_gpio),
+		.adc_pattern = adc_channel_config
+	};
+
 	ESP_RETURN_ON_ERROR(
 		adc_continuous_config(adc_handle, &adc_digital_config),
 		TAG,
 		"Error on `adc_continuous_config()`"
 	);
+
+	adc_continuous_evt_cbs_t adc_callbacks = {
+		.on_conv_done = adc_conversion_done
+	};
 
 	ESP_RETURN_ON_ERROR(
 		adc_continuous_register_event_callbacks(

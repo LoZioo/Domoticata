@@ -321,7 +321,7 @@ void pm_task(void *parameters){
 		printf("samples: { ");
 		for(uint32_t i=0; i<read_samples_size; i++){
 
-			printf("(%u, %u)",
+			printf("(%d, %d)",
 				((adc_digi_output_data_t*) &samples[i])->type1.channel,
 				((adc_digi_output_data_t*) &samples[i])->type1.data
 			);
