@@ -115,10 +115,7 @@ void UART_setup();
 
 /* Background tasks */
 
-// static uint32_t button_task_t0;
 bool button_task();
-
-static uint32_t uart_task_t0;
 bool uart_task();
 
 /* Generic functions */
@@ -253,7 +250,7 @@ bool button_task(){
 		}
 
 		// Debouncer.
-		ul_utils_delay_nonblock(CONFIG_TIME_BTN_DEBOUNCER_MS, millis, &uart_task_t0, uart_task);
+		ul_utils_delay_nonblock(CONFIG_TIME_BTN_DEBOUNCER_MS, millis, uart_task);
 	}
 
 	// Continue eventual non-blocking delay.
