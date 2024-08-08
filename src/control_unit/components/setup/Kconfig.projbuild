@@ -38,7 +38,7 @@ menu "Project configurations"
 			default 20000
 
 		config ADC_SAMPLES
-			int "Number samples per channel"
+			int "Number of samples per channel"
 			default 1000
 
 	endmenu
