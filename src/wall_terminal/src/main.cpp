@@ -184,6 +184,9 @@ void GPIO_setup(){
 	pinMode(CONFIG_GPIO_PWM_A, OUTPUT);
 	pinMode(CONFIG_GPIO_PWM_B, OUTPUT);
 	pinMode(CONFIG_GPIO_UART_DE_RE, OUTPUT);
+
+	analogWrite(CONFIG_GPIO_PWM_A, CONFIG_PWM_BTN_IDLE);
+	analogWrite(CONFIG_GPIO_PWM_B, CONFIG_PWM_BTN_IDLE);
 }
 
 void UART_setup(){
@@ -213,10 +216,8 @@ bool button_task(){
 		switch(ul_bs_get_button_state(button)){
 			case UL_BS_BUTTON_STATE_IDLE:
 				ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_PRESSED);
+				analogWrite(button-1, CONFIG_PWM_BTN_PRESSED);
 				press_count = 1;
-
-				// !!! DEBUG
-				analogWrite(button-1, 40);
 				break;
 
 			case UL_BS_BUTTON_STATE_PRESSED:
@@ -230,23 +231,17 @@ bool button_task(){
 
 		if(press_count == 2){
 			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_DOUBLE_PRESSED);
-
-			// !!! DEBUG
-			analogWrite(button-1, 255);
+			analogWrite(button-1, CONFIG_PWM_BTN_DOUBLE_PRESSED);
 		}
 
 		else if(ul_utils_between(press_count, 3, CONFIG_TIME_BTN_HELD_TICKS - 1)){
 			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_PRESSED);
-
-			// !!! DEBUG
-			analogWrite(button-1, 40);
+			analogWrite(button-1, CONFIG_PWM_BTN_PRESSED);
 		}
 
 		else if(press_count == CONFIG_TIME_BTN_HELD_TICKS){
 			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_HELD);
-
-			// !!! DEBUG
-			analogWrite(button-1, 255);
+			analogWrite(button-1, CONFIG_PWM_BTN_HOLD);
 		}
 
 		// Debouncer.
@@ -276,8 +271,15 @@ bool uart_task(){
 			ul_ms_decode_master_byte(b) == ul_ms_decode_master_byte(CONFIG_UART_DEVICE_ID) &&
 			ul_bs_get_button_states() != 0 &&
 			millis() - last_button_press_ms >= CONFIG_TIME_BTN_LOCK_MS
-		)
+		){
 			send_button_states();
+
+			// Button states are now reset.
+			ul_bs_reset_button_states();
+
+			analogWrite(CONFIG_GPIO_PWM_A, CONFIG_PWM_BTN_IDLE);
+			analogWrite(CONFIG_GPIO_PWM_B, CONFIG_PWM_BTN_IDLE);
+		}
 	}
 
 	// Continue eventual non-blocking delay.
@@ -332,7 +334,6 @@ ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin){
 }
 
 void send_button_states(){
-
 	uart_tx_mode();
 
 	// Reply with my ID to get the master's attention.
@@ -359,13 +360,6 @@ void send_button_states(){
 		);
 
 	uart_rx_mode();
-
-	// Button states are now reset.
-	ul_bs_reset_button_states();
-
-	// !!! DEBUG
-	analogWrite(CONFIG_GPIO_PWM_A, 0);
-	analogWrite(CONFIG_GPIO_PWM_B, 0);
 }
 
 /* USER CODE END 2 */
