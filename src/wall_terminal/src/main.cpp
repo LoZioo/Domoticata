@@ -307,11 +307,11 @@ void set_button_led(ul_bs_button_id_t button, uint8_t pwm){
 	uint8_t gpio;
 	switch(button){
 		case UL_BS_BUTTON_1:
-			gpio = CONFIG_GPIO_PWM_A;
+			gpio = CONFIG_GPIO_PWM_B;
 			break;
 
 		case UL_BS_BUTTON_2:
-			gpio = CONFIG_GPIO_PWM_B;
+			gpio = CONFIG_GPIO_PWM_A;
 			break;
 
 		default:
