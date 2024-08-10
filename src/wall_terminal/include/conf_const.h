@@ -40,7 +40,7 @@
 #define CONFIG_BTN_VALID_EDGE				(ADC_MAX - 100)		// Threshold under where one button press is detected.
 #define CONFIG_BTN_VALID_INTERVAL		20								// Circular +-interval around the button mean value.
 
-// LED PWM values.
+// LED PWM values (8-bit).
 #define CONFIG_PWM_BTN_IDLE							31
 #define CONFIG_PWM_BTN_PRESSED					0
 #define CONFIG_PWM_BTN_DOUBLE_PRESSED		255

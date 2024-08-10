@@ -124,15 +124,25 @@ void uart_rx_mode();
 void uart_tx_mode();
 
 /**
- * @brief Poll the ADC and convert the read value to a button ID.
- * @return A member of `ul_bs_button_id_t` from `button_states.h`: `UL_BS_BUTTON_1`, `UL_BS_BUTTON_2`, ...
+ * @brief Write the PWM value to the LED of the specified button.
  */
-ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin);
+void set_button_led(ul_bs_button_id_t button, uint8_t pwm);
+
+/**
+ * @brief Write the `CONFIG_PWM_BTN_IDLE` PWM value for all button LEDs.
+ */
+void reset_button_leds();
 
 /**
  * @brief Send the button states to the control unit.
  */
 void send_button_states();
+
+/**
+ * @brief Poll the ADC and convert the read value to a button ID.
+ * @return A member of `ul_bs_button_id_t` from `button_states.h`: `UL_BS_BUTTON_1`, `UL_BS_BUTTON_2`, ...
+ */
+ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin);
 
 /* USER CODE END PFP */
 
@@ -185,8 +195,7 @@ void GPIO_setup(){
 	pinMode(CONFIG_GPIO_PWM_B, OUTPUT);
 	pinMode(CONFIG_GPIO_UART_DE_RE, OUTPUT);
 
-	analogWrite(CONFIG_GPIO_PWM_A, CONFIG_PWM_BTN_IDLE);
-	analogWrite(CONFIG_GPIO_PWM_B, CONFIG_PWM_BTN_IDLE);
+	reset_button_leds();
 }
 
 void UART_setup(){
@@ -216,7 +225,7 @@ bool button_task(){
 		switch(ul_bs_get_button_state(button)){
 			case UL_BS_BUTTON_STATE_IDLE:
 				ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_PRESSED);
-				analogWrite(button-1, CONFIG_PWM_BTN_PRESSED);
+				set_button_led(button, CONFIG_PWM_BTN_PRESSED);
 				press_count = 1;
 				break;
 
@@ -231,17 +240,17 @@ bool button_task(){
 
 		if(press_count == 2){
 			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_DOUBLE_PRESSED);
-			analogWrite(button-1, CONFIG_PWM_BTN_DOUBLE_PRESSED);
+			set_button_led(button, CONFIG_PWM_BTN_DOUBLE_PRESSED);
 		}
 
 		else if(ul_utils_between(press_count, 3, CONFIG_TIME_BTN_HELD_TICKS - 1)){
 			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_PRESSED);
-			analogWrite(button-1, CONFIG_PWM_BTN_PRESSED);
+			set_button_led(button, CONFIG_PWM_BTN_PRESSED);
 		}
 
 		else if(press_count == CONFIG_TIME_BTN_HELD_TICKS){
 			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_HELD);
-			analogWrite(button-1, CONFIG_PWM_BTN_HOLD);
+			set_button_led(button, CONFIG_PWM_BTN_HOLD);
 		}
 
 		// Debouncer.
@@ -276,9 +285,7 @@ bool uart_task(){
 
 			// Button states are now reset.
 			ul_bs_reset_button_states();
-
-			analogWrite(CONFIG_GPIO_PWM_A, CONFIG_PWM_BTN_IDLE);
-			analogWrite(CONFIG_GPIO_PWM_B, CONFIG_PWM_BTN_IDLE);
+			reset_button_leds();
 		}
 	}
 
@@ -293,6 +300,60 @@ void uart_rx_mode(){
 void uart_tx_mode(){
 	digitalWrite(CONFIG_GPIO_UART_DE_RE, HIGH);
 	delayMicroseconds(CONFIG_UART_TX_MODE_DELAY_US);
+}
+
+void set_button_led(ul_bs_button_id_t button, uint8_t pwm){
+
+	uint8_t gpio;
+	switch(button){
+		case UL_BS_BUTTON_1:
+			gpio = CONFIG_GPIO_PWM_A;
+			break;
+
+		case UL_BS_BUTTON_2:
+			gpio = CONFIG_GPIO_PWM_B;
+			break;
+
+		default:
+			return;
+			break;
+	}
+
+	analogWrite(gpio, pwm);
+}
+
+void reset_button_leds(){
+	for(uint8_t button=UL_BS_BUTTON_1; button<UL_BS_BUTTON_2; button++)
+		set_button_led((ul_bs_button_id_t) button, CONFIG_PWM_BTN_IDLE);
+}
+
+void send_button_states(){
+	uart_tx_mode();
+
+	// Reply with my ID to get the master's attention.
+	uart_write_byte(ul_ms_encode_slave_byte(CONFIG_UART_DEVICE_ID));
+
+	// button_states + CRC.
+	uint8_t data[3];
+
+	ul_utils_cast_to_type(data, uint16_t) = ul_bs_get_button_states();
+	data[sizeof(data) - 1] = ul_crc_crc8(data, 2);
+
+	/**
+	 * Encoding in 4 bytes instead of 3 (the MSb of every byte must be 0 because a slave is talking).
+	 * Equivalent of a low memory version of `ul_ms_encode_slave_message()` from `ul_master_slave.h`.
+	 */
+	for(uint8_t i=0; i<4; i++)
+		uart_write_byte(
+			ul_ms_encode_slave_byte(
+				ul_utils_get_bit_group(
+					ul_utils_cast_to_type(data, uint32_t),
+					7, i
+				)
+			)
+		);
+
+	uart_rx_mode();
 }
 
 ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin){
@@ -331,35 +392,6 @@ ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin){
 	}
 
 	return button;
-}
-
-void send_button_states(){
-	uart_tx_mode();
-
-	// Reply with my ID to get the master's attention.
-	uart_write_byte(ul_ms_encode_slave_byte(CONFIG_UART_DEVICE_ID));
-
-	// button_states + CRC.
-	uint8_t data[3];
-
-	ul_utils_cast_to_type(data, uint16_t) = ul_bs_get_button_states();
-	data[sizeof(data) - 1] = ul_crc_crc8(data, 2);
-
-	/**
-	 * Encoding in 4 bytes instead of 3 (the MSb of every byte must be 0 because a slave is talking).
-	 * Equivalent of a low memory version of `ul_ms_encode_slave_message()` from `ul_master_slave.h`.
-	 */
-	for(uint8_t i=0; i<4; i++)
-		uart_write_byte(
-			ul_ms_encode_slave_byte(
-				ul_utils_get_bit_group(
-					ul_utils_cast_to_type(data, uint32_t),
-					7, i
-				)
-			)
-		);
-
-	uart_rx_mode();
 }
 
 /* USER CODE END 2 */
