@@ -107,7 +107,7 @@ void loop(){
 
 	mean = count = 0;
 	ul_utils_delay_nonblock(500, millis, mean_task);
-	Serial.println((float) mean);
+	Serial.println(mean);
 
 	/* USER CODE END Loop */
 }
