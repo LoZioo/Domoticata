@@ -74,9 +74,9 @@ extern "C" {
 /**
  * @brief `analog_button_read()` helper.
  */
-#define analog_button_if(dest_var, adc_val, btn_interval, btn_avg, button_id) \
-	if(ul_utils_between(adc_val, btn_avg - btn_interval, btn_avg + btn_interval)) \
-		dest_var = button_id
+#define analog_button_if(adc_val, btn_avg, button_id) \
+	if(ul_utils_between(adc_val, btn_avg - CONFIG_BTN_VALID_INTERVAL, btn_avg + CONFIG_BTN_VALID_INTERVAL)) \
+		return button_id
 
 #ifdef INTERRUPT_SERIAL_RX
 	#define uart_available()	purx_dataready()
@@ -94,7 +94,7 @@ extern "C" {
 /* USER CODE BEGIN PV */
 
 // Last button press instant.
-static uint32_t last_button_press_ms = 0;
+uint32_t last_button_press_ms = 0;
 
 /* USER CODE END PV */
 
@@ -142,7 +142,7 @@ void send_button_states();
  * @brief Poll the ADC and convert the read value to a button ID.
  * @return A member of `ul_bs_button_id_t` from `button_states.h`: `UL_BS_BUTTON_1`, `UL_BS_BUTTON_2`, ...
  */
-ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin);
+ul_bs_button_id_t analog_button_read();
 
 /* USER CODE END PFP */
 
@@ -213,7 +213,7 @@ void UART_setup(){
 bool button_task(){
 
 	static uint8_t press_count;
-	ul_bs_button_id_t button = analog_button_read(CONFIG_GPIO_ADC);
+	ul_bs_button_id_t button = analog_button_read();
 
 	// If a button was pressed.
 	if(button != UL_BS_BUTTON_NONE){
@@ -356,42 +356,37 @@ void send_button_states(){
 	uart_rx_mode();
 }
 
-ul_bs_button_id_t analog_button_read(analog_pin_t adc_pin){
+ul_bs_button_id_t analog_button_read(){
 
-	uint16_t adc_val;
-	ul_bs_button_id_t button;
-
-	adc_val = analogRead(adc_pin);
-	button = UL_BS_BUTTON_NONE;
-
+	uint16_t adc_val = analogRead(CONFIG_GPIO_ADC);
 	if(adc_val < CONFIG_BTN_VALID_EDGE){
 		#ifdef CONFIG_BTN_1_AVG
-			analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_1_AVG, UL_BS_BUTTON_1);
+			analog_button_if(adc_val, CONFIG_BTN_1_AVG, UL_BS_BUTTON_1);
 		#endif
 		#ifdef CONFIG_BTN_2_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_2_AVG, UL_BS_BUTTON_2);
+			else analog_button_if(adc_val, CONFIG_BTN_2_AVG, UL_BS_BUTTON_2);
 		#endif
 		#ifdef CONFIG_BTN_3_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_3_AVG, UL_BS_BUTTON_3);
+			else analog_button_if(adc_val, CONFIG_BTN_3_AVG, UL_BS_BUTTON_3);
 		#endif
 		#ifdef CONFIG_BTN_4_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_4_AVG, UL_BS_BUTTON_4);
+			else analog_button_if(adc_val, CONFIG_BTN_4_AVG, UL_BS_BUTTON_4);
 		#endif
 		#ifdef CONFIG_BTN_5_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_5_AVG, UL_BS_BUTTON_5);
+			else analog_button_if(adc_val, CONFIG_BTN_5_AVG, UL_BS_BUTTON_5);
 		#endif
 		#ifdef CONFIG_BTN_6_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_6_AVG, UL_BS_BUTTON_6);
+			else analog_button_if(adc_val, CONFIG_BTN_6_AVG, UL_BS_BUTTON_6);
 		#endif
 		#ifdef CONFIG_BTN_7_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_7_AVG, UL_BS_BUTTON_7);
+			else analog_button_if(adc_val, CONFIG_BTN_7_AVG, UL_BS_BUTTON_7);
 		#endif
 		#ifdef CONFIG_BTN_8_AVG
-			else analog_button_if(button, adc_val, CONFIG_BTN_VALID_INTERVAL, CONFIG_BTN_8_AVG, UL_BS_BUTTON_8);
+			else analog_button_if(adc_val, CONFIG_BTN_8_AVG, UL_BS_BUTTON_8);
 		#endif
 	}
 
-	return button;
+	return UL_BS_BUTTON_NONE;
 }
 
 /* USER CODE END 2 */
