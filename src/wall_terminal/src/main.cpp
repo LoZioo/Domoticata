@@ -323,7 +323,7 @@ void set_button_led(ul_bs_button_id_t button, uint8_t pwm){
 }
 
 void reset_button_leds(){
-	for(uint8_t button=UL_BS_BUTTON_1; button<UL_BS_BUTTON_2; button++)
+	for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_2; button++)
 		set_button_led((ul_bs_button_id_t) button, CONFIG_PWM_BTN_IDLE);
 }
 
