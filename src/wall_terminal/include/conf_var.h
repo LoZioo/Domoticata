@@ -22,6 +22,6 @@
  * You can define up to 8 average values (up to 8 analog buttons).
  */
 #define CONFIG_BTN_1_AVG	56
-#define CONFIG_BTN_2_AVG	127
+#define CONFIG_BTN_2_AVG	448
 
 #endif  /* INC_CONF_VAR_H_ */
