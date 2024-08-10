@@ -109,7 +109,7 @@ uint32_t last_button_press_ms = 0;
 void GPIO_setup();
 
 /**
- * @brief GPIO initialization.
+ * @brief UART initialization.
  */
 void UART_setup();
 
