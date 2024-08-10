@@ -64,6 +64,11 @@ extern "C" {
 /**
  * @brief GPIO initialization.
  */
+void GPIO_setup();
+
+/**
+ * @brief UART initialization.
+ */
 void UART_setup();
 
 uint32_t mean, count;
@@ -84,6 +89,7 @@ void setup(){
 	/* MCU Configuration--------------------------------------------------------*/
 	/* USER CODE BEGIN SysInit */
 
+	GPIO_setup();
 	UART_setup();
 
 	/* USER CODE END SysInit */
@@ -114,6 +120,15 @@ void loop(){
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 2 */
+
+void GPIO_setup(){
+	pinMode(CONFIG_GPIO_PWM_A, OUTPUT);
+	pinMode(CONFIG_GPIO_PWM_B, OUTPUT);
+	pinMode(CONFIG_GPIO_UART_DE_RE, OUTPUT);
+
+	analogWrite(CONFIG_GPIO_PWM_A, CONFIG_PWM_BTN_IDLE);
+	analogWrite(CONFIG_GPIO_PWM_B, CONFIG_PWM_BTN_IDLE);
+}
 
 void UART_setup(){
 
