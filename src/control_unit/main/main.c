@@ -19,7 +19,6 @@
 
 // !!! SISTEMARE IL REBOOT IN CASO DI CRASH NEL MENUCONFIG SOTTO IL MENU Trace memory
 // !!! SISTEMARE PRIORITA' TASKS E STACK ALLOCATO
-// !!! RIMETTERE IL PINOUT APPOSTO DAL MENUCONFIG
 
 /* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -51,6 +50,7 @@
 #include <ul_button_states.h>
 #include <ul_master_slave.h>
 #include <ul_crc.h>
+#include <ul_pm.h>
 
 // Project libraries.
 #include <setup.h>
@@ -178,12 +178,18 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
-	return;
+	pwm_write(TAG, 0, 50, 1000);
+	pwm_write(TAG, 1, 5, 1000);
+	// return;
 
 	/* Infinite loop */
-	// for(;;){
-	// 	delay(1);
-	// }
+	for(;;){
+		// pwm_write(TAG, 1, 100, 3000);
+		// delay(3000);
+
+		// pwm_write(TAG, 1, 0, 3000);
+		delay(3000);
+	}
 	/* USER CODE END 1 */
 }
 
