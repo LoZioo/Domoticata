@@ -27,6 +27,10 @@
 #include <EEPROM.h>
 
 // UniLibC libraries.
+extern "C" {
+	#include <ul_errors.h>
+	#include <ul_utils.h>
+}
 
 // Project libraries.
 #include <conf_const.h>
@@ -61,6 +65,9 @@
  * @brief GPIO initialization.
  */
 void UART_setup();
+
+uint32_t mean, count;
+bool mean_task();
 
 /* USER CODE END PFP */
 
@@ -98,8 +105,9 @@ void loop(){
 	/* Infinite loop */
 	/* USER CODE BEGIN Loop */
 
-	Serial.println(analogRead(CONFIG_GPIO_ADC));
-	delay(10);
+	mean = count = 0;
+	ul_utils_delay_nonblock(500, millis, mean_task);
+	Serial.println((float) mean);
 
 	/* USER CODE END Loop */
 }
@@ -114,6 +122,11 @@ void UART_setup(){
 
 	if(cal < 0x80)
 		OSCCAL = cal;
+}
+
+bool mean_task(){
+	mean += (analogRead(CONFIG_GPIO_ADC) - mean) / (count + 1);
+	return true;
 }
 
 /* USER CODE END 2 */
