@@ -76,6 +76,18 @@ extern "C" {
 #define uart_write_byte(b) \
 	putx(b)
 
+/**
+ * @brief Read current button states.
+ * @return A member of `ul_bs_button_id_t` from `button_states.h`: `UL_BS_BUTTON_1`, `UL_BS_BUTTON_2`, ...
+ */
+#define button_read()( \
+	(ul_bs_button_id_t)( \
+		(UL_BS_BUTTON_NONE) | \
+		(digitalRead(CONFIG_GPIO_BTN_1)) | \
+		(digitalRead(CONFIG_GPIO_BTN_2) << 1) \
+	) \
+)
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -122,12 +134,6 @@ void uart_tx_mode();
  * @note This function will reset all states after sending them.
  */
 void send_states();
-
-/**
- * @brief Read current button states.
- * @return A member of `ul_bs_button_id_t` from `button_states.h`: `UL_BS_BUTTON_1`, `UL_BS_BUTTON_2`, ...
- */
-ul_bs_button_id_t button_read();
 
 /* USER CODE END PFP */
 
@@ -272,8 +278,8 @@ bool uart_task(){
 			send_states();
 
 			// States are now reset.
-			ul_bs_reset_button_states();
 			adc.is_changed = false;
+			ul_bs_reset_button_states();
 		}
 	}
 
@@ -296,11 +302,14 @@ void send_states(){
 	// Reply with my ID to get the master's attention.
 	uart_write_byte(ul_ms_encode_slave_byte(CONFIG_UART_DEVICE_ID));
 
-	// Button states of the first 4 buttons + trimmer percentage + CRC8.
-	uint8_t data[] = {
-		(uint8_t) ul_bs_get_button_states(),
-		(uint8_t) ul_utils_map_int(adc.value, 0, 1023, 0, 100),
-		ul_crc_crc8(data, 2)
+	struct __attribute__((__packed__)){
+		uint16_t button_states: 6;
+		uint16_t adc_val: 10;
+		uint8_t crc8;
+	} data = {
+		.button_states = ul_bs_get_button_states(),
+		.adc_val = (uint16_t) adc.value,
+		.crc8 = ul_crc_crc8(ul_utils_cast_to_mem(data), 2)
 	};
 
 	/**
@@ -311,32 +320,13 @@ void send_states(){
 		uart_write_byte(
 			ul_ms_encode_slave_byte(
 				ul_utils_get_bit_group(
-					ul_utils_cast_to_type(data, uint32_t),
+					ul_utils_cast_to_type(&data, uint32_t),
 					7, i
 				)
 			)
 		);
 
 	uart_rx_mode();
-}
-
-ul_bs_button_id_t button_read(){
-
-	uint8_t buttons[] = {
-		digitalRead(CONFIG_GPIO_BTN_1),
-		digitalRead(CONFIG_GPIO_BTN_2)
-	};
-
-	if(ul_utils_cast_to_type(buttons, uint16_t) == LOW)
-		return UL_BS_BUTTON_3;
-
-	else if(buttons[0] == LOW)
-		return UL_BS_BUTTON_1;
-
-	else if(buttons[1] == LOW)
-		return UL_BS_BUTTON_2;
-
-	return UL_BS_BUTTON_NONE;
 }
 
 /* USER CODE END 2 */
