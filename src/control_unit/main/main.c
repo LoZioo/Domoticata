@@ -416,7 +416,7 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
 
 	// Default returned values.
 	*device_id = 0xFF;
-	*button_states = 0x0000;
+	*trimmer_val = *button_states = 0x0000;
 
 	// Slave ID increment.
 	static uint8_t poll_device_id = CONFIG_RS485_WALL_TERMINAL_COUNT - 1;
