@@ -76,31 +76,16 @@ extern "C" {
 #define uart_write_byte(b) \
 	putx(b)
 
-/**
- * @brief Read current button states.
- * @return A member of `ul_bs_button_id_t` from `button_states.h`: `UL_BS_BUTTON_1`, `UL_BS_BUTTON_2`, ...
- */
-#define button_read()( \
-	(ul_bs_button_id_t)( \
-		UL_BS_BUTTON_NONE | \
-		!(PINB & _BV(CONFIG_GPIO_BTN_1)) | \
-		!(PINB & _BV(CONFIG_GPIO_BTN_2)) << 1 \
-	) \
-)
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
-// Last performed action instant.
-uint32_t last_action_ms = 0;
+// Last button press instant.
+uint32_t last_button_press_ms = 0;
 
-// ADC read value + is changed flag.
-struct __attribute__((__packed__)){
-	int16_t value: 15;
-	bool is_changed: 1;
-} adc;
+// ADC is changed flag.
+bool adc_is_changed = false;
 
 /* USER CODE END PV */
 
@@ -125,6 +110,12 @@ bool sample_task();
 bool send_task();
 
 /* Generic functions */
+
+/**
+ * @brief Read current button states.
+ * @return A member of `ul_bs_button_id_t` from `button_states.h`: `UL_BS_BUTTON_1`, `UL_BS_BUTTON_2`, ...
+ */
+ul_bs_button_id_t button_read();
 
 void uart_rx_mode();
 void uart_tx_mode();
@@ -198,22 +189,21 @@ void UART_setup(){
 bool sample_task(){
 
 	static uint8_t press_count;
+	static int16_t adc_last_value = 0;
 
 	// Sample everything.
 	ul_bs_button_id_t button = button_read();
-	int16_t adc_tmp = analogRead(CONFIG_GPIO_ADC);
+	int16_t adc_value = analogRead(CONFIG_GPIO_ADC);
 
 	// If the trimmer was moved.
-	if(ul_utils_in_range(adc_tmp, adc.value, CONFIG_ADC_TRIMMER_DETECT)){
-		last_action_ms = millis();
-
-		adc.value = adc_tmp;
-		adc.is_changed = true;
+	if(!ul_utils_in_range(adc_value, adc_last_value, CONFIG_ADC_TRIMMER_DETECT)){
+		adc_last_value = adc_value;
+		adc_is_changed = true;
 	}
 
 	// If a button was pressed.
 	if(button != UL_BS_BUTTON_NONE){
-		last_action_ms = millis();
+		last_button_press_ms = millis();
 
 		// Update the current button state based on it's previous state.
 		switch(ul_bs_get_button_state(button)){
@@ -257,30 +247,42 @@ bool send_task(){
 		 * If:
 		 * 	-	I read a master byte.
 		 * 	-	It's my turn on the bus.
-		 * 	-	The trimmer was rotated or some button was pressed.
-		 * 	-	The lock time elapsed after the last performed action.
+		 * 	-	The trimmer was rotated or:
+		 * 	-	Some button was pressed and...
+		 * 	-	...the lock time elapsed after the last button press.
 		 *
-		 * Then send the button states.
+		 * Then send the states and immediately reset them.
 		 */
 		if(
 			ul_ms_is_master_byte(b) &&
 			ul_ms_decode_master_byte(b) == ul_ms_decode_master_byte(CONFIG_UART_DEVICE_ID) &&
 			(
-				adc.is_changed ||
-				ul_bs_get_button_states() != 0
-			) &&
-			millis() - last_action_ms >= CONFIG_TIME_LAST_ACTION_LOCK_MS
+				adc_is_changed ||
+				(
+					ul_bs_get_button_states() != 0 &&
+					millis() - last_button_press_ms >= CONFIG_TIME_BTN_LOCK_MS
+				)
+			)
 		){
 			send_states();
 
 			// States are now reset.
-			adc.is_changed = false;
+			adc_is_changed = false;
 			ul_bs_reset_button_states();
 		}
 	}
 
 	// Continue eventual non-blocking delay.
 	return true;
+}
+
+ul_bs_button_id_t button_read(){
+	uint8_t pinb = PINB;
+	return (ul_bs_button_id_t)(
+		UL_BS_BUTTON_NONE |
+		!(pinb & _BV(CONFIG_GPIO_BTN_1)) |
+		!(pinb & _BV(CONFIG_GPIO_BTN_2)) << 1
+	);
 }
 
 void uart_rx_mode(){
@@ -303,7 +305,7 @@ void send_states(){
 		uint16_t button_states: 6;
 		uint8_t crc8;
 	} data = {
-		.trimmer_val = (uint16_t) adc.value,
+		.trimmer_val = (uint16_t) analogRead(CONFIG_GPIO_ADC),
 		.button_states = ul_bs_get_button_states(),
 		.crc8 = ul_crc_crc8(ul_utils_cast_to_mem(data), 2)
 	};

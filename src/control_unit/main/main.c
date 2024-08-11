@@ -111,11 +111,12 @@ void pm_task(void *parameters);
 /**
  * @brief Poll the RS-485 bus to check if some button was pressed on some wall terminal.
  * @param TAG The `esp_log.h` tag.
- * @param device_id The device ID of the wall terminal (from `0x00` to `0x7F`); if `0xFF`, no one has pressed any button.
- * @param button_states The raw button states; load them into the `ul_button_states.h` library by using `ul_bs_set_button_states()`.
+ * @param device_id Device ID of the wall terminal (from `0x00` to `0x7F`); if `0xFF`, no one has pressed any button.
+ * @param trimmer_val Current 10-bit trimmer value.
+ * @param button_states Raw button states; load them into the `ul_button_states.h` library by using `ul_bs_set_button_states()`.
  * @note Must be called periodically to ensure a clean wall terminals polling loop.
  */
-esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *button_states);
+esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *trimmer_val, uint16_t *button_states);
 
 /**
  * @brief Send `pwm_data` to `pwm_task` via `pwm_queue`.
@@ -178,18 +179,12 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
-	pwm_write(TAG, 0, 50, 1000);
-	pwm_write(TAG, 1, 5, 1000);
-	// return;
+	return;
 
 	/* Infinite loop */
-	for(;;){
-		// pwm_write(TAG, 1, 100, 3000);
-		// delay(3000);
-
-		// pwm_write(TAG, 1, 0, 3000);
-		delay(3000);
-	}
+	// for(;;){
+	// 	delay(1);
+	// }
 	/* USER CODE END 1 */
 }
 
@@ -206,7 +201,7 @@ void rs485_task(void *parameters){
 	/* Variables */
 
 	uint8_t device_id;
-	uint16_t button_states;
+	uint16_t trimmer_val, button_states;
 	esp_err_t ret;
 
 	/* Code */
@@ -219,7 +214,7 @@ void rs485_task(void *parameters){
 
 		delay(1);
 
-		ret = wall_terminals_poll(TAG, &device_id, &button_states);
+		ret = wall_terminals_poll(TAG, &device_id, &trimmer_val, &button_states);
 		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
 
 		if(ret != ESP_OK){
@@ -227,6 +222,7 @@ void rs485_task(void *parameters){
 			continue;
 		}
 
+		// No button pressed.
 		if(device_id == 0xFF)
 			continue;
 
@@ -234,8 +230,8 @@ void rs485_task(void *parameters){
 		ul_bs_set_button_states(button_states);
 
 		// !!! DEBUG
-		printf("\nDevice ID: 0x%02X\n", device_id);
-		for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_8; button++)
+		printf("\nDevice ID: 0x%02X, Trimmer: %u\n", device_id, trimmer_val);
+		for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_3; button++)
 			printf(
 				"Button %u: %u\n",
 				button,
@@ -286,6 +282,7 @@ void pwm_task(void *parameters){
 	}
 }
 
+// !!! CONTINUARE AGGIUNGENDO ELABORAZIONE DATI
 void pm_task(void *parameters){
 
 	const char *TAG = "pm_task";
@@ -353,21 +350,21 @@ void pm_task(void *parameters){
 		);
 
 		// !!! DEBUG
-		printf("samples: { ");
-		for(uint32_t i=0; i<16; i++){
+		// printf("samples: { ");
+		// for(uint32_t i=0; i<16; i++){
 
-			printf("(%d, %d)",
-				((adc_digi_output_data_t*) &samples[i])->type1.channel,
-				((adc_digi_output_data_t*) &samples[i])->type1.data
-			);
+		// 	printf("(%d, %d)",
+		// 		((adc_digi_output_data_t*) &samples[i])->type1.channel,
+		// 		((adc_digi_output_data_t*) &samples[i])->type1.data
+		// 	);
 
-			if(i < 15)
-				printf(", ");
-		}
-		printf(" }\n");
-		printf("read_size: %lu\n", read_size);
-		printf("samples_size: %u\n", pm_samples_len_to_buf_size(CONFIG_ADC_SAMPLES));
-		printf("\n");
+		// 	if(i < 15)
+		// 		printf(", ");
+		// }
+		// printf(" }\n");
+		// printf("read_size: %lu\n", read_size);
+		// printf("samples_size: %u\n", pm_samples_len_to_buf_size(CONFIG_ADC_SAMPLES));
+		// printf("\n");
 		// !!! DEBUG
 
 		pm_task_continue:
@@ -384,7 +381,7 @@ void pm_task(void *parameters){
 	}
 }
 
-esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *button_states){
+esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *trimmer_val, uint16_t *button_states){
 
 	if(TAG == NULL)
 		return ESP_ERR_INVALID_ARG;
@@ -399,6 +396,14 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 		ESP_ERR_INVALID_ARG,
 		TAG,
 		"Error: `device_id` is NULL"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		trimmer_val != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `adc_val` is NULL"
 	);
 
 	ESP_RETURN_ON_FALSE(
@@ -471,8 +476,15 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 		poll_device_id, read_device_id
 	);
 
-	// Encoded and decoded received data buffers.
-	uint8_t encoded_data[4], decoded_data[3];
+	// Encoded data buffer.
+	uint8_t encoded_data[4];
+
+	// Decoded data buffer.
+	struct __attribute__((__packed__)){
+		uint16_t trimmer_val: 10;
+		uint16_t button_states: 6;
+		uint8_t crc8;
+	} decoded_data;
 
 	// Wait for the remaining bytes.
 	read_bytes = uart_read_bytes(
@@ -514,7 +526,7 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 
 	// Decode the received bytes.
 	ul_err_t ret_val = ul_ms_decode_slave_message(
-		decoded_data,
+		ul_utils_cast_to_mem(decoded_data),
 		encoded_data,
 		4
 	);
@@ -530,21 +542,23 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *but
 	);
 
 	// CRC8 computation.
-	uint8_t crc8 = ul_crc_crc8(decoded_data, 2);
+	uint8_t crc8 =
+		ul_crc_crc8(ul_utils_cast_to_mem(decoded_data), 2);
 
 	// CRC8 check.
 	ESP_RETURN_ON_FALSE(
-		crc8 == decoded_data[2],
+		crc8 == decoded_data.crc8,
 
 		ESP_ERR_INVALID_CRC,
 		TAG,
 		"Error: invalid data CRC for slave device 0x%02X; sent CRC is 0x%02X but computed CRC is 0x%02X",
-		poll_device_id, decoded_data[2], crc8
+		poll_device_id, decoded_data.crc8, crc8
 	);
 
 	// Returned values.
 	*device_id = poll_device_id;
-	*button_states = ul_utils_cast_to_type(decoded_data, uint16_t);
+	*trimmer_val = decoded_data.trimmer_val;
+	*button_states = decoded_data.button_states;
 
 	return ESP_OK;
 }

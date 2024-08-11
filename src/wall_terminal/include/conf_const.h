@@ -25,14 +25,14 @@
 #define CONFIG_GPIO_UART_DE_RE	3
 
 // ADC
-#define CONFIG_ADC_TRIMMER_DETECT			5			// +- steps to see whether the potentiometer was turned or not.
+#define CONFIG_ADC_TRIMMER_DETECT			5			// +- steps to check whether the potentiometer was turned or not.
 
 // UART
 #define CONFIG_UART_TX_MODE_DELAY_US	50		// Microseconds to stabilize the RS-485 bus after pulling high the DE/~RE pin.
 
 // Timings
-#define CONFIG_TIME_BTN_DEBOUNCER_MS			200		// Button delay time after pressed.
-#define CONFIG_TIME_BTN_HELD_TICKS				5			// At this number of ticks, the button will be considered held; the minimum hold time is `CONFIG_HOLD_BTN_TICKS` * `CONFIG_TIME_BTN_DEBOUNCER_MS`.
-#define CONFIG_TIME_LAST_ACTION_LOCK_MS		400		// Minimum time that must pass from the last performed action to send the current states.
+#define CONFIG_TIME_BTN_DEBOUNCER_MS	200		// Button delay time after pressed.
+#define CONFIG_TIME_BTN_HELD_TICKS		5			// At this number of ticks, the button will be considered held; the minimum hold time is `CONFIG_HOLD_BTN_TICKS` * `CONFIG_TIME_BTN_DEBOUNCER_MS`.
+#define CONFIG_TIME_BTN_LOCK_MS				400		// Minimum time that must pass from the last button press to send the current states.
 
 #endif  /* INC_CONF_CONST_H_ */
