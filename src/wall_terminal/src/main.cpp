@@ -83,8 +83,8 @@ extern "C" {
 #define button_read()( \
 	(ul_bs_button_id_t)( \
 		(UL_BS_BUTTON_NONE) | \
-		(digitalRead(CONFIG_GPIO_BTN_1)) | \
-		(digitalRead(CONFIG_GPIO_BTN_2) << 1) \
+		(!digitalRead(CONFIG_GPIO_BTN_1)) | \
+		(!digitalRead(CONFIG_GPIO_BTN_2) << 1) \
 	) \
 )
 
@@ -156,10 +156,6 @@ void setup(){
 	/* USER CODE END SysInit */
 
 	/* USER CODE BEGIN Init */
-
-	// Stabilize the ADC.
-	while(millis() < 500)
-		analogRead(CONFIG_GPIO_ADC);
 
 	/* USER CODE END Init */
 }
