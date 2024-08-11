@@ -303,11 +303,11 @@ void send_states(){
 	uart_write_byte(ul_ms_encode_slave_byte(CONFIG_UART_DEVICE_ID));
 
 	struct __attribute__((__packed__)){
-		uint16_t adc_val: 10;
+		uint16_t trimmer_val: 10;
 		uint16_t button_states: 6;
 		uint8_t crc8;
 	} data = {
-		.adc_val = (uint16_t) adc.value,
+		.trimmer_val = (uint16_t) adc.value,
 		.button_states = ul_bs_get_button_states(),
 		.crc8 = ul_crc_crc8(ul_utils_cast_to_mem(data), 2)
 	};
