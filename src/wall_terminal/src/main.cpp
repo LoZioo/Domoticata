@@ -121,8 +121,8 @@ void UART_setup();
 
 /* Background tasks */
 
-bool button_task();
-bool uart_task();
+bool sample_task();
+bool send_task();
 
 /* Generic functions */
 
@@ -172,8 +172,8 @@ void loop(){
 	/* Infinite loop */
 	/* USER CODE BEGIN Loop */
 
-	button_task();
-	uart_task();
+	sample_task();
+	send_task();
 
 	/* USER CODE END Loop */
 }
@@ -199,7 +199,7 @@ void UART_setup(){
 	uart_rx_mode();
 }
 
-bool button_task(){
+bool sample_task(){
 
 	static uint8_t press_count;
 
@@ -245,14 +245,14 @@ bool button_task(){
 			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_HELD);
 
 		// Debouncer.
-		ul_utils_delay_nonblock(CONFIG_TIME_BTN_DEBOUNCER_MS, millis, uart_task);
+		ul_utils_delay_nonblock(CONFIG_TIME_BTN_DEBOUNCER_MS, millis, send_task);
 	}
 
 	// Continue eventual non-blocking delay.
 	return true;
 }
 
-bool uart_task(){
+bool send_task(){
 
 	if(uart_available()){
 		uint8_t b = uart_read_byte();
@@ -303,12 +303,12 @@ void send_states(){
 	uart_write_byte(ul_ms_encode_slave_byte(CONFIG_UART_DEVICE_ID));
 
 	struct __attribute__((__packed__)){
-		uint16_t button_states: 6;
 		uint16_t adc_val: 10;
+		uint16_t button_states: 6;
 		uint8_t crc8;
 	} data = {
-		.button_states = ul_bs_get_button_states(),
 		.adc_val = (uint16_t) adc.value,
+		.button_states = ul_bs_get_button_states(),
 		.crc8 = ul_crc_crc8(ul_utils_cast_to_mem(data), 2)
 	};
 
