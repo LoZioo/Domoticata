@@ -134,6 +134,14 @@
 	!ul_utils_either(x, y, op, z) \
 )
 
+/**
+ * @brief Check if `x` is in the interval [`center - r`, `center + r`].
+ * @return The contition statement.
+*/
+#define ul_utils_in_range(x, center, r)( \
+	ul_utils_between(x, center - r, center + r) \
+)
+
 /* Type cast */
 
 /**
