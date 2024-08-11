@@ -82,9 +82,9 @@ extern "C" {
  */
 #define button_read()( \
 	(ul_bs_button_id_t)( \
-		(UL_BS_BUTTON_NONE) | \
-		(!digitalRead(CONFIG_GPIO_BTN_1)) | \
-		(!digitalRead(CONFIG_GPIO_BTN_2) << 1) \
+		UL_BS_BUTTON_NONE | \
+		!(PINB & _BV(CONFIG_GPIO_BTN_1)) | \
+		!(PINB & _BV(CONFIG_GPIO_BTN_2)) << 1 \
 	) \
 )
 
