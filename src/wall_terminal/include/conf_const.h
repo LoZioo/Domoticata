@@ -35,4 +35,36 @@
 #define CONFIG_TIME_BTN_HELD_TICKS		5			// At this number of ticks, the button will be considered held; the minimum hold time is `CONFIG_HOLD_BTN_TICKS` * `CONFIG_TIME_BTN_DEBOUNCER_MS`.
 #define CONFIG_TIME_BTN_LOCK_MS				400		// Minimum time that must pass from the last button press to send the current states.
 
+/**
+ * Device hardware configurations.
+ * Note: the 3rd button is attached between `CONFIG_GPIO_BTN_1`, `CONFIG_GPIO_BTN_2` and GND using two diodes.
+ */
+// #define CONFIG_HW_BTN_1		// Button attached between `CONFIG_GPIO_BTN_1` and GND.
+// #define CONFIG_HW_BTN_2		// Button attached between `CONFIG_GPIO_BTN_2` and GND.
+// #define CONFIG_HW_TRIMMER	// Trimmer attached to `CONFIG_GPIO_ADC`.
+
+// Situational hardware configurations.
+#if CONFIG_UART_DEVICE_ID == 0x00
+	#define CONFIG_HW_BTN_1
+#elif CONFIG_UART_DEVICE_ID == 0x01
+	#define CONFIG_HW_BTN_1
+	#define CONFIG_HW_BTN_2
+	#define CONFIG_HW_TRIMMER
+#else
+	#error Device ID does not correspond to any hardware configuration.
+#endif
+
+#if !defined(CONFIG_HW_BTN_1) && !defined(CONFIG_HW_BTN_2)
+	#define CONFIG_HW_NO_BTN
+	#define ul_bs_get_button_states() 0
+
+	#ifndef CONFIG_HW_TRIMMER
+		#error Hardware configuration error.
+	#endif
+#endif
+
+#ifndef CONFIG_HW_TRIMMER
+	#define analogRead(pin)	0
+#endif
+
 #endif  /* INC_CONF_CONST_H_ */

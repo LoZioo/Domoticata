@@ -41,9 +41,12 @@
 extern "C" {
 	#include <ul_errors.h>
 	#include <ul_utils.h>
-	#include <ul_button_states.h>
 	#include <ul_master_slave.h>
 	#include <ul_crc.h>
+
+	#ifndef CONFIG_HW_NO_BTN
+		#include <ul_button_states.h>
+	#endif
 }
 
 // Project libraries.
@@ -82,10 +85,14 @@ extern "C" {
 /* USER CODE BEGIN PV */
 
 // Last button press instant.
+#ifndef CONFIG_HW_NO_BTN
 uint32_t last_button_press_ms = 0;
+#endif
 
 // ADC is changed flag.
+#ifdef CONFIG_HW_TRIMMER
 bool adc_is_changed = false;
+#endif
 
 /* USER CODE END PV */
 
@@ -111,11 +118,15 @@ bool send_task();
 
 /* Generic functions */
 
+#ifndef CONFIG_HW_NO_BTN
+
 /**
  * @brief Read current button states.
  * @return A member of `ul_bs_button_id_t` from `button_states.h`: `UL_BS_BUTTON_1`, `UL_BS_BUTTON_2`, ...
  */
 ul_bs_button_id_t button_read();
+
+#endif
 
 void uart_rx_mode();
 void uart_tx_mode();
@@ -169,9 +180,15 @@ void loop(){
 /* USER CODE BEGIN 2 */
 
 void GPIO_setup(){
-	pinMode(CONFIG_GPIO_BTN_1, INPUT_PULLUP);
-	pinMode(CONFIG_GPIO_BTN_2, INPUT_PULLUP);
 	pinMode(CONFIG_GPIO_UART_DE_RE, OUTPUT);
+
+	#ifdef CONFIG_HW_BTN_1
+		pinMode(CONFIG_GPIO_BTN_1, INPUT_PULLUP);
+	#endif
+
+	#ifdef CONFIG_HW_BTN_2
+		pinMode(CONFIG_GPIO_BTN_2, INPUT_PULLUP);
+	#endif
 }
 
 void UART_setup(){
@@ -188,11 +205,21 @@ void UART_setup(){
 
 bool sample_task(){
 
+	#ifndef CONFIG_HW_NO_BTN
 	static uint8_t press_count;
-	static int16_t adc_last_value = 0;
+	#endif
 
-	// Sample everything.
+	// Sample trimmer.
+	#ifdef CONFIG_HW_TRIMMER
+	static int16_t adc_last_value = 0;
+	#endif
+
+	// Sample buttons.
+	#ifndef CONFIG_HW_NO_BTN
 	ul_bs_button_id_t button = button_read();
+	#endif
+
+	#ifdef CONFIG_HW_TRIMMER
 	int16_t adc_value = analogRead(CONFIG_GPIO_ADC);
 
 	// If the trimmer was moved.
@@ -200,8 +227,10 @@ bool sample_task(){
 		adc_last_value = adc_value;
 		adc_is_changed = true;
 	}
+	#endif
 
 	// If a button was pressed.
+	#ifndef CONFIG_HW_NO_BTN
 	if(button != UL_BS_BUTTON_NONE){
 		last_button_press_ms = millis();
 
@@ -233,6 +262,7 @@ bool sample_task(){
 		// Debouncer.
 		ul_utils_delay_nonblock(CONFIG_TIME_BTN_DEBOUNCER_MS, millis, send_task);
 	}
+	#endif
 
 	// Continue eventual non-blocking delay.
 	return true;
@@ -257,18 +287,32 @@ bool send_task(){
 			ul_ms_is_master_byte(b) &&
 			ul_ms_decode_master_byte(b) == ul_ms_decode_master_byte(CONFIG_UART_DEVICE_ID) &&
 			(
-				adc_is_changed ||
-				(
-					ul_bs_get_button_states() != 0 &&
-					millis() - last_button_press_ms >= CONFIG_TIME_BTN_LOCK_MS
-				)
+				#ifdef CONFIG_HW_TRIMMER
+					adc_is_changed
+				#endif
+
+				#if defined(CONFIG_HW_TRIMMER) && !defined(CONFIG_HW_NO_BTN)
+					||
+				#endif
+
+				#ifndef CONFIG_HW_NO_BTN
+					(
+						ul_bs_get_button_states() != 0 &&
+						millis() - last_button_press_ms >= CONFIG_TIME_BTN_LOCK_MS
+					)
+				#endif
 			)
 		){
 			send_states();
 
 			// States are now reset.
+			#ifdef CONFIG_HW_TRIMMER
 			adc_is_changed = false;
+			#endif
+
+			#ifndef CONFIG_HW_NO_BTN
 			ul_bs_reset_button_states();
+			#endif
 		}
 	}
 
@@ -276,14 +320,20 @@ bool send_task(){
 	return true;
 }
 
+#ifndef CONFIG_HW_NO_BTN
 ul_bs_button_id_t button_read(){
 	uint8_t pinb = PINB;
 	return (ul_bs_button_id_t)(
-		UL_BS_BUTTON_NONE |
-		!(pinb & _BV(CONFIG_GPIO_BTN_1)) |
-		!(pinb & _BV(CONFIG_GPIO_BTN_2)) << 1
+		UL_BS_BUTTON_NONE
+		#ifdef CONFIG_HW_BTN_1
+			| (!(pinb & _BV(CONFIG_GPIO_BTN_1)))
+		#endif
+		#ifdef CONFIG_HW_BTN_2
+			| (!(pinb & _BV(CONFIG_GPIO_BTN_2)) << 1)
+		#endif
 	);
 }
+#endif
 
 void uart_rx_mode(){
 	digitalWrite(CONFIG_GPIO_UART_DE_RE, LOW);
