@@ -18,8 +18,8 @@
 #define ADC_MAX		((1 << 10) - 1)
 
 // GPIO
-#define CONFIG_GPIO_BTN_1				0
-#define CONFIG_GPIO_BTN_2				1
+#define CONFIG_GPIO_BTN_1				1
+#define CONFIG_GPIO_BTN_2				0
 #define CONFIG_GPIO_ADC					A1
 #define CONFIG_GPIO_UART_RX_TX	4
 #define CONFIG_GPIO_UART_DE_RE	3
