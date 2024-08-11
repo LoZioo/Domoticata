@@ -21,13 +21,7 @@
 	*		- Select the `env:oscillator_tuner` PlatformIO environment.
 	*		- Upload the sketch.
 	*		- Open the serial monitor and spam 'x' to detect the right `OSCCAL`.
-	*		- Select the `env:analog_button_tuner` PlatformIO environment.
-	*		- Upload the sketch.
-	*		- Press the physical button to obtain on the serial monitor, the corresponding ADC value.
-	*		- For each read physical button, go to the `conf_var.h` header.
-	*		- In that header, define the `CONFIG_BTN_x_AVG` as the read ADC value.
-	*		- Note: keep a distance of at least `CONFIG_BTN_VALID_INTERVAL` between the values.
-	*		- In the same header, update the `CONFIG_UART_DEVICE_ID`.
+	*		- Open the `conf_var.h` header, update the `CONFIG_UART_DEVICE_ID`.
 	*		- Select the `env:main` PlatformIO environment.
 	*		- Upload the sketch.
 	*		- Enjoy.
@@ -71,13 +65,6 @@ extern "C" {
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
-/**
- * @brief `analog_button_read()` helper.
- */
-#define analog_button_if(adc_val, btn_avg, button_id) \
-	if(ul_utils_between(adc_val, btn_avg - CONFIG_BTN_VALID_INTERVAL, btn_avg + CONFIG_BTN_VALID_INTERVAL)) \
-		return button_id
-
 #ifdef INTERRUPT_SERIAL_RX
 	#define uart_available()	purx_dataready()
 	#define uart_read_byte()	pu_read()
@@ -86,15 +73,22 @@ extern "C" {
 	#define uart_read_byte()	purx()
 #endif
 
-#define uart_write_byte(b)	putx(b)
+#define uart_write_byte(b) \
+	putx(b)
 
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
-// Last button press instant.
-uint32_t last_button_press_ms = 0;
+// Last performed action instant.
+uint32_t last_action_ms = 0;
+
+// ADC read value + is changed flag.
+struct __attribute__((__packed__)){
+	int16_t value: 15;
+	bool is_changed: 1;
+} adc;
 
 /* USER CODE END PV */
 
@@ -124,25 +118,16 @@ void uart_rx_mode();
 void uart_tx_mode();
 
 /**
- * @brief Write the PWM value to the LED of the specified button.
+ * @brief Send current button states and trimmer value to the control unit.
+ * @note This function will reset all states after sending them.
  */
-void set_button_led(ul_bs_button_id_t button, uint8_t pwm);
+void send_states();
 
 /**
- * @brief Write the `CONFIG_PWM_BTN_IDLE` PWM value for all button LEDs.
- */
-void reset_button_leds();
-
-/**
- * @brief Send the button states to the control unit.
- */
-void send_button_states();
-
-/**
- * @brief Poll the ADC and convert the read value to a button ID.
+ * @brief Read current button states.
  * @return A member of `ul_bs_button_id_t` from `button_states.h`: `UL_BS_BUTTON_1`, `UL_BS_BUTTON_2`, ...
  */
-ul_bs_button_id_t analog_button_read();
+ul_bs_button_id_t button_read();
 
 /* USER CODE END PFP */
 
@@ -191,11 +176,9 @@ void loop(){
 /* USER CODE BEGIN 2 */
 
 void GPIO_setup(){
-	pinMode(CONFIG_GPIO_PWM_A, OUTPUT);
-	pinMode(CONFIG_GPIO_PWM_B, OUTPUT);
+	pinMode(CONFIG_GPIO_BTN_1, INPUT_PULLUP);
+	pinMode(CONFIG_GPIO_BTN_2, INPUT_PULLUP);
 	pinMode(CONFIG_GPIO_UART_DE_RE, OUTPUT);
-
-	reset_button_leds();
 }
 
 void UART_setup(){
@@ -213,19 +196,27 @@ void UART_setup(){
 bool button_task(){
 
 	static uint8_t press_count;
-	ul_bs_button_id_t button = analog_button_read();
+
+	// Sample everything.
+	ul_bs_button_id_t button = button_read();
+	int16_t adc_tmp = analogRead(CONFIG_GPIO_ADC);
+
+	// If the trimmer was moved.
+	if(ul_utils_in_range(adc_tmp, adc.value, CONFIG_ADC_TRIMMER_DETECT)){
+		last_action_ms = millis();
+
+		adc.value = adc_tmp;
+		adc.is_changed = true;
+	}
 
 	// If a button was pressed.
 	if(button != UL_BS_BUTTON_NONE){
-
-		// Update the last button press instant.
-		last_button_press_ms = millis();
+		last_action_ms = millis();
 
 		// Update the current button state based on it's previous state.
 		switch(ul_bs_get_button_state(button)){
 			case UL_BS_BUTTON_STATE_IDLE:
 				ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_PRESSED);
-				set_button_led(button, CONFIG_PWM_BTN_PRESSED);
 				press_count = 1;
 				break;
 
@@ -238,20 +229,14 @@ bool button_task(){
 				break;
 		}
 
-		if(press_count == 2){
+		if(press_count == 2)
 			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_DOUBLE_PRESSED);
-			set_button_led(button, CONFIG_PWM_BTN_DOUBLE_PRESSED);
-		}
 
-		else if(ul_utils_between(press_count, 3, CONFIG_TIME_BTN_HELD_TICKS - 1)){
+		else if(ul_utils_between(press_count, 3, CONFIG_TIME_BTN_HELD_TICKS - 1))
 			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_PRESSED);
-			set_button_led(button, CONFIG_PWM_BTN_PRESSED);
-		}
 
-		else if(press_count == CONFIG_TIME_BTN_HELD_TICKS){
+		else if(press_count == CONFIG_TIME_BTN_HELD_TICKS)
 			ul_bs_set_button_state(button, UL_BS_BUTTON_STATE_HELD);
-			set_button_led(button, CONFIG_PWM_BTN_HOLD);
-		}
 
 		// Debouncer.
 		ul_utils_delay_nonblock(CONFIG_TIME_BTN_DEBOUNCER_MS, millis, uart_task);
@@ -270,22 +255,25 @@ bool uart_task(){
 		 * If:
 		 * 	-	I read a master byte.
 		 * 	-	It's my turn on the bus.
-		 * 	-	Some button was pressed.
-		 * 	-	The lock time elapsed after the last button press.
+		 * 	-	The trimmer was rotated or some button was pressed.
+		 * 	-	The lock time elapsed after the last performed action.
 		 *
 		 * Then send the button states.
 		 */
 		if(
 			ul_ms_is_master_byte(b) &&
 			ul_ms_decode_master_byte(b) == ul_ms_decode_master_byte(CONFIG_UART_DEVICE_ID) &&
-			ul_bs_get_button_states() != 0 &&
-			millis() - last_button_press_ms >= CONFIG_TIME_BTN_LOCK_MS
+			(
+				adc.is_changed ||
+				ul_bs_get_button_states() != 0
+			) &&
+			millis() - last_action_ms >= CONFIG_TIME_LAST_ACTION_LOCK_MS
 		){
-			send_button_states();
+			send_states();
 
-			// Button states are now reset.
+			// States are now reset.
 			ul_bs_reset_button_states();
-			reset_button_leds();
+			adc.is_changed = false;
 		}
 	}
 
@@ -302,42 +290,18 @@ void uart_tx_mode(){
 	delayMicroseconds(CONFIG_UART_TX_MODE_DELAY_US);
 }
 
-void set_button_led(ul_bs_button_id_t button, uint8_t pwm){
-
-	uint8_t gpio;
-	switch(button){
-		case UL_BS_BUTTON_1:
-			gpio = CONFIG_GPIO_PWM_B;
-			break;
-
-		case UL_BS_BUTTON_2:
-			gpio = CONFIG_GPIO_PWM_A;
-			break;
-
-		default:
-			return;
-			break;
-	}
-
-	analogWrite(gpio, pwm);
-}
-
-void reset_button_leds(){
-	for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_2; button++)
-		set_button_led((ul_bs_button_id_t) button, CONFIG_PWM_BTN_IDLE);
-}
-
-void send_button_states(){
+void send_states(){
 	uart_tx_mode();
 
 	// Reply with my ID to get the master's attention.
 	uart_write_byte(ul_ms_encode_slave_byte(CONFIG_UART_DEVICE_ID));
 
-	// button_states + CRC.
-	uint8_t data[3];
-
-	ul_utils_cast_to_type(data, uint16_t) = ul_bs_get_button_states();
-	data[sizeof(data) - 1] = ul_crc_crc8(data, 2);
+	// Button states of the first 4 buttons + trimmer percentage + CRC8.
+	uint8_t data[] = {
+		(uint8_t) ul_bs_get_button_states(),
+		(uint8_t) ul_utils_map_int(adc.value, 0, 1023, 0, 100),
+		ul_crc_crc8(data, 2)
+	};
 
 	/**
 	 * Encoding in 4 bytes instead of 3 (the MSb of every byte must be 0 because a slave is talking).
@@ -356,35 +320,21 @@ void send_button_states(){
 	uart_rx_mode();
 }
 
-ul_bs_button_id_t analog_button_read(){
+ul_bs_button_id_t button_read(){
 
-	uint16_t adc_val = analogRead(CONFIG_GPIO_ADC);
-	if(adc_val < CONFIG_BTN_VALID_EDGE){
-		#ifdef CONFIG_BTN_1_AVG
-			analog_button_if(adc_val, CONFIG_BTN_1_AVG, UL_BS_BUTTON_1);
-		#endif
-		#ifdef CONFIG_BTN_2_AVG
-			else analog_button_if(adc_val, CONFIG_BTN_2_AVG, UL_BS_BUTTON_2);
-		#endif
-		#ifdef CONFIG_BTN_3_AVG
-			else analog_button_if(adc_val, CONFIG_BTN_3_AVG, UL_BS_BUTTON_3);
-		#endif
-		#ifdef CONFIG_BTN_4_AVG
-			else analog_button_if(adc_val, CONFIG_BTN_4_AVG, UL_BS_BUTTON_4);
-		#endif
-		#ifdef CONFIG_BTN_5_AVG
-			else analog_button_if(adc_val, CONFIG_BTN_5_AVG, UL_BS_BUTTON_5);
-		#endif
-		#ifdef CONFIG_BTN_6_AVG
-			else analog_button_if(adc_val, CONFIG_BTN_6_AVG, UL_BS_BUTTON_6);
-		#endif
-		#ifdef CONFIG_BTN_7_AVG
-			else analog_button_if(adc_val, CONFIG_BTN_7_AVG, UL_BS_BUTTON_7);
-		#endif
-		#ifdef CONFIG_BTN_8_AVG
-			else analog_button_if(adc_val, CONFIG_BTN_8_AVG, UL_BS_BUTTON_8);
-		#endif
-	}
+	uint8_t buttons[] = {
+		digitalRead(CONFIG_GPIO_BTN_1),
+		digitalRead(CONFIG_GPIO_BTN_2)
+	};
+
+	if(ul_utils_cast_to_type(buttons, uint16_t) == LOW)
+		return UL_BS_BUTTON_3;
+
+	else if(buttons[0] == LOW)
+		return UL_BS_BUTTON_1;
+
+	else if(buttons[1] == LOW)
+		return UL_BS_BUTTON_2;
 
 	return UL_BS_BUTTON_NONE;
 }
