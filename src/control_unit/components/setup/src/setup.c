@@ -119,13 +119,12 @@ esp_err_t LEDC_setup(const char *TAG){
 
 	// Timer setup for both ports.
 	for(uint8_t i=0; i<LEDC_SPEED_MODE_MAX; i++){
-
 		ledc_tim_config.speed_mode = i;
 
 		ESP_RETURN_ON_ERROR(
 			ledc_timer_config(&ledc_tim_config),
 			TAG,
-			"Error on `ledc_timer_config({.speed_mode = %u})`",
+			"Error on `ledc_timer_config(speed_mode=%u)`",
 			i
 		);
 	}
@@ -134,7 +133,6 @@ esp_err_t LEDC_setup(const char *TAG){
 
 	// Channel setup for both ports.
 	for(uint8_t i=0; i<sizeof(pwm_ch_to_gpio); i++){
-
 		ledc_ch_config.gpio_num = pwm_ch_to_gpio[i];
 		ledc_ch_config.speed_mode = pwm_get_port(i);
 		ledc_ch_config.channel = pwm_get_channel(i);
@@ -142,8 +140,8 @@ esp_err_t LEDC_setup(const char *TAG){
 		ESP_RETURN_ON_ERROR(
 			ledc_channel_config(&ledc_ch_config),
 			TAG,
-			"Error on `ledc_channel_config({.gpio_num = %u})`",
-			pwm_ch_to_gpio[i]
+			"Error on `ledc_channel_config(gpio_num=%u, speed_mode=%u, channel=%u)`",
+			pwm_ch_to_gpio[i], pwm_get_port(i), pwm_get_channel(i)
 		);
 	}
 
@@ -271,8 +269,8 @@ esp_err_t ADC_setup(const char *TAG){
 			),
 
 			TAG,
-			"Error on `adc_continuous_io_to_channel(%u)`",
-			i
+			"Error on `adc_continuous_io_to_channel(io_num=%u)`",
+			adc_gpio[i]
 		);
 
 		ESP_RETURN_ON_FALSE(
@@ -301,7 +299,11 @@ esp_err_t ADC_setup(const char *TAG){
 	};
 
 	ESP_RETURN_ON_ERROR(
-		adc_continuous_config(adc_handle, &adc_digital_config),
+		adc_continuous_config(
+			adc_handle,
+			&adc_digital_config
+		),
+
 		TAG,
 		"Error on `adc_continuous_config()`"
 	);

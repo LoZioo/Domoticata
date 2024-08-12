@@ -83,6 +83,18 @@
 	micros() / 1000 \
 )
 
+#define log_event_pwm_button(TAG, pwm_index, pwm_enabled, pwm_duty, device_id, button_id, button_state) \
+	ESP_LOGI( \
+		TAG, "PWM channel %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, button_id=%u, button_state=%u)", \
+		pwm_index, pwm_enabled, pwm_duty, device_id, button_id, button_state \
+	)
+
+#define log_event_pwm_trimmer(TAG, pwm_index, pwm_enabled, pwm_duty, device_id) \
+	ESP_LOGI( \
+		TAG, "PWM channel %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X)", \
+		pwm_index, pwm_enabled, pwm_duty, device_id \
+	)
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -117,6 +129,13 @@ void pm_task(void *parameters);
  * @note Must be called periodically to ensure a clean wall terminals polling loop.
  */
 esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *trimmer_val, uint16_t *button_states);
+esp_err_t handle_trimmer_change(const char *TAG, uint8_t device_id, uint16_t trimmer_val);
+esp_err_t handle_button_press(const char *TAG, uint8_t device_id, uint16_t button_states);
+
+/**
+ * @return The corresponding `pwm_index` given `device_id`, `button_id` and `button_state`; -1 if no `pwm_index` is mapped to the given indexes; -2 if there are some parameter errors.
+ */
+int8_t id_button_and_state_to_pwm_index(uint8_t device_id, ul_bs_button_id_t button_id, ul_bs_button_state_t button_state);
 
 /**
  * @brief Send `pwm_data` to `pwm_task` via `pwm_queue`.
@@ -215,99 +234,52 @@ void rs485_task(void *parameters){
 	for(;;){
 		ret = ESP_OK;
 
+		// Poll the wall terminals.
 		ESP_GOTO_ON_ERROR(
 			wall_terminals_poll(TAG, &device_id, &trimmer_val, &button_states),
 
 			task_error,
 			TAG,
-			"Error on `wall_terminals_poll()`"
+			"Error on `wall_terminals_poll(device_id=0x%02X, trimmer_val=%u, button_states=%u)`",
+			device_id, trimmer_val, button_states
 		);
 
-		// No button pressed.
+		// Nothing to communicate.
 		if(device_id == 0xFF)
 			goto task_continue;
 
 		// Device ID check.
-		if(device_id >= CONFIG_RS485_WALL_TERMINALS_COUNT){
-			ret = ESP_ERR_INVALID_STATE;
-			ESP_LOGE(
-				TAG, "Error: the returned `device_id` is 0x%02X; max is 0x%02X",
-				device_id, CONFIG_RS485_WALL_TERMINALS_COUNT - 1
-			);
+		ESP_GOTO_ON_FALSE(
+			device_id < CONFIG_RS485_WALL_TERMINALS_COUNT,
 
-			goto task_error;
-		}
+			ESP_ERR_NOT_SUPPORTED,
+			task_error,
+			TAG,
+			"Error: the returned `device_id` is 0x%02X; max allowed is 0x%02X",
+			device_id, CONFIG_RS485_WALL_TERMINALS_COUNT - 1
+		);
 
 		// Button pressed.
-		if(button_states != 0){
-			ul_bs_set_button_states(button_states);
+		if(button_states != 0)
+			ESP_GOTO_ON_ERROR(
+				handle_button_press(TAG, device_id, button_states),
 
-			// !!!
-			static int8_t id_button_and_state_to_pwm_index
-				[CONFIG_RS485_WALL_TERMINALS_COUNT]
-				[CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL]
-				[UL_BS_BUTTON_STATE_MAX - 1];		// Idle state is not used.
-
-			memset(
-				id_button_and_state_to_pwm_index, -1,
-				sizeof(id_button_and_state_to_pwm_index)
+				task_error,
+				TAG,
+				"Error on `handle_button_press(device_id=0x%02X, button_states=%u)`",
+				device_id, button_states
 			);
-
-			id_button_and_state_to_pwm_index[0x00][UL_BS_BUTTON_1-1][UL_BS_BUTTON_STATE_PRESSED-1] = 0;
-			id_button_and_state_to_pwm_index[0x00][UL_BS_BUTTON_1-1][UL_BS_BUTTON_STATE_DOUBLE_PRESSED-1] = 1;
-			id_button_and_state_to_pwm_index[0x00][UL_BS_BUTTON_1-1][UL_BS_BUTTON_STATE_HELD-1] = 2;
-
-			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_1-1][UL_BS_BUTTON_STATE_PRESSED-1] = 3;
-			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_1-1][UL_BS_BUTTON_STATE_DOUBLE_PRESSED-1] = 4;
-			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_1-1][UL_BS_BUTTON_STATE_HELD-1] = 5;
-
-			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_2-1][UL_BS_BUTTON_STATE_PRESSED-1] = 6;
-			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_2-1][UL_BS_BUTTON_STATE_DOUBLE_PRESSED-1] = 7;
-			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_2-1][UL_BS_BUTTON_STATE_HELD-1] = 8;
-
-			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_3-1][UL_BS_BUTTON_STATE_PRESSED-1] = 9;
-			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_3-1][UL_BS_BUTTON_STATE_DOUBLE_PRESSED-1] = 10;
-			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_3-1][UL_BS_BUTTON_STATE_HELD-1] = 11;
-
-			int8_t pwm_index = -1;
-			ul_bs_button_state_t button_state;
-
-			for(
-				uint8_t button = UL_BS_BUTTON_1;
-				button <= CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL;
-				button++
-			){
-				button_state = ul_bs_get_button_state(button);
-
-				// Idle state is not used.
-				if(button_state == UL_BS_BUTTON_STATE_IDLE)
-					continue;
-
-				pwm_index = id_button_and_state_to_pwm_index
-					[device_id][button-1][button_state-1];
-
-				// If the current configuration is not mapped.
-				if(pwm_index == -1)
-					continue;
-
-				// !!! Execute the associated routine.
-				ESP_LOGI(
-					TAG, "(0x%02X, %u, %u) = %d",
-					device_id, button-1, button_state-1,
-					pwm_index
-				);
-			}
-		}
 
 		// Trimmer rotated.
-		else {
-			ESP_LOGI(
-				TAG, "0x%02X: %u",
+		else
+			ESP_GOTO_ON_ERROR(
+				handle_trimmer_change(TAG, device_id, trimmer_val),
+
+				task_error,
+				TAG,
+				"Error on `handle_button_press(device_id=0x%02X, trimmer_val=%u)`",
 				device_id, trimmer_val
 			);
-		}
-
-		// !!!
 
 		// Delay before continuing.
 		goto task_continue;
@@ -355,7 +327,8 @@ void pwm_task(void *parameters){
 
 			task_error,
 			TAG,
-			"Error on `ledc_set_fade_with_time()`"
+			"Error on `ledc_set_fade_with_time(speed_mode=%u, channel=%u, target_duty=%u, max_fade_time_ms=%u)`",
+			pwm_get_port(pwm.pwm_index), pwm_get_channel(pwm.pwm_index), pwm.target_duty, pwm.fade_time_ms
 		);
 
 		// Fade start.
@@ -368,7 +341,8 @@ void pwm_task(void *parameters){
 
 			task_error,
 			TAG,
-			"Error on `ledc_fade_start()`"
+			"Error on `ledc_fade_start(speed_mode=%u, channel=%u)`",
+			pwm_get_port(pwm.pwm_index), pwm_get_channel(pwm.pwm_index)
 		);
 
 		// Delay before continuing.
@@ -480,12 +454,17 @@ void pm_task(void *parameters){
 
 esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *trimmer_val, uint16_t *button_states){
 
-	if(TAG == NULL)
-		return ESP_ERR_INVALID_ARG;
-
 	// Function disabled.
 	if(CONFIG_RS485_WALL_TERMINALS_COUNT == 0)
 		return ESP_OK;
+
+	ESP_RETURN_ON_FALSE(
+		TAG != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `TAG` is NULL"
+	);
 
 	ESP_RETURN_ON_FALSE(
 		device_id != NULL,
@@ -660,10 +639,163 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
 	return ESP_OK;
 }
 
+esp_err_t handle_trimmer_change(const char *TAG, uint8_t device_id, uint16_t trimmer_val){
+	ESP_LOGI(
+		TAG, "0x%02X: %u",
+		device_id, trimmer_val
+	);
+
+	return ESP_OK;
+}
+
+esp_err_t handle_button_press(const char *TAG, uint8_t device_id, uint16_t button_states){
+
+	ESP_RETURN_ON_FALSE(
+		TAG != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `TAG` is NULL"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		device_id < CONFIG_RS485_WALL_TERMINALS_COUNT,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `device_id` must be less than %u",
+		CONFIG_RS485_WALL_TERMINALS_COUNT
+	);
+
+	ESP_RETURN_ON_FALSE(
+		button_states != 0,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `button_states` is 0"
+	);
+
+	ul_bs_set_button_states(button_states);
+
+	// PWM values for each PWM index.
+	static uint16_t pwm_duty[CONFIG_PWM_INDEXES];
+	static bool pwm_index_enabled[CONFIG_PWM_INDEXES] = {0};
+
+	// `pwm_duty[]` initialization.
+	for(
+		uint8_t i = 0;
+		i < sizeof(pwm_duty) / sizeof(uint16_t);
+		i++
+	)
+		pwm_duty[i] = CONFIG_PWM_DEFAULT;
+
+	// Auxiliary variables.
+	int8_t pwm_index = -1;
+	ul_bs_button_state_t button_state;
+
+	// For each button, check if it was pressed.
+	for(
+		uint8_t button_id = UL_BS_BUTTON_1;
+		button_id <= CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL;
+		button_id++
+	){
+		button_state = ul_bs_get_button_state(button_id);
+
+		// Idle state is not used.
+		if(button_state == UL_BS_BUTTON_STATE_IDLE)
+			continue;
+
+		pwm_index = id_button_and_state_to_pwm_index(device_id, button_id, button_state);
+
+		// If the current configuration is not mapped.
+		if(pwm_index == -1)
+			continue;
+
+		ESP_RETURN_ON_FALSE(
+			pwm_index != -2,
+
+			ESP_ERR_INVALID_ARG,
+			TAG,
+			"Error: invalid args passed on `id_button_and_state_to_pwm_index(device_id=0x%02X, button_id=%u, button_state=%u)`",
+			device_id, button_id, button_state
+		);
+
+		// Turn ON/OFF PWM.
+		pwm_index_enabled[pwm_index] = !pwm_index_enabled[pwm_index];
+
+		uint16_t pwm_final_duty = (
+			pwm_index_enabled[pwm_index] ?
+			pwm_duty[pwm_index] :
+			0
+		);
+
+		// Update PWM.
+		ESP_RETURN_ON_ERROR(
+			pwm_write(
+				TAG,
+				pwm_index,
+				pwm_final_duty,
+				CONFIG_PWM_FADE_TIME_MS
+			),
+
+			TAG,
+			"Error on `pwm_write(pwm_index=%u, target_duty=%u)`",
+			pwm_index, pwm_final_duty
+		);
+
+		// Log the event.
+		log_event_pwm_button(
+			TAG,
+			pwm_index,
+			pwm_index_enabled[pwm_index],
+			pwm_duty[pwm_index],
+			device_id,
+			button_id,
+			button_state
+		);
+	}
+
+	return ESP_OK;
+}
+
+int8_t id_button_and_state_to_pwm_index(uint8_t device_id, ul_bs_button_id_t button_id, ul_bs_button_state_t button_state){
+
+	// Index error.
+	if(
+		device_id >= CONFIG_RS485_WALL_TERMINALS_COUNT ||
+
+		!ul_utils_between(
+			button_id,
+			UL_BS_BUTTON_1,
+			CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL
+		) ||
+
+		!ul_utils_between(
+			button_state,
+			UL_BS_BUTTON_STATE_PRESSED,
+			UL_BS_BUTTON_STATE_HELD
+		)
+	)
+		return -2;
+
+	// Mapping cube matrix (idle state is not used on the last index).
+	int8_t id_button_and_state_to_pwm_index
+		[CONFIG_RS485_WALL_TERMINALS_COUNT]
+		[CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL]
+		[UL_BS_BUTTON_STATE_MAX - 1] = CONFIG_ID_BUTTON_AND_STATE_TO_PWM_INDEX_INIT;
+
+	return id_button_and_state_to_pwm_index[device_id][button_id-1][button_state-1];
+}
+
 esp_err_t pwm_write(const char *TAG, uint8_t pwm_index, uint16_t target_duty, uint16_t fade_time_ms){
 
-	if(TAG == NULL)
-		return ESP_ERR_INVALID_ARG;
+	ESP_RETURN_ON_FALSE(
+		TAG != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `TAG` is NULL"
+	);
 
 	ESP_RETURN_ON_FALSE(
 		pwm_index < CONFIG_PWM_INDEXES,
