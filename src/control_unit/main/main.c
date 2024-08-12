@@ -283,35 +283,57 @@ void pwm_task(void *parameters){
 
 	/* Variables */
 
+	// `ESP_GOTO_ON_ERROR()` return code.
+	esp_err_t ret;
+
+	// PWM incoming data.
 	pwm_data_t pwm;
 
 	/* Code */
 
 	/* Infinite loop */
 	for(;;){
+		ret = ESP_OK;
 
 		// Waiting for `pwm_write()` requests.
 		if(xQueueReceive(pwm_queue, &pwm, portMAX_DELAY) == pdFALSE)
-			continue;
+			goto task_continue;
 
 		// Set PWM parameters.
-		ESP_ERROR_CHECK_WITHOUT_ABORT(
+		ESP_GOTO_ON_ERROR(
 			ledc_set_fade_with_time(
 				pwm_get_port(pwm.index),
 				pwm_get_channel(pwm.index),
 				pwm.duty_target,
 				pwm.fade_time_ms
-			)
+			),
+
+			task_error,
+			TAG,
+			"Error on `ledc_set_fade_with_time()`"
 		);
 
 		// Fade start.
-		ESP_ERROR_CHECK_WITHOUT_ABORT(
+		ESP_GOTO_ON_ERROR(
 			ledc_fade_start(
 				pwm_get_port(pwm.index),
 				pwm_get_channel(pwm.index),
 				LEDC_FADE_NO_WAIT
-			)
+			),
+
+			task_error,
+			TAG,
+			"Error on `ledc_fade_start()`"
 		);
+
+		// Delay before continuing.
+		goto task_continue;
+
+		task_error:
+		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
+
+		task_continue:
+		delay(1);
 	}
 }
 
