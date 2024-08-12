@@ -89,10 +89,10 @@
 		pwm_index, pwm_enabled, pwm_duty, device_id, button_id, button_state \
 	)
 
-#define log_event_pwm_trimmer(TAG, pwm_index, pwm_enabled, pwm_duty, device_id) \
+#define log_event_pwm_trimmer(TAG, pwm_index, pwm_enabled, pwm_duty, device_id, trimmer_val) \
 	ESP_LOGI( \
-		TAG, "PWM channel %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X)", \
-		pwm_index, pwm_enabled, pwm_duty, device_id \
+		TAG, "PWM channel %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, trimmer_val=%u)", \
+		pwm_index, pwm_enabled, pwm_duty, device_id, trimmer_val \
 	)
 
 /* USER CODE END PM */
@@ -129,8 +129,8 @@ void pm_task(void *parameters);
  * @note Must be called periodically to ensure a clean wall terminals polling loop.
  */
 esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *trimmer_val, uint16_t *button_states);
-esp_err_t handle_trimmer_change(const char *TAG, uint8_t device_id, uint16_t trimmer_val);
-esp_err_t handle_button_press(const char *TAG, uint8_t device_id, uint16_t button_states);
+esp_err_t handle_trimmer_change(const char *TAG, bool *pwm_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t trimmer_val);
+esp_err_t handle_button_press(const char *TAG, bool *pwm_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t button_states);
 
 /**
  * @return The corresponding `pwm_index` given `device_id`, `button_id` and `button_state`; -1 if no `pwm_index` is mapped to the given indexes; -2 if there are some parameter errors.
@@ -141,7 +141,7 @@ int8_t id_button_and_state_to_pwm_index(uint8_t device_id, ul_bs_button_id_t but
  * @brief Send `pwm_data` to `pwm_task` via `pwm_queue`.
  * @param TAG The `esp_log.h` tag.
  * @param index 0: Fan controller, 1-12: LEDs.
- * @param target_duty 10-bit duty target (from 0 to 1023).
+ * @param target_duty 10-bit duty target (from 0 to (2^`CONFIG_LEDC_PWM_BIT_RES`) - 1 ).
  */
 esp_err_t pwm_write(const char *TAG, uint8_t pwm_index, uint16_t target_duty, uint16_t fade_time_ms);
 
@@ -225,7 +225,19 @@ void rs485_task(void *parameters){
 	uint8_t device_id;
 	uint16_t trimmer_val, button_states;
 
+	// PWM values for each PWM index.
+	uint16_t pwm_duty[CONFIG_PWM_INDEXES];
+	bool pwm_enabled[CONFIG_PWM_INDEXES] = {0};
+
 	/* Code */
+
+	// `pwm_duty[]` initialization.
+	for(
+		uint8_t i = 0;
+		i < sizeof(pwm_duty) / sizeof(uint16_t);
+		i++
+	)
+		pwm_duty[i] = CONFIG_PWM_DEFAULT;
 
 	ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_UART_PORT));
 	ESP_LOGI(TAG, "Polling slave devices");
@@ -262,7 +274,7 @@ void rs485_task(void *parameters){
 		// Button pressed.
 		if(button_states != 0)
 			ESP_GOTO_ON_ERROR(
-				handle_button_press(TAG, device_id, button_states),
+				handle_button_press(TAG, pwm_enabled, pwm_duty, device_id, button_states),
 
 				task_error,
 				TAG,
@@ -273,7 +285,7 @@ void rs485_task(void *parameters){
 		// Trimmer rotated.
 		else
 			ESP_GOTO_ON_ERROR(
-				handle_trimmer_change(TAG, device_id, trimmer_val),
+				handle_trimmer_change(TAG, pwm_enabled, pwm_duty, device_id, trimmer_val),
 
 				task_error,
 				TAG,
@@ -462,7 +474,7 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
 		TAG != NULL,
 
 		ESP_ERR_INVALID_ARG,
-		TAG,
+		"???",
 		"Error: `TAG` is NULL"
 	);
 
@@ -639,23 +651,115 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
 	return ESP_OK;
 }
 
-esp_err_t handle_trimmer_change(const char *TAG, uint8_t device_id, uint16_t trimmer_val){
-	ESP_LOGI(
-		TAG, "0x%02X: %u",
-		device_id, trimmer_val
-	);
-
-	return ESP_OK;
-}
-
-esp_err_t handle_button_press(const char *TAG, uint8_t device_id, uint16_t button_states){
+esp_err_t handle_trimmer_change(const char *TAG, bool *pwm_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t trimmer_val){
 
 	ESP_RETURN_ON_FALSE(
 		TAG != NULL,
 
 		ESP_ERR_INVALID_ARG,
-		TAG,
+		"???",
 		"Error: `TAG` is NULL"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		pwm_enabled != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `pwm_enabled` is NULL"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		pwm_duty != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `pwm_duty` is NULL"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		device_id < CONFIG_RS485_WALL_TERMINALS_COUNT,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `device_id` must be less than %u",
+		CONFIG_RS485_WALL_TERMINALS_COUNT
+	);
+
+	ESP_RETURN_ON_FALSE(
+		trimmer_val <= CONFIG_PWM_DUTY_MAX,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `trimmer_val` must be between 0 and %u",
+		CONFIG_PWM_DUTY_MAX
+	);
+
+	// Mapping array.
+	int8_t id_to_pwm_index[] = CONFIG_TRIMMER_MATRIX;
+
+	// Trimmer not mapped.
+	if(id_to_pwm_index[device_id] == -1)
+		return ESP_OK;
+
+	// Update PWM.
+	ESP_RETURN_ON_ERROR(
+		pwm_write(
+			TAG,
+			id_to_pwm_index[device_id],
+			trimmer_val,
+			CONFIG_PWM_FADE_TIME_MS
+		),
+
+		TAG,
+		"Error on `pwm_write(pwm_index=%u, target_duty=%u)`",
+		id_to_pwm_index[device_id], trimmer_val
+	);
+
+	// Update the corresponding PWM state.
+	pwm_enabled[id_to_pwm_index[device_id]] =
+		(trimmer_val > 0);
+
+	pwm_duty[id_to_pwm_index[device_id]] =
+		(trimmer_val > 0 ? trimmer_val : CONFIG_PWM_DEFAULT);
+
+	// Log the event.
+	log_event_pwm_trimmer(
+		TAG,
+		id_to_pwm_index[device_id],
+		pwm_enabled[device_id],
+		pwm_duty[device_id],
+		device_id,
+		trimmer_val
+	);
+
+	return ESP_OK;
+}
+
+esp_err_t handle_button_press(const char *TAG, bool *pwm_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t button_states){
+
+	ESP_RETURN_ON_FALSE(
+		TAG != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		"???",
+		"Error: `TAG` is NULL"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		pwm_enabled != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `pwm_enabled` is NULL"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		pwm_duty != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `pwm_duty` is NULL"
 	);
 
 	ESP_RETURN_ON_FALSE(
@@ -676,18 +780,6 @@ esp_err_t handle_button_press(const char *TAG, uint8_t device_id, uint16_t butto
 	);
 
 	ul_bs_set_button_states(button_states);
-
-	// PWM values for each PWM index.
-	static uint16_t pwm_duty[CONFIG_PWM_INDEXES];
-	static bool pwm_index_enabled[CONFIG_PWM_INDEXES] = {0};
-
-	// `pwm_duty[]` initialization.
-	for(
-		uint8_t i = 0;
-		i < sizeof(pwm_duty) / sizeof(uint16_t);
-		i++
-	)
-		pwm_duty[i] = CONFIG_PWM_DEFAULT;
 
 	// Auxiliary variables.
 	int8_t pwm_index = -1;
@@ -721,10 +813,10 @@ esp_err_t handle_button_press(const char *TAG, uint8_t device_id, uint16_t butto
 		);
 
 		// Turn ON/OFF PWM.
-		pwm_index_enabled[pwm_index] = !pwm_index_enabled[pwm_index];
+		pwm_enabled[pwm_index] = !pwm_enabled[pwm_index];
 
 		uint16_t pwm_final_duty = (
-			pwm_index_enabled[pwm_index] ?
+			pwm_enabled[pwm_index] ?
 			pwm_duty[pwm_index] :
 			0
 		);
@@ -747,7 +839,7 @@ esp_err_t handle_button_press(const char *TAG, uint8_t device_id, uint16_t butto
 		log_event_pwm_button(
 			TAG,
 			pwm_index,
-			pwm_index_enabled[pwm_index],
+			pwm_enabled[pwm_index],
 			pwm_duty[pwm_index],
 			device_id,
 			button_id,
@@ -782,7 +874,7 @@ int8_t id_button_and_state_to_pwm_index(uint8_t device_id, ul_bs_button_id_t but
 	int8_t id_button_and_state_to_pwm_index
 		[CONFIG_RS485_WALL_TERMINALS_COUNT]
 		[CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL]
-		[UL_BS_BUTTON_STATE_MAX - 1] = CONFIG_ID_BUTTON_AND_STATE_TO_PWM_INDEX_INIT;
+		[UL_BS_BUTTON_STATE_MAX - 1] = CONFIG_BUTTON_MATRIX;
 
 	return id_button_and_state_to_pwm_index[device_id][button_id-1][button_state-1];
 }
@@ -793,7 +885,7 @@ esp_err_t pwm_write(const char *TAG, uint8_t pwm_index, uint16_t target_duty, ui
 		TAG != NULL,
 
 		ESP_ERR_INVALID_ARG,
-		TAG,
+		"???",
 		"Error: `TAG` is NULL"
 	);
 
@@ -806,8 +898,8 @@ esp_err_t pwm_write(const char *TAG, uint8_t pwm_index, uint16_t target_duty, ui
 		CONFIG_PWM_INDEXES - 1
 	);
 
-	if(target_duty > 1023)
-		target_duty = 1023;
+	if(target_duty > CONFIG_PWM_DUTY_MAX)
+		target_duty = CONFIG_PWM_DUTY_MAX;
 
 	pwm_data_t pwm_data = {
 		.pwm_index = pwm_index,

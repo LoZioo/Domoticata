@@ -56,6 +56,10 @@
 		"string": "c",
 		"esp_timer.h": "c",
 		"ul_pm.h": "c",
-		"chrono": "c"
+		"chrono": "c",
+		"esp_err.h": "c",
+		"stdio.h": "c",
+		"thread": "c",
+		"temp_configs.h": "c"
 	}
 }

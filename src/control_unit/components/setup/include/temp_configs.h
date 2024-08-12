@@ -6,6 +6,9 @@
  * 	-	Soglia potenza cicalino
  */
 
+// LEDC PWM max duty.
+#define CONFIG_PWM_DUTY_MAX		((1 << CONFIG_LEDC_PWM_BIT_RES) - 1)
+
 // Max number of buttons per wall terminal.
 #define CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL	UL_BS_BUTTON_3
 
@@ -31,15 +34,17 @@
 
 /**
  * f: (device_id x button_id x button state) -> pwm_index
- * 
+ *
  * Row n: wall terminal with `device_id` = n.
  * Coloumn n: button n.
- * 
+ *
  * Element 1: button pressed.
  * Element 2: button double pressed.
  * Element 3: button held.
+ *
+ * Note: -1 means not mapped.
  */
-#define CONFIG_ID_BUTTON_AND_STATE_TO_PWM_INDEX_INIT	\
+#define CONFIG_BUTTON_MATRIX	\
 { \
 	{{  0,  3,  2 }, { -1, -1, -1 }, { -1, -1, -1 }}, \
 	{{  1,  4,  5 }, {  6,  7,  8 }, {  9, 10, 11 }}, \
@@ -55,3 +60,10 @@
 	{{ -1, -1, -1 }, { -1, -1, -1 }, { -1, -1, -1 }}, \
 	{{ -1, -1, -1 }, { -1, -1, -1 }, { -1, -1, -1 }}, \
 }
+
+/**
+ * f: device_id -> pwm_index
+ * Note: -1 means not mapped.
+ */
+#define CONFIG_TRIMMER_MATRIX	\
+	{ -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 }

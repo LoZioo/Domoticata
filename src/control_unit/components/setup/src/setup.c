@@ -69,8 +69,13 @@
 
 esp_err_t GPIO_setup(const char *TAG){
 
-	if(TAG == NULL)
-		return ESP_ERR_INVALID_ARG;
+	ESP_RETURN_ON_FALSE(
+		TAG != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		"???",
+		"Error: `TAG` is NULL"
+	);
 
 	gpio_config_t io_config = {
 		.pin_bit_mask = GPIO_OUT_BIT_MASK,
@@ -91,14 +96,19 @@ esp_err_t GPIO_setup(const char *TAG){
 
 esp_err_t LEDC_setup(const char *TAG){
 
-	if(TAG == NULL)
-		return ESP_ERR_INVALID_ARG;
+	ESP_RETURN_ON_FALSE(
+		TAG != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		"???",
+		"Error: `TAG` is NULL"
+	);
 
 	/* LEDC base config */
 
 	ledc_timer_config_t ledc_tim_config = {
 		.freq_hz = CONFIG_LEDC_PWM_FREQUENCY_HZ,
-		.duty_resolution = (ledc_timer_bit_t) CONFIG_LEDC_BIT_RES,
+		.duty_resolution = (ledc_timer_bit_t) CONFIG_LEDC_PWM_BIT_RES,
 		.timer_num = LEDC_TIMER_1,
 		.clk_cfg = LEDC_AUTO_CLK
 	};
@@ -154,8 +164,13 @@ esp_err_t LEDC_setup(const char *TAG){
 
 esp_err_t UART_setup(const char *TAG){
 
-	if(TAG == NULL)
-		return ESP_ERR_INVALID_ARG;
+	ESP_RETURN_ON_FALSE(
+		TAG != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		"???",
+		"Error: `TAG` is NULL"
+	);
 
 	uart_config_t uart_config = {
 		.baud_rate = CONFIG_UART_BAUD_RATE,
@@ -219,8 +234,13 @@ esp_err_t UART_setup(const char *TAG){
 
 esp_err_t ADC_setup(const char *TAG){
 
-	if(TAG == NULL)
-		return ESP_ERR_INVALID_ARG;
+	ESP_RETURN_ON_FALSE(
+		TAG != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		"???",
+		"Error: `TAG` is NULL"
+	);
 
 	extern adc_continuous_handle_t adc_handle;
 	extern bool IRAM_ATTR adc_conversion_done(
@@ -326,8 +346,13 @@ esp_err_t ADC_setup(const char *TAG){
 
 esp_err_t QUEUES_setup(const char *TAG){
 
-	if(TAG == NULL)
-		return ESP_ERR_INVALID_ARG;
+	ESP_RETURN_ON_FALSE(
+		TAG != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		"???",
+		"Error: `TAG` is NULL"
+	);
 
 	/* pwm_task */
 
@@ -347,8 +372,13 @@ esp_err_t QUEUES_setup(const char *TAG){
 
 esp_err_t TASKS_setup(const char *TAG){
 
-	if(TAG == NULL)
-		return ESP_ERR_INVALID_ARG;
+	ESP_RETURN_ON_FALSE(
+		TAG != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		"???",
+		"Error: `TAG` is NULL"
+	);
 
 	extern TaskHandle_t
 		rs485_task_handle,

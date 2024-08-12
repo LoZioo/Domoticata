@@ -24,7 +24,7 @@ menu "Project configurations"
 			int "PWM frequency (Hz)"
 			default 30000
 
-		config LEDC_BIT_RES
+		config LEDC_PWM_BIT_RES
 			int "Bit resolution"
 			range 1 20
 			default 7
