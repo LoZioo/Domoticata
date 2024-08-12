@@ -230,6 +230,29 @@ void rs485_task(void *parameters){
 		ul_bs_set_button_states(button_states);
 
 		// !!! DEBUG
+		if(ul_bs_get_button_state(UL_BS_BUTTON_1) == UL_BS_BUTTON_STATE_PRESSED)
+			pwm_write(TAG, 1, 100, 1000);
+
+		else if(ul_bs_get_button_state(UL_BS_BUTTON_1) == UL_BS_BUTTON_STATE_DOUBLE_PRESSED)
+			pwm_write(TAG, 1, 0, 1000);
+
+		else if(ul_bs_get_button_state(UL_BS_BUTTON_1) == UL_BS_BUTTON_STATE_DOUBLE_PRESSED){
+			ESP_ERROR_CHECK_WITHOUT_ABORT(
+				pwm_write(
+					TAG,
+					1,
+					ul_utils_map_int(
+						trimmer_val,
+						0, 1023,
+						0, 100
+					),
+					400
+				)
+			);
+		}
+		// !!! DEBUG
+
+		// !!! DEBUG
 		printf("\nDevice ID: 0x%02X, Trimmer: %u\n", device_id, trimmer_val);
 		for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_3; button++)
 			printf(
