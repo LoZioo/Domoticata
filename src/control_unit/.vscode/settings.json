@@ -55,6 +55,7 @@
 		"esp_attr.h": "c",
 		"string": "c",
 		"esp_timer.h": "c",
-		"ul_pm.h": "c"
+		"ul_pm.h": "c",
+		"chrono": "c"
 	}
 }

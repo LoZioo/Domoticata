@@ -76,7 +76,7 @@
 typedef struct {
 
 	// 0: Fan controller, 1-12: LEDs.
-	uint8_t index;
+	uint8_t pwm_index;
 	uint16_t target_duty;
 	uint16_t fade_time_ms;
 

@@ -124,7 +124,7 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
  * @param index 0: Fan controller, 1-12: LEDs.
  * @param target_duty 10-bit duty target (from 0 to 1023).
  */
-esp_err_t pwm_write(const char *TAG, uint8_t index, uint16_t target_duty, uint16_t fade_time_ms);
+esp_err_t pwm_write(const char *TAG, uint8_t pwm_index, uint16_t target_duty, uint16_t fade_time_ms);
 
 /**
  * @brief `delay( ms - (millis() - initial_timestamp_ms) )`
@@ -180,16 +180,12 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
-	// return;
+	return;
 
 	/* Infinite loop */
-	for(;;){
-		pwm_write(TAG, 1, 1024, 1000);
-		delay(2000);
-
-		pwm_write(TAG, 1, 0, 1000);
-		delay(2000);
-	}
+	// for(;;){
+	// 	delay(1);
+	// }
 	/* USER CODE END 1 */
 }
 
@@ -231,41 +227,87 @@ void rs485_task(void *parameters){
 		if(device_id == 0xFF)
 			goto task_continue;
 
-		// Update button states.
-		ul_bs_set_button_states(button_states);
+		// Device ID check.
+		if(device_id >= CONFIG_RS485_WALL_TERMINALS_COUNT){
+			ret = ESP_ERR_INVALID_STATE;
+			ESP_LOGE(
+				TAG, "Error: the returned `device_id` is 0x%02X; max is 0x%02X",
+				device_id, CONFIG_RS485_WALL_TERMINALS_COUNT - 1
+			);
 
-		// !!! DEBUG
-		if(ul_bs_get_button_state(UL_BS_BUTTON_1) == UL_BS_BUTTON_STATE_PRESSED)
-			pwm_write(TAG, 1, 100, 1000);
+			goto task_error;
+		}
 
-		else if(ul_bs_get_button_state(UL_BS_BUTTON_1) == UL_BS_BUTTON_STATE_DOUBLE_PRESSED)
-			pwm_write(TAG, 1, 0, 1000);
+		// Button pressed.
+		if(button_states != 0){
+			ul_bs_set_button_states(button_states);
 
-		else if(ul_bs_get_button_state(UL_BS_BUTTON_1) == UL_BS_BUTTON_STATE_DOUBLE_PRESSED){
-			ESP_ERROR_CHECK_WITHOUT_ABORT(
-				pwm_write(
-					TAG,
-					1,
-					ul_utils_map_int(
-						trimmer_val,
-						0, 1023,
-						0, 100
-					),
-					400
-				)
+			// !!!
+			static int8_t id_button_and_state_to_pwm_index
+				[CONFIG_RS485_WALL_TERMINALS_COUNT]
+				[CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL]
+				[UL_BS_BUTTON_STATE_MAX - 1];		// Idle state is not used.
+
+			memset(
+				id_button_and_state_to_pwm_index, -1,
+				sizeof(id_button_and_state_to_pwm_index)
+			);
+
+			id_button_and_state_to_pwm_index[0x00][UL_BS_BUTTON_1-1][UL_BS_BUTTON_STATE_PRESSED-1] = 0;
+			id_button_and_state_to_pwm_index[0x00][UL_BS_BUTTON_1-1][UL_BS_BUTTON_STATE_DOUBLE_PRESSED-1] = 1;
+			id_button_and_state_to_pwm_index[0x00][UL_BS_BUTTON_1-1][UL_BS_BUTTON_STATE_HELD-1] = 2;
+
+			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_1-1][UL_BS_BUTTON_STATE_PRESSED-1] = 3;
+			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_1-1][UL_BS_BUTTON_STATE_DOUBLE_PRESSED-1] = 4;
+			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_1-1][UL_BS_BUTTON_STATE_HELD-1] = 5;
+
+			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_2-1][UL_BS_BUTTON_STATE_PRESSED-1] = 6;
+			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_2-1][UL_BS_BUTTON_STATE_DOUBLE_PRESSED-1] = 7;
+			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_2-1][UL_BS_BUTTON_STATE_HELD-1] = 8;
+
+			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_3-1][UL_BS_BUTTON_STATE_PRESSED-1] = 9;
+			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_3-1][UL_BS_BUTTON_STATE_DOUBLE_PRESSED-1] = 10;
+			id_button_and_state_to_pwm_index[0x01][UL_BS_BUTTON_3-1][UL_BS_BUTTON_STATE_HELD-1] = 11;
+
+			int8_t pwm_index = -1;
+			ul_bs_button_state_t button_state;
+
+			for(
+				uint8_t button = UL_BS_BUTTON_1;
+				button <= CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL;
+				button++
+			){
+				button_state = ul_bs_get_button_state(button);
+
+				// Idle state is not used.
+				if(button_state == UL_BS_BUTTON_STATE_IDLE)
+					continue;
+
+				pwm_index = id_button_and_state_to_pwm_index
+					[device_id][button-1][button_state-1];
+
+				// If the current configuration is not mapped.
+				if(pwm_index == -1)
+					continue;
+
+				// !!! Execute the associated routine.
+				ESP_LOGI(
+					TAG, "(0x%02X, %u, %u) = %d",
+					device_id, button-1, button_state-1,
+					pwm_index
+				);
+			}
+		}
+
+		// Trimmer rotated.
+		else {
+			ESP_LOGI(
+				TAG, "0x%02X: %u",
+				device_id, trimmer_val
 			);
 		}
 
-		printf("\nDevice ID: 0x%02X, Trimmer: %u\n", device_id, trimmer_val);
-		for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_3; button++)
-			printf(
-				"Button %u: %u\n",
-				button,
-				ul_bs_get_button_state(
-					(ul_bs_button_id_t) button
-				)
-			);
-		// !!! DEBUG
+		// !!!
 
 		// Delay before continuing.
 		goto task_continue;
@@ -305,8 +347,8 @@ void pwm_task(void *parameters){
 		// Set PWM parameters.
 		ESP_GOTO_ON_ERROR(
 			ledc_set_fade_with_time(
-				pwm_get_port(pwm.index),
-				pwm_get_channel(pwm.index),
+				pwm_get_port(pwm.pwm_index),
+				pwm_get_channel(pwm.pwm_index),
 				pwm.target_duty,
 				pwm.fade_time_ms
 			),
@@ -319,8 +361,8 @@ void pwm_task(void *parameters){
 		// Fade start.
 		ESP_GOTO_ON_ERROR(
 			ledc_fade_start(
-				pwm_get_port(pwm.index),
-				pwm_get_channel(pwm.index),
+				pwm_get_port(pwm.pwm_index),
+				pwm_get_channel(pwm.pwm_index),
 				LEDC_FADE_NO_WAIT
 			),
 
@@ -442,7 +484,7 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
 		return ESP_ERR_INVALID_ARG;
 
 	// Function disabled.
-	if(CONFIG_RS485_WALL_TERMINAL_COUNT == 0)
+	if(CONFIG_RS485_WALL_TERMINALS_COUNT == 0)
 		return ESP_OK;
 
 	ESP_RETURN_ON_FALSE(
@@ -474,8 +516,8 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
 	*trimmer_val = *button_states = 0x0000;
 
 	// Slave ID increment.
-	static uint8_t poll_device_id = CONFIG_RS485_WALL_TERMINAL_COUNT - 1;
-	poll_device_id = (poll_device_id + 1) % CONFIG_RS485_WALL_TERMINAL_COUNT;
+	static uint8_t poll_device_id = CONFIG_RS485_WALL_TERMINALS_COUNT - 1;
+	poll_device_id = (poll_device_id + 1) % CONFIG_RS485_WALL_TERMINALS_COUNT;
 
 	uint8_t tmp = ul_ms_encode_master_byte(poll_device_id);
 
@@ -618,16 +660,25 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
 	return ESP_OK;
 }
 
-esp_err_t pwm_write(const char *TAG, uint8_t index, uint16_t target_duty, uint16_t fade_time_ms){
+esp_err_t pwm_write(const char *TAG, uint8_t pwm_index, uint16_t target_duty, uint16_t fade_time_ms){
 
 	if(TAG == NULL)
 		return ESP_ERR_INVALID_ARG;
+
+	ESP_RETURN_ON_FALSE(
+		pwm_index < CONFIG_PWM_INDEXES,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `pwm_index` must be between 0 and %u",
+		CONFIG_PWM_INDEXES - 1
+	);
 
 	if(target_duty > 1023)
 		target_duty = 1023;
 
 	pwm_data_t pwm_data = {
-		.index = index,
+		.pwm_index = pwm_index,
 		.target_duty = target_duty,
 		.fade_time_ms = fade_time_ms
 	};
