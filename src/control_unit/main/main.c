@@ -122,8 +122,9 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
  * @brief Send `pwm_data` to `pwm_task` via `pwm_queue`.
  * @param TAG The `esp_log.h` tag.
  * @param index 0: Fan controller, 1-12: LEDs.
+ * @param target_duty 10-bit duty target (from 0 to 1023).
  */
-esp_err_t pwm_write(const char *TAG, uint8_t index, uint8_t duty_target_perc, uint16_t fade_time_ms);
+esp_err_t pwm_write(const char *TAG, uint8_t index, uint16_t target_duty, uint16_t fade_time_ms);
 
 /**
  * @brief `delay( ms - (millis() - initial_timestamp_ms) )`
@@ -179,19 +180,21 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
-	return;
+	// return;
 
 	/* Infinite loop */
-	// for(;;){
-	// 	delay(1);
-	// }
+	for(;;){
+		pwm_write(TAG, 1, 1024, 1000);
+		delay(2000);
+
+		pwm_write(TAG, 1, 0, 1000);
+		delay(2000);
+	}
 	/* USER CODE END 1 */
 }
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 2 */
-
-// !!! SISTEMARE TUTTI I TASK CON for(;;) CON PATTERN GOTO_ON_ERROR/FALSE
 
 void rs485_task(void *parameters){
 
@@ -304,7 +307,7 @@ void pwm_task(void *parameters){
 			ledc_set_fade_with_time(
 				pwm_get_port(pwm.index),
 				pwm_get_channel(pwm.index),
-				pwm.duty_target,
+				pwm.target_duty,
 				pwm.fade_time_ms
 			),
 
@@ -615,22 +618,17 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
 	return ESP_OK;
 }
 
-esp_err_t pwm_write(const char *TAG, uint8_t index, uint8_t duty_target_perc, uint16_t fade_time_ms){
+esp_err_t pwm_write(const char *TAG, uint8_t index, uint16_t target_duty, uint16_t fade_time_ms){
 
 	if(TAG == NULL)
 		return ESP_ERR_INVALID_ARG;
 
-	if(duty_target_perc > 100)
-		duty_target_perc = 100;
+	if(target_duty > 1023)
+		target_duty = 1023;
 
 	pwm_data_t pwm_data = {
 		.index = index,
-		.duty_target =
-			ul_utils_map_int(
-				duty_target_perc,
-				0, 100, 0, 128
-			),
-
+		.target_duty = target_duty,
 		.fade_time_ms = fade_time_ms
 	};
 
@@ -665,15 +663,3 @@ bool adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuou
 }
 
 /* USER CODE END ISR */
-
-// ESP_RETURN_ON_ERROR(
-// 	ledc_set_duty(pwm_get_port(i), pwm_get_channel(i), 127),
-// 	TAG,
-// 	"Error on `ledc_set_duty()`"
-// );
-
-// ESP_RETURN_ON_ERROR(
-// 	ledc_update_duty(pwm_get_port(i), pwm_get_channel(i)),
-// 	TAG,
-// 	"Error on `ledc_update_duty()`"
-// );
