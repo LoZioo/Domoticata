@@ -85,13 +85,13 @@
 
 #define log_event_pwm_button(TAG, pwm_index, pwm_enabled, pwm_duty, device_id, button_id, button_state) \
 	ESP_LOGI( \
-		TAG, "PWM channel %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, button_id=%u, button_state=%u)", \
+		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, button_id=%u, button_state=%u)", \
 		pwm_index, pwm_enabled, pwm_duty, device_id, button_id, button_state \
 	)
 
 #define log_event_pwm_trimmer(TAG, pwm_index, pwm_enabled, pwm_duty, device_id, trimmer_val) \
 	ESP_LOGI( \
-		TAG, "PWM channel %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, trimmer_val=%u)", \
+		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, trimmer_val=%u)", \
 		pwm_index, pwm_enabled, pwm_duty, device_id, trimmer_val \
 	)
 
