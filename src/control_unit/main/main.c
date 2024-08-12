@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
 
 // Platform libraries.
 #include <esp_err.h>
@@ -94,6 +95,19 @@
 		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, trimmer_val=%u)", \
 		pwm_index, pwm_enabled, pwm_duty, device_id, trimmer_val \
 	)
+
+// !!! SISTEMARE IL DELAY DEL FADE CALCOLANDO IL DELTA TRA UN MESSAGGIO E L'ALTRO (AVENTI LO STESSO ID)
+
+// !!! METTERE A FUNZIONE E O ADDIRITTURA RIDURRE LA FORMULA A UN SINGOLO COEFFICIENTE
+// !!! RIMUOVERE ANCHE `CONFIG_PWM_GAMMA_CORRECTION` NEL CASO
+#define led_gamma_correction(pwm_duty)( \
+	(uint16_t)( \
+		pow( \
+			(float)(pwm_duty) / CONFIG_PWM_DUTY_MAX, \
+			CONFIG_PWM_GAMMA_CORRECTION \
+		) * CONFIG_PWM_DUTY_MAX \
+	) \
+)
 
 /* USER CODE END PM */
 
@@ -237,7 +251,7 @@ void rs485_task(void *parameters){
 		i < sizeof(pwm_duty) / sizeof(uint16_t);
 		i++
 	)
-		pwm_duty[i] = CONFIG_PWM_DEFAULT;
+		pwm_duty[i] = led_gamma_correction(CONFIG_PWM_DEFAULT);
 
 	ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_UART_PORT));
 	ESP_LOGI(TAG, "Polling slave devices");
@@ -701,6 +715,9 @@ esp_err_t handle_trimmer_change(const char *TAG, bool *pwm_enabled, uint16_t *pw
 	// Trimmer not mapped.
 	if(id_to_pwm_index[device_id] == -1)
 		return ESP_OK;
+
+	// Gamma correction.
+	trimmer_val = led_gamma_correction(trimmer_val);
 
 	// Update PWM.
 	ESP_RETURN_ON_ERROR(

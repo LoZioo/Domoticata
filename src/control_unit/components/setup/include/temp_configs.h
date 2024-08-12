@@ -32,6 +32,8 @@
 
 #define CONFIG_PWM_FADE_TIME_MS		500
 
+#define CONFIG_PWM_GAMMA_CORRECTION		2.2
+
 /**
  * f: (device_id x button_id x button state) -> pwm_index
  *
