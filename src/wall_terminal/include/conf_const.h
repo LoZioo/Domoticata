@@ -14,9 +14,6 @@
 #ifndef INC_CONF_CONST_H_
 #define INC_CONF_CONST_H_
 
-// Misc
-#define ADC_MAX		((1 << 10) - 1)
-
 // GPIO
 #define CONFIG_GPIO_BTN_1				1
 #define CONFIG_GPIO_BTN_2				0
