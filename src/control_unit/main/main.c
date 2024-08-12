@@ -346,7 +346,7 @@ void pm_task(void *parameters){
 		ESP_GOTO_ON_ERROR(
 			adc_continuous_flush_pool(adc_handle),
 
-			task_continue,
+			task_error,
 			TAG,
 			"Error on `adc_continuous_flush_pool()`"
 		);
@@ -355,7 +355,7 @@ void pm_task(void *parameters){
 		ESP_GOTO_ON_ERROR(
 			adc_continuous_start(adc_handle),
 
-			task_continue,
+			task_error,
 			TAG,
 			"Error on `adc_continuous_start()`"
 		);
@@ -373,7 +373,7 @@ void pm_task(void *parameters){
 				40	// Two 50Hz cycles.
 			),
 
-			task_continue,
+			task_error,
 			TAG,
 			"Error on `adc_continuous_read()`"
 		);
@@ -396,12 +396,13 @@ void pm_task(void *parameters){
 		// printf("\n");
 		// !!! DEBUG
 
-		task_continue:
+		// Delay before continuing.
+		goto task_continue;
 
-		// Check the return code.
+		task_error:
 		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
 
-		// Before continuing, stop the sample acquisition.
+		task_continue:
 		ESP_ERROR_CHECK_WITHOUT_ABORT(
 			adc_continuous_stop(adc_handle)
 		);
