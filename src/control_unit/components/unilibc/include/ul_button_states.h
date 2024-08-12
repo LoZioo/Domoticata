@@ -32,6 +32,7 @@
  */
 typedef enum __attribute__((packed)) {
 	UL_BS_BUTTON_NONE = 0,
+
 	UL_BS_BUTTON_1,
 	UL_BS_BUTTON_2,
 	UL_BS_BUTTON_3,
@@ -39,7 +40,9 @@ typedef enum __attribute__((packed)) {
 	UL_BS_BUTTON_5,
 	UL_BS_BUTTON_6,
 	UL_BS_BUTTON_7,
-	UL_BS_BUTTON_8
+	UL_BS_BUTTON_8,
+
+	UL_BS_BUTTON_MAX
 } ul_bs_button_id_t;
 
 /**
@@ -50,6 +53,8 @@ typedef enum __attribute__((packed)) {
 	UL_BS_BUTTON_STATE_PRESSED,
 	UL_BS_BUTTON_STATE_DOUBLE_PRESSED,
 	UL_BS_BUTTON_STATE_HELD,
+
+	UL_BS_BUTTON_STATE_MAX
 } ul_bs_button_state_t;
 
 /************************************************************************************************************
