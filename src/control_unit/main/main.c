@@ -200,9 +200,12 @@ void rs485_task(void *parameters){
 
 	/* Variables */
 
+	// `ESP_GOTO_ON_ERROR()` return code.
+	esp_err_t ret;
+
+	// `wall_terminals_poll()` parameters.
 	uint8_t device_id;
 	uint16_t trimmer_val, button_states;
-	esp_err_t ret;
 
 	/* Code */
 
@@ -211,20 +214,19 @@ void rs485_task(void *parameters){
 
 	/* Infinite loop */
 	for(;;){
+		ret = ESP_OK;
 
-		delay(1);
+		ESP_GOTO_ON_ERROR(
+			wall_terminals_poll(TAG, &device_id, &trimmer_val, &button_states),
 
-		ret = wall_terminals_poll(TAG, &device_id, &trimmer_val, &button_states);
-		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
-
-		if(ret != ESP_OK){
-			ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_UART_PORT));
-			continue;
-		}
+			task_error,
+			TAG,
+			"Error on `wall_terminals_poll()`"
+		);
 
 		// No button pressed.
 		if(device_id == 0xFF)
-			continue;
+			goto task_continue;
 
 		// Update button states.
 		ul_bs_set_button_states(button_states);
@@ -250,9 +252,7 @@ void rs485_task(void *parameters){
 				)
 			);
 		}
-		// !!! DEBUG
 
-		// !!! DEBUG
 		printf("\nDevice ID: 0x%02X, Trimmer: %u\n", device_id, trimmer_val);
 		for(uint8_t button=UL_BS_BUTTON_1; button<=UL_BS_BUTTON_3; button++)
 			printf(
@@ -263,6 +263,16 @@ void rs485_task(void *parameters){
 				)
 			);
 		// !!! DEBUG
+
+		// Delay before continuing.
+		goto task_continue;
+
+		task_error:
+		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
+		ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_UART_PORT));
+
+		task_continue:
+		delay(1);
 	}
 }
 
@@ -329,18 +339,14 @@ void pm_task(void *parameters){
 
 	/* Infinite loop */
 	for(;;){
-
-		// Save the current timestamp.
 		t0 = millis();
-
-		// Reset the return code.
 		ret = ESP_OK;
 
 		// Flush old samples.
 		ESP_GOTO_ON_ERROR(
 			adc_continuous_flush_pool(adc_handle),
 
-			pm_task_continue,
+			task_continue,
 			TAG,
 			"Error on `adc_continuous_flush_pool()`"
 		);
@@ -349,7 +355,7 @@ void pm_task(void *parameters){
 		ESP_GOTO_ON_ERROR(
 			adc_continuous_start(adc_handle),
 
-			pm_task_continue,
+			task_continue,
 			TAG,
 			"Error on `adc_continuous_start()`"
 		);
@@ -367,7 +373,7 @@ void pm_task(void *parameters){
 				40	// Two 50Hz cycles.
 			),
 
-			pm_task_continue,
+			task_continue,
 			TAG,
 			"Error on `adc_continuous_read()`"
 		);
@@ -390,7 +396,7 @@ void pm_task(void *parameters){
 		// printf("\n");
 		// !!! DEBUG
 
-		pm_task_continue:
+		task_continue:
 
 		// Check the return code.
 		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
