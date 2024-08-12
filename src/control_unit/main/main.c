@@ -562,7 +562,7 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
 
 		ESP_ERR_TIMEOUT,
 		TAG,
-		"Error: slave device 0x%02X exceeded the prefixed %ums timeout for sending the button states",
+		"Error: slave device 0x%02X exceeded the prefixed %ums timeout for sending its state",
 		poll_device_id, CONFIG_RS485_WALL_TERMINAL_CONN_TIMEOUT_MS
 	);
 
@@ -603,7 +603,7 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
 
 		ESP_ERR_INVALID_CRC,
 		TAG,
-		"Error: invalid data CRC for slave device 0x%02X; sent CRC is 0x%02X but computed CRC is 0x%02X",
+		"Error: invalid CRC8 for slave device 0x%02X; sent CRC8 is 0x%02X but computed CRC8 is 0x%02X",
 		poll_device_id, decoded_data.crc8, crc8
 	);
 
