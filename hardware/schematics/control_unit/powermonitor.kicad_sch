@@ -1608,7 +1608,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "HomeMonitor:Transformer"
+		(property "Footprint" "PowerMonitor:Transformer"
 			(at 144.78 100.33 0)
 			(effects
 				(font

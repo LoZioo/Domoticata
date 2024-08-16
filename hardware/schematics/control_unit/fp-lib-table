@@ -2,6 +2,6 @@
   (version 7)
   (lib (name "MCU_Espressif_ESP32_38PIN")(type "KiCad")(uri "${KIPRJMOD}/../../lib/footprints/MCU_Espressif_ESP32_38PIN.pretty")(options "")(descr ""))
   (lib (name "Connector_Phoenix_MC_D1.4mm")(type "KiCad")(uri "${KIPRJMOD}/../../lib/footprints/Connector_Phoenix_MC_D1.4mm.pretty")(options "")(descr ""))
-  (lib (name "HomeMonitor")(type "KiCad")(uri "${KIPRJMOD}/../../lib/footprints/HomeMonitor.pretty")(options "")(descr ""))
+  (lib (name "PowerMonitor")(type "KiCad")(uri "${KIPRJMOD}/../../lib/footprints/PowerMonitor.pretty")(options "")(descr ""))
   (lib (name "Heatsink_Custom")(type "KiCad")(uri "${KIPRJMOD}/../../lib/footprints/Heatsink_Custom.pretty")(options "")(descr ""))
 )

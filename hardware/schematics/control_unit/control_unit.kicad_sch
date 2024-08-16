@@ -6439,7 +6439,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "HomeMonitor:SCT013"
+		(property "Footprint" "PowerMonitor:SCT013"
 			(at 176.53 66.04 0)
 			(effects
 				(font
