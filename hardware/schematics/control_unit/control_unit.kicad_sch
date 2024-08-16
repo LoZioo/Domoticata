@@ -7681,7 +7681,7 @@
 			(color 255 255 194 1.0000)
 		)
 		(uuid "c26fa081-0dcc-46f1-824c-e1a5c901dc40")
-		(property "Sheetname" "HOMEMONITOR"
+		(property "Sheetname" "POWERMONITOR"
 			(at 63.5 37.3884 0)
 			(effects
 				(font
@@ -7690,7 +7690,7 @@
 				(justify left bottom)
 			)
 		)
-		(property "Sheetfile" "untitled.kicad_sch"
+		(property "Sheetfile" "powermonitor.kicad_sch"
 			(at 63.5 56.4646 0)
 			(effects
 				(font
