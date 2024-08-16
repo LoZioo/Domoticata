@@ -1667,7 +1667,7 @@
 		(dnp no)
 		(uuid "29a13104-08cf-4232-bf8f-c41c163a2ee0")
 		(property "Reference" "R61"
-			(at 190.5 121.92 90)
+			(at 190.5 120.65 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1675,7 +1675,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 190.5 119.38 90)
+			(at 190.5 123.19 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1734,20 +1734,19 @@
 		(dnp no)
 		(uuid "2f0f1548-fd8b-44e2-a9e6-9c968940154d")
 		(property "Reference" "R57"
-			(at 144.78 80.01 90)
+			(at 144.78 76.2 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "R"
-			(at 144.78 80.01 90)
+		(property "Value" "120"
+			(at 144.78 78.74 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
@@ -1802,7 +1801,7 @@
 		(dnp no)
 		(uuid "3d570c35-185a-419d-a298-4b41c6bc1773")
 		(property "Reference" "R60"
-			(at 190.5 92.71 90)
+			(at 190.5 91.44 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1810,7 +1809,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 190.5 90.17 90)
+			(at 190.5 93.98 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1869,7 +1868,7 @@
 		(dnp no)
 		(uuid "41abbfc7-b56c-4c5f-b1e6-3e45b5908379")
 		(property "Reference" "R59"
-			(at 163.83 105.41 0)
+			(at 165.1 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1877,14 +1876,13 @@
 				(justify left)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "820"
 			(at 165.1 106.6799 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
 			)
 		)
 		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
@@ -1939,7 +1937,7 @@
 		(dnp no)
 		(uuid "71f8c852-e82a-4e04-923a-407fb2c4609f")
 		(property "Reference" "R58"
-			(at 163.83 95.25 0)
+			(at 165.1 93.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1947,14 +1945,13 @@
 				(justify left)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "10k"
 			(at 165.1 96.5199 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
 			)
 		)
 		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
@@ -2121,7 +2118,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "1k"
 			(at 104.14 97.7899 0)
 			(effects
 				(font
@@ -2191,7 +2188,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "1k"
 			(at 104.14 87.6299 0)
 			(effects
 				(font

@@ -191,10 +191,10 @@
 	(net 103 "Net-(U18A--)")
 	(net 104 "/MCU/TEMP")
 	(net 105 "Net-(U18D-+)")
-	(net 106 "/HOMEMONITOR/I")
+	(net 106 "/MCU/AC_I")
 	(net 107 "Net-(U18C--)")
 	(net 108 "Net-(U18D--)")
-	(net 109 "/HOMEMONITOR/V")
+	(net 109 "/MCU/AC_V")
 	(net 110 "/MCU/TX")
 	(net 111 "unconnected-(U15-RXD{slash}G3-Pad24)")
 	(net 112 "unconnected-(U15-TXD{slash}G1-Pad23)")
@@ -2706,7 +2706,7 @@
 				)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "120"
 			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(uuid "ac1fc74a-f0d9-47fe-a2f7-5aa8483ff392")
@@ -2758,8 +2758,8 @@
 		)
 		(property ki_fp_filters "R_*")
 		(path "/c26fa081-0dcc-46f1-824c-e1a5c901dc40/2f0f1548-fd8b-44e2-a9e6-9c968940154d")
-		(sheetname "HOMEMONITOR")
-		(sheetfile "untitled.kicad_sch")
+		(sheetname "POWERMONITOR")
+		(sheetfile "powermonitor.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -3033,8 +3033,8 @@
 		)
 		(property ki_fp_filters "CP_*")
 		(path "/c26fa081-0dcc-46f1-824c-e1a5c901dc40/f0dac7aa-b2b3-42c4-8c92-9b82ad25eb42")
-		(sheetname "HOMEMONITOR")
-		(sheetfile "untitled.kicad_sch")
+		(sheetname "POWERMONITOR")
+		(sheetfile "powermonitor.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 3.081 -0.37)
@@ -6231,7 +6231,7 @@
 		(uuid "200c9fc5-c6d5-4c42-adc2-ac35b96b5551")
 		(at 86.57493 61.468 180)
 		(property "Reference" "G***"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "78d8b27a-ad11-4960-b9a0-43656e4a83de")
@@ -6243,7 +6243,7 @@
 			)
 		)
 		(property "Value" "LOGO"
-			(at 0.75 0 360)
+			(at 0.75 0 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "6176db63-3f6a-41cd-857b-6fb6d7aae1d1")
@@ -6255,7 +6255,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "2af3854c-6247-4270-a948-0913bbc8c7b6")
@@ -6267,7 +6267,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "fd9589d7-5e14-48fd-81ab-97022ba2571c")
@@ -6279,7 +6279,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "461e133e-d82e-4213-9c90-1023ff26eddb")
@@ -7617,7 +7617,7 @@
 			(drill 1)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
-			(net 106 "/HOMEMONITOR/I")
+			(net 106 "/MCU/AC_I")
 			(pinfunction "SN/G39")
 			(pintype "bidirectional")
 			(uuid "86eedd6d-bed2-4efb-af74-6995f9d424bb")
@@ -7628,7 +7628,7 @@
 			(drill 1)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
-			(net 109 "/HOMEMONITOR/V")
+			(net 109 "/MCU/AC_V")
 			(pinfunction "SP/G36")
 			(pintype "bidirectional")
 			(uuid "e38e52dc-9607-4655-b97c-ad17c549c264")
@@ -10787,7 +10787,7 @@
 				)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "820"
 			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(uuid "071c16ae-01f0-4dc2-9bfe-7f170e7f1dc5")
@@ -10839,8 +10839,8 @@
 		)
 		(property ki_fp_filters "R_*")
 		(path "/c26fa081-0dcc-46f1-824c-e1a5c901dc40/41abbfc7-b56c-4c5f-b1e6-3e45b5908379")
-		(sheetname "HOMEMONITOR")
-		(sheetfile "untitled.kicad_sch")
+		(sheetname "POWERMONITOR")
+		(sheetfile "powermonitor.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -11336,7 +11336,7 @@
 		(uuid "4b014080-5e3f-4655-91dc-a8befbdd59b8")
 		(at 220.472 80.264 180)
 		(property "Reference" "G***"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "30323b07-3854-49a1-9378-7550a5cf529d")
@@ -11348,7 +11348,7 @@
 			)
 		)
 		(property "Value" "LOGO"
-			(at 0.75 0 360)
+			(at 0.75 0 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "22159975-be08-47d1-8754-313960cd0f4c")
@@ -11360,7 +11360,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "745daa89-1cae-45be-b937-18f0ce2517a1")
@@ -11372,7 +11372,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "d6ebafdb-d0aa-49ad-bbd1-88428f2d938c")
@@ -11384,7 +11384,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "766c8650-c3a0-42c2-8499-130ac7b3f15d")
@@ -12355,7 +12355,7 @@
 		(uuid "5206f84f-b8c3-4085-9842-f27525d69f5d")
 		(at 101.81493 61.468 180)
 		(property "Reference" "G***"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "d6392c71-357e-47d6-b113-2db3eaf86599")
@@ -12367,7 +12367,7 @@
 			)
 		)
 		(property "Value" "LOGO"
-			(at 0.75 0 360)
+			(at 0.75 0 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "f65fe0ec-6da6-4af1-94e9-fefff0f29efd")
@@ -12379,7 +12379,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "d78d3fe9-82bf-4de4-8d03-4b27d0cba144")
@@ -12391,7 +12391,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "187557d6-ddbe-4a61-ad3a-771cca332690")
@@ -12403,7 +12403,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b4352525-d986-457f-a42a-91b190b695f0")
@@ -12580,8 +12580,8 @@
 		)
 		(property ki_fp_filters "R_*")
 		(path "/c26fa081-0dcc-46f1-824c-e1a5c901dc40/29a13104-08cf-4232-bf8f-c41c163a2ee0")
-		(sheetname "HOMEMONITOR")
-		(sheetfile "untitled.kicad_sch")
+		(sheetname "POWERMONITOR")
+		(sheetfile "powermonitor.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -12770,7 +12770,7 @@
 			(drill 0.8)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
-			(net 109 "/HOMEMONITOR/V")
+			(net 109 "/MCU/AC_V")
 			(pintype "passive")
 			(uuid "b2d624da-f05a-4aa5-a0c2-35f7935827a9")
 		)
@@ -12791,7 +12791,7 @@
 		(uuid "52cd21e7-2f87-43b2-921b-2904efd67dd0")
 		(at 221.84743 61.468 180)
 		(property "Reference" "G***"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "fc1ba295-33bd-4546-84bf-b2918a9458f5")
@@ -12803,7 +12803,7 @@
 			)
 		)
 		(property "Value" "LOGO"
-			(at 0.75 0 360)
+			(at 0.75 0 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "85d6aed9-77b0-45e3-88af-e2346e459aeb")
@@ -12815,7 +12815,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "d78d3fe9-82bf-4de4-8d03-4b27d0cba144")
@@ -12827,7 +12827,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "187557d6-ddbe-4a61-ad3a-771cca332690")
@@ -12839,7 +12839,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b4352525-d986-457f-a42a-91b190b695f0")
@@ -21674,8 +21674,8 @@
 		)
 		(property ki_fp_filters "R_*")
 		(path "/c26fa081-0dcc-46f1-824c-e1a5c901dc40/3d570c35-185a-419d-a298-4b41c6bc1773")
-		(sheetname "HOMEMONITOR")
-		(sheetfile "untitled.kicad_sch")
+		(sheetname "POWERMONITOR")
+		(sheetfile "powermonitor.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -21854,7 +21854,7 @@
 			(drill 0.8)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
-			(net 106 "/HOMEMONITOR/I")
+			(net 106 "/MCU/AC_I")
 			(pintype "passive")
 			(uuid "d501baa9-e933-42f7-a31d-9eccc78a8194")
 		)
@@ -27370,7 +27370,7 @@
 		(uuid "91af58e6-2ac7-4eb4-bdef-8e472346f059")
 		(at 94.19493 61.468 180)
 		(property "Reference" "G***"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "f91cc0f1-5180-4c6a-97c5-4b53920d1195")
@@ -27382,7 +27382,7 @@
 			)
 		)
 		(property "Value" "LOGO"
-			(at 0.75 0 360)
+			(at 0.75 0 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "713afd1b-4105-40b2-a1c7-fe3ea50c7db9")
@@ -27394,7 +27394,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "4401cb8d-da4a-4971-9f5f-ec718e05aa63")
@@ -27406,7 +27406,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "132f0396-0aea-4a87-b1ff-649e944a0522")
@@ -27418,7 +27418,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b6decf43-b083-4666-9522-f6ae25e6fc3e")
@@ -30531,7 +30531,7 @@
 			(drill 0.8)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
-			(net 106 "/HOMEMONITOR/I")
+			(net 106 "/MCU/AC_I")
 			(pintype "output")
 			(uuid "99a4cdc8-be09-4f41-a8e1-5a899bc87d4e")
 		)
@@ -30596,7 +30596,7 @@
 			(drill 0.8)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
-			(net 109 "/HOMEMONITOR/V")
+			(net 109 "/MCU/AC_V")
 			(pintype "output")
 			(uuid "a1329c93-8393-488d-bb36-9a1f8b1d2147")
 		)
@@ -32595,8 +32595,8 @@
 			)
 		)
 		(path "/c26fa081-0dcc-46f1-824c-e1a5c901dc40/261832a5-e2ba-4083-8966-f06e57ef255b")
-		(sheetname "HOMEMONITOR")
-		(sheetfile "untitled.kicad_sch")
+		(sheetname "POWERMONITOR")
+		(sheetfile "powermonitor.kicad_sch")
 		(attr through_hole)
 		(fp_rect
 			(start 0 0)
@@ -33343,7 +33343,7 @@
 				)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "10k"
 			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(uuid "36629383-f91c-4181-aa8c-9f9d9b94e4d6")
@@ -33395,8 +33395,8 @@
 		)
 		(property ki_fp_filters "R_*")
 		(path "/c26fa081-0dcc-46f1-824c-e1a5c901dc40/71f8c852-e82a-4e04-923a-407fb2c4609f")
-		(sheetname "HOMEMONITOR")
-		(sheetfile "untitled.kicad_sch")
+		(sheetname "POWERMONITOR")
+		(sheetfile "powermonitor.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 7.08 1.37)
@@ -35531,7 +35531,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "1k"
 			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(uuid "9dca20e3-1001-40e9-ae45-f088cac063f7")
@@ -35583,8 +35583,8 @@
 		)
 		(property ki_fp_filters "R_*")
 		(path "/c26fa081-0dcc-46f1-824c-e1a5c901dc40/9fcc7402-ddc9-43ec-80df-64e65908498c")
-		(sheetname "HOMEMONITOR")
-		(sheetfile "untitled.kicad_sch")
+		(sheetname "POWERMONITOR")
+		(sheetfile "powermonitor.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
@@ -43140,7 +43140,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "1k"
 			(at 3.81 2.37 0)
 			(layer "F.Fab")
 			(uuid "19c73fc1-864b-4165-bf25-eb6d8d549266")
@@ -43192,8 +43192,8 @@
 		)
 		(property ki_fp_filters "R_*")
 		(path "/c26fa081-0dcc-46f1-824c-e1a5c901dc40/a22d9708-20a1-4ccc-945b-497a62f74f7d")
-		(sheetname "HOMEMONITOR")
-		(sheetfile "untitled.kicad_sch")
+		(sheetname "POWERMONITOR")
+		(sheetfile "powermonitor.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 0.54 -1.37)
