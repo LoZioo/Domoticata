@@ -6,6 +6,8 @@
  * 	-	Soglia potenza cicalino
  */
 
+// Transformer: 232.9V vs 14.29V
+
 // LEDC PWM max duty.
 #define CONFIG_PWM_DUTY_MAX		((1 << CONFIG_LEDC_PWM_BIT_RES) - 1)
 
