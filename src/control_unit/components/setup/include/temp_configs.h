@@ -7,6 +7,7 @@
  */
 
 // Transformer: 232.9V vs 14.29V
+// Applique: a total of 12.19V for 4 led @ 248mA
 
 // LEDC PWM max duty.
 #define CONFIG_PWM_DUTY_MAX		((1 << CONFIG_LEDC_PWM_BIT_RES) - 1)
