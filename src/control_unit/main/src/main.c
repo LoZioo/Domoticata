@@ -54,6 +54,7 @@
 #include <ul_pm.h>
 
 // Project libraries.
+#include <project.h>
 #include <setup.h>
 
 // !!! RIMUOVERE
