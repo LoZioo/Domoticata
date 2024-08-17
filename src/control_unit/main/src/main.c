@@ -127,9 +127,6 @@
 
 /* FreeRTOS tasks */
 
-TaskHandle_t rs485_task_handle;
-void rs485_task(void *parameters);
-
 QueueHandle_t pwm_queue;
 TaskHandle_t pwm_task_handle;
 void pwm_task(void *parameters);
