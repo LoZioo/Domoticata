@@ -162,76 +162,6 @@ esp_err_t LEDC_setup(const char *TAG){
 	return ESP_OK;
 }
 
-esp_err_t UART_setup(const char *TAG){
-
-	ESP_RETURN_ON_FALSE(
-		TAG != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		"???",
-		"Error: `TAG` is NULL"
-	);
-
-	uart_config_t uart_config = {
-		.baud_rate = CONFIG_UART_BAUD_RATE,
-		.data_bits = UART_DATA_8_BITS,
-		.parity = UART_PARITY_DISABLE,
-		.stop_bits = UART_STOP_BITS_1,
-		.flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-		.rx_flow_ctrl_thresh = 122,
-		.source_clk = UART_SCLK_DEFAULT,
-	};
-
-	ESP_RETURN_ON_ERROR(
-		uart_driver_install(
-			CONFIG_UART_PORT,
-			UART_HW_FIFO_LEN(2) * 2,
-			0,
-			0,
-			NULL,
-			0
-		),
-
-		TAG,
-		"Error on `uart_driver_install()`"
-	);
-
-	ESP_RETURN_ON_ERROR(
-		uart_param_config(
-			CONFIG_UART_PORT,
-			&uart_config
-		),
-
-		TAG,
-		"Error on `uart_param_config()`"
-	);
-
-	ESP_RETURN_ON_ERROR(
-		uart_set_pin(
-			CONFIG_UART_PORT,
-			CONFIG_GPIO_UART_TX,
-			CONFIG_GPIO_UART_RX,
-			CONFIG_GPIO_UART_DE_RE,
-			UART_PIN_NO_CHANGE
-		),
-
-		TAG,
-		"Error on `uart_set_pin()`"
-	);
-
-	ESP_RETURN_ON_ERROR(
-		uart_set_mode(
-			CONFIG_UART_PORT,
-			UART_MODE_RS485_HALF_DUPLEX
-		),
-
-		TAG,
-		"Error on `uart_set_mode()`"
-	);
-
-	return ESP_OK;
-}
-
 esp_err_t ADC_setup(const char *TAG){
 
 	ESP_RETURN_ON_FALSE(
@@ -344,94 +274,94 @@ esp_err_t ADC_setup(const char *TAG){
 	return ESP_OK;
 }
 
-esp_err_t QUEUES_setup(const char *TAG){
+// esp_err_t QUEUES_setup(const char *TAG){
 
-	ESP_RETURN_ON_FALSE(
-		TAG != NULL,
+// 	ESP_RETURN_ON_FALSE(
+// 		TAG != NULL,
 
-		ESP_ERR_INVALID_ARG,
-		"???",
-		"Error: `TAG` is NULL"
-	);
+// 		ESP_ERR_INVALID_ARG,
+// 		"???",
+// 		"Error: `TAG` is NULL"
+// 	);
 
-	/* pwm_task */
+// 	/* pwm_task */
 
-	extern QueueHandle_t pwm_queue;
-	pwm_queue = xQueueCreate(10, sizeof(pwm_data_t));
+// 	extern QueueHandle_t pwm_queue;
+// 	pwm_queue = xQueueCreate(10, sizeof(pwm_data_t));
 
-	ESP_RETURN_ON_FALSE(
-		pwm_queue != NULL,
+// 	ESP_RETURN_ON_FALSE(
+// 		pwm_queue != NULL,
 
-		ESP_ERR_NO_MEM,
-		TAG,
-		"Error: unable to allocate the \"pwm_queue\""
-	);
+// 		ESP_ERR_NO_MEM,
+// 		TAG,
+// 		"Error: unable to allocate the \"pwm_queue\""
+// 	);
 
-	return ESP_OK;
-}
+// 	return ESP_OK;
+// }
 
-esp_err_t TASKS_setup(const char *TAG){
+// esp_err_t TASKS_setup(const char *TAG){
 
-	ESP_RETURN_ON_FALSE(
-		TAG != NULL,
+// 	ESP_RETURN_ON_FALSE(
+// 		TAG != NULL,
 
-		ESP_ERR_INVALID_ARG,
-		"???",
-		"Error: `TAG` is NULL"
-	);
+// 		ESP_ERR_INVALID_ARG,
+// 		"???",
+// 		"Error: `TAG` is NULL"
+// 	);
 
-	extern TaskHandle_t
-		rs485_task_handle,
-		pwm_task_handle,
-		pm_task_handle;
+// 	extern TaskHandle_t
+// 		pwm_task_handle,
+// 		pm_task_handle,
+// 		rs485_task_handle;
 
-	TaskHandle_t *task_handles[] = {
-		&rs485_task_handle,
-		&pwm_task_handle,
-		&pm_task_handle
-	};
+// 	TaskHandle_t *task_handles[] = {
+// 		&rs485_task_handle,
+// 		&pwm_task_handle,
+// 		&pm_task_handle
+// 	};
 
-	extern void
-		rs485_task(void *parameters),
-		pwm_task(void *parameters),
-		pm_task(void *parameters);
+// 	extern void
+// 		rs485_task(void *parameters),
+// 		pwm_task(void *parameters),
+// 		pm_task(void *parameters);
 
-	TaskFunction_t task_routines[] = {
-		rs485_task,
-		pwm_task,
-		pm_task
-	};
+// 	TaskFunction_t task_routines[] = {
+// 		rs485_task,
+// 		pwm_task,
+// 		pm_task
+// 	};
 
-	char task_names[][12] = {
-		"rs485_task",
-		"pwm_task",
-		"pm_task"
-	};
+// 	char task_names[][12] = {
+// 		"rs485_task",
+// 		"pwm_task",
+// 		"pm_task"
+// 	};
 
-	uint8_t tasks = sizeof(task_handles) / sizeof(TaskHandle_t);
-	BaseType_t ret_val;
+// 	uint8_t tasks = sizeof(task_handles) / sizeof(TaskHandle_t);
+// 	BaseType_t ret_val;
 
-	for(uint8_t i=0; i<tasks; i++){
+// 	for(uint8_t i=0; i<tasks; i++){
 
-		ret_val = xTaskCreatePinnedToCore(
-			task_routines[i],
-			task_names[i],
-			4096,
-			NULL,
-			tskIDLE_PRIORITY,
-			task_handles[i],
-			ESP_APPLICATION_CORE
-		);
+// 		ret_val = xTaskCreatePinnedToCore(
+// 			task_routines[i],
+// 			task_names[i],
+// 			4096,
+// 			NULL,
+// 			tskIDLE_PRIORITY,
+// 			task_handles[i],
+// 			ESP_APPLICATION_CORE
+// 		);
 
-		ESP_RETURN_ON_FALSE(
-			ret_val == pdPASS,
+// 		ESP_RETURN_ON_FALSE(
+// 			ret_val == pdPASS,
 
-			ESP_ERR_INVALID_STATE,
-			TAG,
-			"Error %d: unable to spawn the \"%s\"",
-			ret_val, task_names[i]
-		);
-	}
+// 			ESP_ERR_INVALID_STATE,
+// 			TAG,
+// 			"Error %d: unable to spawn the \"%s\"",
+// 			ret_val, task_names[i]
+// 		);
+// 	}
 
-	return ESP_OK;
-}
+// 	return ESP_OK;
+// }

@@ -103,10 +103,9 @@ typedef struct __attribute__((__packed__)) {
 
 extern esp_err_t GPIO_setup(const char *TAG);
 extern esp_err_t LEDC_setup(const char *TAG);
-extern esp_err_t UART_setup(const char *TAG);
 extern esp_err_t ADC_setup(const char *TAG);
 
-extern esp_err_t QUEUES_setup(const char *TAG);
-extern esp_err_t TASKS_setup(const char *TAG);
+// extern esp_err_t QUEUES_setup(const char *TAG);
+// extern esp_err_t TASKS_setup(const char *TAG);
 
 #endif  /* INC_SETUP_H_ */
