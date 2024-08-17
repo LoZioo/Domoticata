@@ -96,8 +96,6 @@
 		pwm_index, pwm_enabled, pwm_duty, device_id, trimmer_val \
 	)
 
-// !!! SISTEMARE IL DELAY DEL FADE CALCOLANDO IL DELTA TRA UN MESSAGGIO E L'ALTRO (AVENTI LO STESSO ID)
-
 // !!! METTERE A FUNZIONE E O ADDIRITTURA RIDURRE LA FORMULA A UN SINGOLO COEFFICIENTE
 // !!! RIMUOVERE ANCHE `CONFIG_PWM_GAMMA_CORRECTION` NEL CASO e rimuovere math.h
 #define led_gamma_correction(pwm_duty)( \
@@ -213,7 +211,6 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
-	pwm_write(TAG, 1, 1023, 1000);
 	return;
 
 	/* Infinite loop */
@@ -583,7 +580,7 @@ esp_err_t wall_terminals_poll(const char *TAG, uint8_t *device_id, uint16_t *tri
 	uint8_t encoded_data[4];
 
 	// Decoded data buffer.
-	struct __attribute__((__packed__)){
+	struct __attribute__((__packed__)) {
 		uint16_t trimmer_val: 10;
 		uint16_t button_states: 6;
 		uint8_t crc8;

@@ -38,9 +38,12 @@
 * Public Defines
 ************************************************************************************************************/
 
-// Misc
+/* Miscellaneous */
+
 #define ESP_PROTOCOL_CORE			0
 #define ESP_APPLICATION_CORE	1
+
+/* LEDC PWM */
 
 /**
  * @return `ledc_mode_t`
@@ -60,6 +63,8 @@
 	(ledc_channel_t) (i % LEDC_CHANNEL_MAX) \
 )
 
+/* PowerMonitor */
+
 /**
  * @brief Convert the needed samples length for the "PowerMonitor" feature to the corresponding total byte length for the allocation of the `esp_adc/adc_continuous.h` driver's buffer.
  * @return `samples_len` * 2 channels * 2 bytes/sample.
@@ -72,6 +77,8 @@
 /************************************************************************************************************
 * Public Types Definitions
 ************************************************************************************************************/
+
+/* LEDC PWM */
 
 typedef struct __attribute__((__packed__)) {
 
