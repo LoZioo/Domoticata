@@ -74,6 +74,8 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
+/* Miscellaneous */
+
 #define delay(ms) \
 	vTaskDelay(pdMS_TO_TICKS(ms))
 
@@ -83,6 +85,8 @@
 #define millis()( \
 	micros() / 1000 \
 )
+
+/* Log */
 
 #define log_event_pwm_button(TAG, pwm_index, pwm_enabled, pwm_duty, device_id, button_id, button_state) \
 	ESP_LOGI( \
@@ -96,9 +100,12 @@
 		pwm_index, pwm_enabled, pwm_duty, device_id, trimmer_val \
 	)
 
-// !!! METTERE A FUNZIONE E O ADDIRITTURA RIDURRE LA FORMULA A UN SINGOLO COEFFICIENTE
-// !!! RIMUOVERE ANCHE `CONFIG_PWM_GAMMA_CORRECTION` NEL CASO e rimuovere math.h
-#define led_gamma_correction(pwm_duty)( \
+/* LEDC PWM */
+
+/**
+ * @brief Converts the linear scale of the PWM to logarithmic by applying a gamma correction with a coefficient `CONFIG_PWM_GAMMA_CORRECTION`.
+ */
+#define pwm_led_gamma_correction(pwm_duty)( \
 	(uint16_t)( \
 		pow( \
 			(float)(pwm_duty) / CONFIG_PWM_DUTY_MAX, \
@@ -249,7 +256,7 @@ void rs485_task(void *parameters){
 		i < sizeof(pwm_duty) / sizeof(uint16_t);
 		i++
 	)
-		pwm_duty[i] = led_gamma_correction(CONFIG_PWM_DEFAULT);
+		pwm_duty[i] = pwm_led_gamma_correction(CONFIG_PWM_DEFAULT);
 
 	ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_UART_PORT));
 	ESP_LOGI(TAG, "Polling slave devices");
@@ -715,7 +722,7 @@ esp_err_t handle_trimmer_change(const char *TAG, bool *pwm_enabled, uint16_t *pw
 		return ESP_OK;
 
 	// Gamma correction.
-	trimmer_val = led_gamma_correction(trimmer_val);
+	trimmer_val = pwm_led_gamma_correction(trimmer_val);
 
 	// Update PWM.
 	ESP_RETURN_ON_ERROR(
