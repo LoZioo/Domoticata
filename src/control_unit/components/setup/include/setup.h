@@ -73,12 +73,16 @@
 * Public Types Definitions
 ************************************************************************************************************/
 
-typedef struct {
+typedef struct __attribute__((__packed__)) {
 
 	// 0: Fan controller, 1-12: LEDs.
-	uint8_t pwm_index;
-	uint16_t target_duty;
-	uint16_t fade_time_ms;
+	uint8_t pwm_index: 4;
+
+	// Up to `CONFIG_PWM_DUTY_MAX`.
+	uint16_t target_duty: CONFIG_LEDC_PWM_BIT_RES;
+
+	// Up to 1023ms.
+	uint16_t fade_time_ms: 10;
 
 } pwm_data_t;
 

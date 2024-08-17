@@ -99,7 +99,7 @@
 // !!! SISTEMARE IL DELAY DEL FADE CALCOLANDO IL DELTA TRA UN MESSAGGIO E L'ALTRO (AVENTI LO STESSO ID)
 
 // !!! METTERE A FUNZIONE E O ADDIRITTURA RIDURRE LA FORMULA A UN SINGOLO COEFFICIENTE
-// !!! RIMUOVERE ANCHE `CONFIG_PWM_GAMMA_CORRECTION` NEL CASO
+// !!! RIMUOVERE ANCHE `CONFIG_PWM_GAMMA_CORRECTION` NEL CASO e rimuovere math.h
 #define led_gamma_correction(pwm_duty)( \
 	(uint16_t)( \
 		pow( \
@@ -155,7 +155,7 @@ int8_t id_button_and_state_to_pwm_index(uint8_t device_id, ul_bs_button_id_t but
  * @brief Send `pwm_data` to `pwm_task` via `pwm_queue`.
  * @param TAG The `esp_log.h` tag.
  * @param index 0: Fan controller, 1-12: LEDs.
- * @param target_duty 10-bit duty target (from 0 to (2^`CONFIG_LEDC_PWM_BIT_RES`) - 1 ).
+ * @param target_duty 10-bit target duty (from 0 to (2^`CONFIG_LEDC_PWM_BIT_RES`) - 1 ).
  */
 esp_err_t pwm_write(const char *TAG, uint8_t pwm_index, uint16_t target_duty, uint16_t fade_time_ms);
 
@@ -213,6 +213,7 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
+	pwm_write(TAG, 1, 1023, 1000);
 	return;
 
 	/* Infinite loop */
