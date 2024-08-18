@@ -35,7 +35,7 @@
 #define BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL	UL_BS_BUTTON_3
 
 // Default PWM value at startup for every logical PWM channel.
-#define PWM_DEFAULT_VALUE	512
+#define PWM_DEFAULT_VALUE	__led_gamma_correction(512)
 
 /**
  * PWM fade time passed to every `pwm_write()`.
@@ -625,7 +625,7 @@ void __rs485_task(void *parameters){
 		i < sizeof(pwm_duty) / sizeof(uint16_t);
 		i++
 	)
-		pwm_duty[i] = __led_gamma_correction(PWM_DEFAULT_VALUE);
+		pwm_duty[i] = PWM_DEFAULT_VALUE;
 
 	ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_RS485_UART_PORT));
 	ESP_LOGI(TAG, "Polling slave devices");
