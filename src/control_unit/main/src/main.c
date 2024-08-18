@@ -23,37 +23,17 @@
 /* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-// !!! SFOLTIRE
-
 // Standard libraries.
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include <math.h>
 
 // Platform libraries.
 #include <esp_err.h>
 #include <esp_check.h>
 #include <esp_log.h>
-#include <esp_attr.h>
-#include <esp_timer.h>
-
-#include <freertos/FreeRTOS.h>
-
-#include <esp_adc/adc_continuous.h>
-#include <driver/gpio.h>
-#include <driver/ledc.h>
-#include <driver/uart.h>
-
-// UniLibC libraries.
-#include <ul_errors.h>
-#include <ul_utils.h>
-#include <ul_button_states.h>
-#include <ul_master_slave.h>
-#include <ul_crc.h>
-#include <ul_pm.h>
 
 // Project libraries.
 #include <main.h>
