@@ -35,6 +35,24 @@
 	CONFIG_GPIO_LED_12 \
 }
 
+/**
+ * @return `ledc_mode_t`
+ * @note 0: Fan controller, 1-12: LEDs.
+ */
+#define __pwm_get_port(i)( \
+	i < LEDC_CHANNEL_MAX ? \
+	LEDC_HIGH_SPEED_MODE : \
+	LEDC_LOW_SPEED_MODE \
+)
+
+/**
+ * @return `ledc_channel_t`
+ * @note 0: Fan controller, 1-12: LEDs.
+ */
+#define __pwm_get_channel(i)( \
+	(ledc_channel_t) (i % LEDC_CHANNEL_MAX) \
+)
+
 /************************************************************************************************************
 * Private Types Definitions
  ************************************************************************************************************/
@@ -102,14 +120,14 @@ esp_err_t __ledc_driver_setup(){
 	// Channel setup for both ports.
 	for(uint8_t i=0; i<sizeof(pwm_ch_to_gpio); i++){
 		ledc_ch_config.gpio_num = pwm_ch_to_gpio[i];
-		ledc_ch_config.speed_mode = pwm_get_port(i);
-		ledc_ch_config.channel = pwm_get_channel(i);
+		ledc_ch_config.speed_mode = __pwm_get_port(i);
+		ledc_ch_config.channel = __pwm_get_channel(i);
 
 		ESP_RETURN_ON_ERROR(
 			ledc_channel_config(&ledc_ch_config),
 			TAG,
 			"Error on `ledc_channel_config(gpio_num=%u, speed_mode=%u, channel=%u)`",
-			pwm_ch_to_gpio[i], pwm_get_port(i), pwm_get_channel(i)
+			pwm_ch_to_gpio[i], __pwm_get_port(i), __pwm_get_channel(i)
 		);
 	}
 
@@ -179,8 +197,8 @@ void __pwm_task(void *parameters){
 		// Set PWM parameters.
 		ESP_GOTO_ON_ERROR(
 			ledc_set_fade_with_time(
-				pwm_get_port(pwm.pwm_index),
-				pwm_get_channel(pwm.pwm_index),
+				__pwm_get_port(pwm.pwm_index),
+				__pwm_get_channel(pwm.pwm_index),
 				pwm.target_duty,
 				pwm.fade_time_ms
 			),
@@ -188,21 +206,21 @@ void __pwm_task(void *parameters){
 			task_error,
 			TAG,
 			"Error on `ledc_set_fade_with_time(speed_mode=%u, channel=%u, target_duty=%u, max_fade_time_ms=%u)`",
-			pwm_get_port(pwm.pwm_index), pwm_get_channel(pwm.pwm_index), pwm.target_duty, pwm.fade_time_ms
+			__pwm_get_port(pwm.pwm_index), __pwm_get_channel(pwm.pwm_index), pwm.target_duty, pwm.fade_time_ms
 		);
 
 		// Fade start.
 		ESP_GOTO_ON_ERROR(
 			ledc_fade_start(
-				pwm_get_port(pwm.pwm_index),
-				pwm_get_channel(pwm.pwm_index),
+				__pwm_get_port(pwm.pwm_index),
+				__pwm_get_channel(pwm.pwm_index),
 				LEDC_FADE_NO_WAIT
 			),
 
 			task_error,
 			TAG,
 			"Error on `ledc_fade_start(speed_mode=%u, channel=%u)`",
-			pwm_get_port(pwm.pwm_index), pwm_get_channel(pwm.pwm_index)
+			__pwm_get_port(pwm.pwm_index), __pwm_get_channel(pwm.pwm_index)
 		);
 
 		// Delay before continuing.

@@ -39,26 +39,6 @@
 * Public Defines
 ************************************************************************************************************/
 
-// !!! vedere se spostare private
-
-/**
- * @return `ledc_mode_t`
- * @note 0: Fan controller, 1-12: LEDs.
- */
-#define pwm_get_port(i)( \
-	i < LEDC_CHANNEL_MAX ? \
-	LEDC_HIGH_SPEED_MODE : \
-	LEDC_LOW_SPEED_MODE \
-)
-
-/**
- * @return `ledc_channel_t`
- * @note 0: Fan controller, 1-12: LEDs.
- */
-#define pwm_get_channel(i)( \
-	(ledc_channel_t) (i % LEDC_CHANNEL_MAX) \
-)
-
 /**
  * @brief Converts the linear scale of the PWM to logarithmic by applying a gamma correction with a coefficient `CONFIG_PWM_GAMMA_CORRECTION`.
  */

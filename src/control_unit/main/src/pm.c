@@ -19,6 +19,15 @@
 
 #define LOG_TAG	"pm"
 
+/**
+ * @brief Convert the needed samples length for the "PowerMonitor" feature to the corresponding total byte length for the allocation of the `esp_adc/adc_continuous.h` driver's buffer.
+ * @return `samples_len` * 2 channels * 2 bytes/sample.
+ * @note The resulting number must be a multiple of `SOC_ADC_DIGI_DATA_BYTES_PER_CONV` on `soc/soc_caps.h`.
+ */
+#define __pm_samples_len_to_buf_size(samples_len)( \
+	samples_len * 4 \
+)
+
 /************************************************************************************************************
 * Private Types Definitions
  ************************************************************************************************************/
@@ -53,8 +62,8 @@ esp_err_t __adc_driver_setup(){
 	 * Please read the descriprion of `esp_adc/adc_continuous.h`.
 	 */
 	adc_continuous_handle_cfg_t adc_memory_config = {
-		.max_store_buf_size = pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES),
-		.conv_frame_size = pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES),
+		.max_store_buf_size = __pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES),
+		.conv_frame_size = __pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES),
 	};
 
 	ESP_RETURN_ON_ERROR(
@@ -185,7 +194,7 @@ void __pm_task(void *parameters){
 	int64_t t0;
 
 	// Must be multiple of 4.
-	static uint16_t samples[pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES)];
+	static uint16_t samples[__pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES)];
 	uint32_t read_size;
 
 	/* Code */
@@ -223,7 +232,7 @@ void __pm_task(void *parameters){
 			adc_continuous_read(
 				__adc_handle,
 				(uint8_t*) samples,
-				pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES),
+				__pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES),
 				&read_size,
 				40	// Two 50Hz cycles.
 			),
@@ -247,7 +256,7 @@ void __pm_task(void *parameters){
 		// }
 		// printf(" }\n");
 		// printf("read_size: %lu\n", read_size);
-		// printf("samples_size: %u\n", pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES));
+		// printf("samples_size: %u\n", __pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES));
 		// printf("\n");
 		// !!! DEBUG
 

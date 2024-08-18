@@ -19,8 +19,6 @@
 
 #define LOG_TAG	"rs485"
 
-/* Log */
-
 #define __log_event_button(TAG, pwm_index, pwm_enabled, pwm_duty, device_id, button_id, button_state) \
 	ESP_LOGI( \
 		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, button_id=%u, button_state=%u)", \
