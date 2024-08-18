@@ -523,17 +523,34 @@ esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t d
 		if(zones.raw == 0)
 			continue;
 
-		uint16_t pwm_final_duty;
 		uint8_t zones_arr[] = {
 			zones.zones.zone_1,
 			zones.zones.zone_2
 		};
 
+		bool one_zone_enabled = false;
+		for(uint8_t i=0; i<sizeof(zones_arr); i++)
+			if(
+				zones_arr[i] > 0 &&
+				!pwm_enabled[zones_arr[i]]
+			){
+
+				// If at least one zone is enabled, enable every selected zone.
+				one_zone_enabled = true;
+				break;
+			}
+
+		uint16_t pwm_final_duty;
 		for(uint8_t i=0; i<sizeof(zones_arr); i++)
 			if(zones_arr[i] > 0){
 
 				// Turn ON/OFF PWM.
-				pwm_enabled[zones_arr[i]] = !pwm_enabled[zones_arr[i]];
+				pwm_enabled[zones_arr[i]] = (
+					one_zone_enabled ?
+					true :
+					!pwm_enabled[zones_arr[i]]
+				);
+
 				pwm_final_duty = (
 					pwm_enabled[zones_arr[i]] ?
 					pwm_duty[zones_arr[i]] :
