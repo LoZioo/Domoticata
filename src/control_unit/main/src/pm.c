@@ -162,11 +162,16 @@ esp_err_t __pm_task_setup(){
 	BaseType_t ret_val = xTaskCreatePinnedToCore(
 		__pm_task,
 		LOG_TAG"_task",
-		4096,
+		CONFIG_PM_TASK_STACK_SIZE_BYTES,
 		NULL,
-		tskIDLE_PRIORITY,
+		CONFIG_PM_TASK_PRIORITY,
 		&__pm_task_handle,
-		ESP_APPLICATION_CORE
+
+		#ifdef CONFIG_PM_TASK_CORE_AFFINITY_APPLICATION
+			ESP_APPLICATION_CORE
+		#else
+			ESP_PROTOCOL_CORE
+		#endif
 	);
 
 	ESP_RETURN_ON_FALSE(

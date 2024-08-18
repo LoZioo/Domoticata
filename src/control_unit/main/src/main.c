@@ -42,7 +42,8 @@
 #include <pwm.h>
 #include <pm.h>
 
-// !!! su ogni libreria, vedere se e' il caso di alleggerire assert su funzioni private
+// !!! SISTEMARE RITORNO A CAPO DEL HELP KCONFIG
+
 // !!! su ogni libreria, mettere a costante privata ogni numero
 
 // !!! vedere se rimuovere configurazione bit pwm e lasciarla fissa a 10

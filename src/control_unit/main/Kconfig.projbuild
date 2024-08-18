@@ -8,18 +8,66 @@
 menu "Project configurations"
 
 	menu "RS485"
+		config RS485_TASK_STACK_SIZE_BYTES
+			int "Task stack max size (bytes)"
+			range 2048 8192
+			default 4096
+
+		config RS485_TASK_PRIORITY
+			int "Task priority"
+			range 0 24
+			default 0
+			help
+				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority)
+
+		choice
+			prompt "Task core affinity"
+			default RS485_TASK_CORE_AFFINITY_APPLICATION
+
+			config RS485_TASK_CORE_AFFINITY_PROTOCOL
+				bool "Protocol core"
+
+			config RS485_TASK_CORE_AFFINITY_APPLICATION
+				bool "Application core"
+
+		endchoice
+
 		config RS485_UART_PORT
-			int "RS-485 UART port number"
+			int "UART port number"
 			range 0 2
 			default 1
 
 		config RS485_UART_BAUD_RATE
-			int "RS-485 UART Baud Rate"
+			int "UART Baud Rate"
 			default 115200
 
 	endmenu
 
 	menu "PWM"
+		config PWM_TASK_STACK_SIZE_BYTES
+			int "Task stack max size (bytes)"
+			range 2048 8192
+			default 4096
+
+		config PWM_TASK_PRIORITY
+			int "Task priority"
+			range 0 24
+			default 0
+			help
+				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority)
+
+		choice
+			prompt "Task core affinity"
+			default PWM_TASK_CORE_AFFINITY_APPLICATION
+
+			config PWM_TASK_CORE_AFFINITY_PROTOCOL
+				bool "Protocol core"
+
+			config PWM_TASK_CORE_AFFINITY_APPLICATION
+				bool "Application core"
+
+		endchoice
+
 		config PWM_FREQUENCY_HZ
 			int "PWM frequency (Hz)"
 			default 500
@@ -32,6 +80,30 @@ menu "Project configurations"
 	endmenu
 
 	menu "PowerMonitor"
+		config PM_TASK_STACK_SIZE_BYTES
+			int "Task stack max size (bytes)"
+			range 2048 8192
+			default 4096
+
+		config PM_TASK_PRIORITY
+			int "Task priority"
+			range 0 24
+			default 0
+			help
+				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority)
+
+		choice
+			prompt "Task core affinity"
+			default PM_TASK_CORE_AFFINITY_APPLICATION
+
+			config PM_TASK_CORE_AFFINITY_PROTOCOL
+				bool "Protocol core"
+
+			config PM_TASK_CORE_AFFINITY_APPLICATION
+				bool "Application core"
+
+		endchoice
+
 		config PM_ADC_SAMPLE_RATE
 			int "Sample rate (Hz)"
 			range 20000 2000000

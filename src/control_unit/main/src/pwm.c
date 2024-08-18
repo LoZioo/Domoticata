@@ -161,11 +161,16 @@ esp_err_t __pwm_task_setup(){
 	BaseType_t ret_val = xTaskCreatePinnedToCore(
 		__pwm_task,
 		LOG_TAG"_task",
-		4096,
+		CONFIG_PWM_TASK_STACK_SIZE_BYTES,
 		NULL,
-		tskIDLE_PRIORITY,
+		CONFIG_PWM_TASK_PRIORITY,
 		&__pwm_task_handle,
-		ESP_APPLICATION_CORE
+
+		#ifdef CONFIG_PWM_TASK_CORE_AFFINITY_APPLICATION
+			ESP_APPLICATION_CORE
+		#else
+			ESP_PROTOCOL_CORE
+		#endif
 	);
 
 	ESP_RETURN_ON_FALSE(
