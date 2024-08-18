@@ -42,12 +42,6 @@
 #include <main.h>
 #include <pwm.h>
 
-// !!! RIMUOVERE E SPOSTARE PROTOTIPO IN `pwm.h`
-extern esp_err_t pwm_write(const char *TAG, uint8_t pwm_index, uint16_t target_duty, uint16_t fade_time_ms);
-
-// !!! RIMUOVERE
-#include <temp_configs.h>
-
 /************************************************************************************************************
 * Public Defines
 ************************************************************************************************************/
@@ -64,7 +58,9 @@ extern esp_err_t pwm_write(const char *TAG, uint8_t pwm_index, uint16_t target_d
 * Public Functions Prototypes
 ************************************************************************************************************/
 
+/**
+ * @brief Initialize the library.
+ */
 extern esp_err_t rs485_setup();
-extern void rs485_task(void *parameters);
 
 #endif  /* INC_RS485_H_ */

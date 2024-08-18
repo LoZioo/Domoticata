@@ -2,42 +2,42 @@
 #	Configurations under "Project configurations" on menuconfig.
 #
 #	Note:	if you want to store your configuration under "Component config"
-# 			on menuconfig, just rename this file "Kconfig".
+# 			on menuconfig, just rename this file to "Kconfig".
 ##########################################################################
 
 menu "Project configurations"
 
-	menu "UART"
-		config UART_PORT
+	menu "RS485"
+		config RS485_UART_PORT
 			int "RS-485 UART port number"
 			range 0 2
 			default 1
 
-		config UART_BAUD_RATE
+		config RS485_UART_BAUD_RATE
 			int "RS-485 UART Baud Rate"
 			default 115200
 
 	endmenu
 
-	menu "LEDC"
-		config LEDC_PWM_FREQUENCY_HZ
+	menu "PWM"
+		config PWM_FREQUENCY_HZ
 			int "PWM frequency (Hz)"
-			default 30000
+			default 500
 
-		config LEDC_PWM_BIT_RES
+		config PWM_BIT_RES
 			int "Bit resolution"
 			range 1 20
 			default 7
 
 	endmenu
 
-	menu "ADC"
-		config ADC_SAMPLE_RATE
+	menu "PowerMonitor"
+		config PM_ADC_SAMPLE_RATE
 			int "Sample rate (Hz)"
 			range 20000 2000000
 			default 20000
 
-		config ADC_SAMPLES
+		config PM_ADC_SAMPLES
 			int "Number of samples per channel"
 			default 1000
 

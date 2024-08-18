@@ -10,7 +10,7 @@
 // Applique: a total of 12.19V for 4 led @ 248mA
 
 // LEDC PWM max duty.
-#define CONFIG_PWM_DUTY_MAX		((1 << CONFIG_LEDC_PWM_BIT_RES) - 1)
+#define CONFIG_PWM_DUTY_MAX		((1 << CONFIG_PWM_BIT_RES) - 1)
 
 // Max number of buttons per wall terminal.
 #define CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL	UL_BS_BUTTON_3

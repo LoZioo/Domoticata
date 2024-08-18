@@ -1,48 +1,40 @@
-/** @file main.h
+/** @file gpio.h
  *  @brief  Created on: Aug 17, 2024
  *          Davide Scalisi
  *
- * 					Description:	Project common header.
+ * 					Description:	RS485 code.
  *
  * @copyright [2024] Davide Scalisi *
  * @copyright All Rights Reserved. *
  *
 */
 
-#ifndef INC_MAIN_H_
-#define INC_MAIN_H_
+#ifndef INC_GPIO_H_
+#define INC_GPIO_H_
 
 /************************************************************************************************************
 * Included files
 ************************************************************************************************************/
 
 // Standard libraries.
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 // Platform libraries.
-#include <esp_timer.h>
-#include <freertos/FreeRTOS.h>
+#include <esp_err.h>
+#include <esp_check.h>
 
-// !!! RIMUOVERE
-#include <temp_configs.h>
+#include <driver/gpio.h>
+
+// Project libraries.
+#include <main.h>
 
 /************************************************************************************************************
 * Public Defines
 ************************************************************************************************************/
-
-#define ESP_PROTOCOL_CORE			0
-#define ESP_APPLICATION_CORE	1
-
-#define delay(ms) \
-	vTaskDelay(pdMS_TO_TICKS(ms))
-
-#define micros() \
-	esp_timer_get_time()
-
-#define millis()( \
-	micros() / 1000 \
-)
 
 /************************************************************************************************************
 * Public Types Definitions
@@ -57,8 +49,8 @@
 ************************************************************************************************************/
 
 /**
- * @brief `delay( ms - (millis() - initial_timestamp_ms) )`
+ * @brief Initialize the library.
  */
-extern void delay_remainings(int32_t ms, int64_t initial_timestamp_ms);
+extern esp_err_t gpio_setup();
 
-#endif  /* INC_MAIN_H_ */
+#endif  /* INC_GPIO_H_ */
