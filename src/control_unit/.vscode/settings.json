@@ -67,6 +67,7 @@
 		"ul_button_states.h": "c",
 		"rs485.h": "c",
 		"ul_master_slave.h": "c",
-		"main.h": "c"
+		"main.h": "c",
+		"stdarg.h": "c"
 	}
 }

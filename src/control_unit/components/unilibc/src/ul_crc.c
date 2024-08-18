@@ -45,7 +45,7 @@ uint8_t ul_crc_crc8(const uint8_t *data, uint32_t len){
 	)
 		return 0x00;
 
-	uint8_t bit, crc = UL_CRC_CRC8_INITIAL_VALUE;
+	uint8_t bit, crc = UL_CONFIG_CRC8_INITIAL_VALUE;
 
 	for(uint32_t i=0; i<len; i++){
 		crc ^= data[i];
@@ -53,10 +53,10 @@ uint8_t ul_crc_crc8(const uint8_t *data, uint32_t len){
 		for(bit=0; bit<8; bit++)
 			crc = (
 				crc & 0x80 ?
-				(crc << 1) ^ UL_CRC_CRC8_POLYNOMIAL :
+				(crc << 1) ^ UL_CONFIG_CRC_CRC8_POLYNOMIAL :
 				crc << 1
 			);
 	}
 
-	return (crc ^ UL_CRC_CRC8_FINAL_XOR_VALUE);
+	return (crc ^ UL_CONFIG_CRC_CRC8_FINAL_XOR_VALUE);
 }
