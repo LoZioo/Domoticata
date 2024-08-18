@@ -101,9 +101,9 @@ static esp_err_t __handle_trimmer_change(bool *pwm_enabled, uint16_t *pwm_duty, 
 static esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t button_states);
 
 /**
- * @return The corresponding `pwm_index` given `device_id`, `button_id` and `button_state`; -1 if no `pwm_index` is mapped to the given indexes; -2 if there are some parameter errors.
+ * @return The corresponding `rs485_keymap_t` containing the mapped zones, given `device_id`, `button_id` and `button_state`; if one zone is equal to 0, it means that it is unmapped.
  */
-static int8_t __id_button_and_state_to_pwm_index(uint8_t device_id, ul_bs_button_id_t button_id, ul_bs_button_state_t button_state);
+static rs485_keymap_t __id_button_and_state_to_zones(uint8_t device_id, ul_bs_button_id_t button_id, ul_bs_button_state_t button_state);
 
 static void __rs485_task(void *parameters);
 
@@ -414,44 +414,52 @@ esp_err_t __handle_trimmer_change(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t
 	);
 
 	// Mapping array.
-	int8_t id_to_pwm_index[] = RS485_KEYMAP_TRIMMER;
+	rs485_keymap_t id_to_zone[] = RS485_KEYMAP_TRIMMER;
 
 	// Trimmer not mapped.
-	if(id_to_pwm_index[device_id] == -1)
+	if(id_to_zone[device_id].raw == 0)
 		return ESP_OK;
 
 	// Gamma correction.
 	trimmer_val = __led_gamma_correction(trimmer_val);
 
-	// Update PWM.
-	ESP_RETURN_ON_ERROR(
-		pwm_write(
-			id_to_pwm_index[device_id],
-			trimmer_val,
-			PWM_FADE_TIME_MS
-		),
+	uint8_t zones_arr[] = {
+		id_to_zone[device_id].zones.zone_1,
+		id_to_zone[device_id].zones.zone_2
+	};
 
-		TAG,
-		"Error on `pwm_write(pwm_index=%u, target_duty=%u)`",
-		id_to_pwm_index[device_id], trimmer_val
-	);
+	for(uint8_t i=0; i<sizeof(zones_arr); i++){
 
-	// Update the corresponding PWM state.
-	pwm_enabled[id_to_pwm_index[device_id]] =
-		(trimmer_val > 0);
+		// Update the corresponding PWM state.
+		pwm_enabled[zones_arr[i]] =
+			(trimmer_val > 0);
 
-	pwm_duty[id_to_pwm_index[device_id]] =
-		(trimmer_val > 0 ? trimmer_val : PWM_DEFAULT_VALUE);
+		pwm_duty[zones_arr[i]] =
+			(trimmer_val > 0 ? trimmer_val : PWM_DEFAULT_VALUE);
 
-	// Log the event.
-	__log_event_trimmer(
-		TAG,
-		id_to_pwm_index[device_id],
-		pwm_enabled[device_id],
-		pwm_duty[device_id],
-		device_id,
-		trimmer_val
-	);
+		// Update PWM.
+		ESP_RETURN_ON_ERROR(
+			pwm_write(
+				zones_arr[i],
+				trimmer_val,
+				PWM_FADE_TIME_MS
+			),
+
+			TAG,
+			"Error on `pwm_write(pwm_index=%u, target_duty=%u)`",
+			zones_arr[i], trimmer_val
+		);
+
+		// Log the event.
+		__log_event_trimmer(
+			TAG,
+			zones_arr[i],
+			pwm_enabled[zones_arr[i]],
+			pwm_duty[zones_arr[i]],
+			device_id,
+			trimmer_val
+		);
+	}
 
 	return ESP_OK;
 }
@@ -494,7 +502,7 @@ esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t d
 	ul_bs_set_button_states(button_states);
 
 	// Auxiliary variables.
-	int8_t pwm_index = -1;
+	rs485_keymap_t zones;
 	ul_bs_button_state_t button_state;
 
 	// For each button, check if it was pressed.
@@ -509,59 +517,59 @@ esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t d
 		if(button_state == UL_BS_BUTTON_STATE_IDLE)
 			continue;
 
-		pwm_index = __id_button_and_state_to_pwm_index(device_id, button_id, button_state);
+		zones = __id_button_and_state_to_zones(device_id, button_id, button_state);
 
 		// If the current configuration is not mapped.
-		if(pwm_index == -1)
+		if(zones.raw == 0)
 			continue;
 
-		ESP_RETURN_ON_FALSE(
-			pwm_index != -2,
+		uint16_t pwm_final_duty;
+		uint8_t zones_arr[] = {
+			zones.zones.zone_1,
+			zones.zones.zone_2
+		};
 
-			ESP_ERR_INVALID_ARG,
-			TAG,
-			"Error: invalid args passed on `__id_button_and_state_to_pwm_index(device_id=0x%02X, button_id=%u, button_state=%u)`",
-			device_id, button_id, button_state
-		);
+		for(uint8_t i=0; i<sizeof(zones_arr); i++)
+			if(zones_arr[i] > 0){
 
-		// Turn ON/OFF PWM.
-		pwm_enabled[pwm_index] = !pwm_enabled[pwm_index];
+				// Turn ON/OFF PWM.
+				pwm_enabled[zones_arr[i]] = !pwm_enabled[zones_arr[i]];
+				pwm_final_duty = (
+					pwm_enabled[zones_arr[i]] ?
+					pwm_duty[zones_arr[i]] :
+					0
+				);
 
-		uint16_t pwm_final_duty = (
-			pwm_enabled[pwm_index] ?
-			pwm_duty[pwm_index] :
-			0
-		);
+				// Update PWM.
+				ESP_RETURN_ON_ERROR(
+					pwm_write(
+						zones_arr[i],
+						pwm_final_duty,
+						PWM_FADE_TIME_MS
+					),
 
-		// Update PWM.
-		ESP_RETURN_ON_ERROR(
-			pwm_write(
-				pwm_index,
-				pwm_final_duty,
-				PWM_FADE_TIME_MS
-			),
+					TAG,
+					"Error on `pwm_write(pwm_index=%u, target_duty=%u)`",
+					zones_arr[i], pwm_final_duty
+				);
 
-			TAG,
-			"Error on `pwm_write(pwm_index=%u, target_duty=%u)`",
-			pwm_index, pwm_final_duty
-		);
-
-		// Log the event.
-		__log_event_button(
-			TAG,
-			pwm_index,
-			pwm_enabled[pwm_index],
-			pwm_duty[pwm_index],
-			device_id,
-			button_id,
-			button_state
-		);
+				// Log the event.
+				__log_event_button(
+					TAG,
+					zones_arr[i],
+					pwm_enabled[zones_arr[i]],
+					pwm_duty[zones_arr[i]],
+					device_id,
+					button_id,
+					button_state
+				);
+			}
 	}
 
 	return ESP_OK;
 }
 
-int8_t __id_button_and_state_to_pwm_index(uint8_t device_id, ul_bs_button_id_t button_id, ul_bs_button_state_t button_state){
+rs485_keymap_t __id_button_and_state_to_zones(uint8_t device_id, ul_bs_button_id_t button_id, ul_bs_button_state_t button_state){
 
 	// Index error.
 	if(
@@ -579,15 +587,17 @@ int8_t __id_button_and_state_to_pwm_index(uint8_t device_id, ul_bs_button_id_t b
 			UL_BS_BUTTON_STATE_HELD
 		)
 	)
-		return -2;
+		return (rs485_keymap_t){
+			.raw = 0
+		};
 
 	// Mapping cube matrix (idle state is not used on the last index).
-	int8_t __id_button_and_state_to_pwm_index
+	rs485_keymap_t id_button_and_state_to_zones
 		[WALL_TERMINALS_COUNT]
 		[BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL]
 		[UL_BS_BUTTON_STATE_MAX - 1] = RS485_KEYMAP_BUTTON;
 
-	return __id_button_and_state_to_pwm_index[device_id][button_id-1][button_state-1];
+	return id_button_and_state_to_zones[device_id][button_id-1][button_state-1];
 }
 
 void __rs485_task(void *parameters){
