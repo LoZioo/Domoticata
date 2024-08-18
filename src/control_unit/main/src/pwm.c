@@ -95,7 +95,7 @@ esp_err_t __ledc_driver_setup(){
 
 	ledc_timer_config_t ledc_tim_config = {
 		.freq_hz = CONFIG_PWM_FREQUENCY_HZ,
-		.duty_resolution = (ledc_timer_bit_t) CONFIG_PWM_BIT_RES,
+		.duty_resolution = (ledc_timer_bit_t) PWM_BIT_RES,
 		.timer_num = LEDC_TIMER_1,
 		.clk_cfg = LEDC_AUTO_CLK
 	};

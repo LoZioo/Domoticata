@@ -72,11 +72,6 @@ menu "Project configurations"
 			int "PWM frequency (Hz)"
 			default 500
 
-		config PWM_BIT_RES
-			int "Bit resolution"
-			range 1 20
-			default 10
-
 	endmenu
 
 	menu "PowerMonitor"

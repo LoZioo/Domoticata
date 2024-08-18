@@ -39,8 +39,11 @@
 * Public Defines
 ************************************************************************************************************/
 
+// PWM bit resolution.
+#define PWM_BIT_RES		10
+
 // PWM max duty.
-#define PWM_DUTY_MAX	((1 << CONFIG_PWM_BIT_RES) - 1)
+#define PWM_DUTY_MAX	((1 << PWM_BIT_RES) - 1)
 
 // Number of logical PWM channels on the physical board.
 #define PWM_INDEXES		13
@@ -55,7 +58,7 @@ typedef struct __attribute__((__packed__)) {
 	uint8_t pwm_index: 4;
 
 	// Up to `PWM_DUTY_MAX`.
-	uint16_t target_duty: CONFIG_PWM_BIT_RES;
+	uint16_t target_duty: PWM_BIT_RES;
 
 	// Up to 1023ms.
 	uint16_t fade_time_ms: 10;
