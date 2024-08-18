@@ -19,6 +19,45 @@
 
 #define LOG_TAG	"rs485"
 
+// Should be greater than `UART_HW_FIFO_LEN(uart_num)`.
+#define UART_RX_BUFFER_LEN_BYTES	(UART_HW_FIFO_LEN(CONFIG_RS485_UART_PORT) * 2)
+
+// Number of wall terminals on the RS-485 bus (from 1 to 127).
+#define WALL_TERMINALS_COUNT	13
+
+// Response timeout on the poll phase.
+#define WALL_TERMINAL_POLL_TIMEOUT_MS	30
+
+// Response timeout on the data exchange phase.
+#define WALL_TERMINAL_CONN_TIMEOUT_MS	100
+
+// Max number of buttons per wall terminal.
+#define BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL	UL_BS_BUTTON_3
+
+// Default PWM value at startup for every logical PWM channel.
+#define PWM_DEFAULT_VALUE	512
+
+/**
+ * PWM fade time passed to every `pwm_write()`.
+ * Note: tune this value if by rotating the trimmer you notice a "step" increase/decrease in brightness effect.
+ */
+#define PWM_FADE_TIME_MS	500
+
+// PWM LED gamma correction factor.
+#define LED_GAMMA_CORRECTION_FACTOR		2.2
+
+/**
+ * @brief Converts the linear scale of the PWM to logarithmic by applying a gamma correction with coefficient `LED_GAMMA_CORRECTION_FACTOR`.
+ */
+#define __led_gamma_correction(pwm_duty)( \
+	(uint16_t)( \
+		pow( \
+			(float)(pwm_duty) / PWM_DUTY_MAX, \
+			LED_GAMMA_CORRECTION_FACTOR \
+		) * PWM_DUTY_MAX \
+	) \
+)
+
 #define __log_event_button(TAG, pwm_index, pwm_enabled, pwm_duty, device_id, button_id, button_state) \
 	ESP_LOGI( \
 		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, button_id=%u, button_state=%u)", \
@@ -87,7 +126,7 @@ esp_err_t __uart_driver_setup(){
 	ESP_RETURN_ON_ERROR(
 		uart_driver_install(
 			CONFIG_RS485_UART_PORT,
-			UART_HW_FIFO_LEN(2) * 2,
+			UART_RX_BUFFER_LEN_BYTES,
 			0,
 			0,
 			NULL,
@@ -165,10 +204,6 @@ esp_err_t __rs485_task_setup(){
 
 esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint16_t *button_states){
 
-	// Function disabled.
-	if(CONFIG_RS485_WALL_TERMINALS_COUNT == 0)
-		return ESP_OK;
-
 	ESP_RETURN_ON_FALSE(
 		device_id != NULL,
 
@@ -198,8 +233,8 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 	*trimmer_val = *button_states = 0x0000;
 
 	// Slave ID increment.
-	static uint8_t poll_device_id = CONFIG_RS485_WALL_TERMINALS_COUNT - 1;
-	poll_device_id = (poll_device_id + 1) % CONFIG_RS485_WALL_TERMINALS_COUNT;
+	static uint8_t poll_device_id = WALL_TERMINALS_COUNT - 1;
+	poll_device_id = (poll_device_id + 1) % WALL_TERMINALS_COUNT;
 
 	uint8_t tmp = ul_ms_encode_master_byte(poll_device_id);
 
@@ -223,7 +258,7 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 		CONFIG_RS485_UART_PORT,
 		ul_utils_cast_to_mem(tmp),
 		1,
-		pdMS_TO_TICKS(CONFIG_RS485_WALL_TERMINAL_POLL_TIMEOUT_MS)
+		pdMS_TO_TICKS(WALL_TERMINAL_POLL_TIMEOUT_MS)
 	);
 
 	// Error.
@@ -269,8 +304,8 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 	read_bytes = uart_read_bytes(
 		CONFIG_RS485_UART_PORT,
 		encoded_data,
-		4,
-		pdMS_TO_TICKS(CONFIG_RS485_WALL_TERMINAL_CONN_TIMEOUT_MS)
+		sizeof(encoded_data),
+		pdMS_TO_TICKS(WALL_TERMINAL_CONN_TIMEOUT_MS)
 	);
 
 	// Error.
@@ -290,12 +325,12 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 		ESP_ERR_TIMEOUT,
 		TAG,
 		"Error: slave device 0x%02X exceeded the prefixed %ums timeout for sending its state",
-		poll_device_id, CONFIG_RS485_WALL_TERMINAL_CONN_TIMEOUT_MS
+		poll_device_id, WALL_TERMINAL_CONN_TIMEOUT_MS
 	);
 
 	// Invalid response.
 	ESP_RETURN_ON_FALSE(
-		read_bytes == 4,
+		read_bytes == sizeof(encoded_data),
 
 		ESP_ERR_INVALID_RESPONSE,
 		TAG,
@@ -307,7 +342,7 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 	ul_err_t ret_val = ul_ms_decode_slave_message(
 		ul_utils_cast_to_mem(decoded_data),
 		encoded_data,
-		4
+		sizeof(encoded_data)
 	);
 
 	// `ul_ms_decode_slave_message()` failed.
@@ -361,39 +396,39 @@ esp_err_t __handle_trimmer_change(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t
 	);
 
 	ESP_RETURN_ON_FALSE(
-		device_id < CONFIG_RS485_WALL_TERMINALS_COUNT,
+		device_id < WALL_TERMINALS_COUNT,
 
 		ESP_ERR_INVALID_ARG,
 		TAG,
 		"Error: `device_id` must be less than %u",
-		CONFIG_RS485_WALL_TERMINALS_COUNT
+		WALL_TERMINALS_COUNT
 	);
 
 	ESP_RETURN_ON_FALSE(
-		trimmer_val <= CONFIG_PWM_DUTY_MAX,
+		trimmer_val <= PWM_DUTY_MAX,
 
 		ESP_ERR_INVALID_ARG,
 		TAG,
 		"Error: `trimmer_val` must be between 0 and %u",
-		CONFIG_PWM_DUTY_MAX
+		PWM_DUTY_MAX
 	);
 
 	// Mapping array.
-	int8_t id_to_pwm_index[] = CONFIG_TRIMMER_MATRIX;
+	int8_t id_to_pwm_index[] = RS485_KEYMAP_TRIMMER;
 
 	// Trimmer not mapped.
 	if(id_to_pwm_index[device_id] == -1)
 		return ESP_OK;
 
 	// Gamma correction.
-	trimmer_val = pwm_led_gamma_correction(trimmer_val);
+	trimmer_val = __led_gamma_correction(trimmer_val);
 
 	// Update PWM.
 	ESP_RETURN_ON_ERROR(
 		pwm_write(
 			id_to_pwm_index[device_id],
 			trimmer_val,
-			CONFIG_PWM_FADE_TIME_MS
+			PWM_FADE_TIME_MS
 		),
 
 		TAG,
@@ -406,7 +441,7 @@ esp_err_t __handle_trimmer_change(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t
 		(trimmer_val > 0);
 
 	pwm_duty[id_to_pwm_index[device_id]] =
-		(trimmer_val > 0 ? trimmer_val : CONFIG_PWM_DEFAULT);
+		(trimmer_val > 0 ? trimmer_val : PWM_DEFAULT_VALUE);
 
 	// Log the event.
 	__log_event_trimmer(
@@ -440,12 +475,12 @@ esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t d
 	);
 
 	ESP_RETURN_ON_FALSE(
-		device_id < CONFIG_RS485_WALL_TERMINALS_COUNT,
+		device_id < WALL_TERMINALS_COUNT,
 
 		ESP_ERR_INVALID_ARG,
 		TAG,
 		"Error: `device_id` must be less than %u",
-		CONFIG_RS485_WALL_TERMINALS_COUNT
+		WALL_TERMINALS_COUNT
 	);
 
 	ESP_RETURN_ON_FALSE(
@@ -465,7 +500,7 @@ esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t d
 	// For each button, check if it was pressed.
 	for(
 		uint8_t button_id = UL_BS_BUTTON_1;
-		button_id <= CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL;
+		button_id <= BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL;
 		button_id++
 	){
 		button_state = ul_bs_get_button_state(button_id);
@@ -503,7 +538,7 @@ esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t d
 			pwm_write(
 				pwm_index,
 				pwm_final_duty,
-				CONFIG_PWM_FADE_TIME_MS
+				PWM_FADE_TIME_MS
 			),
 
 			TAG,
@@ -530,12 +565,12 @@ int8_t __id_button_and_state_to_pwm_index(uint8_t device_id, ul_bs_button_id_t b
 
 	// Index error.
 	if(
-		device_id >= CONFIG_RS485_WALL_TERMINALS_COUNT ||
+		device_id >= WALL_TERMINALS_COUNT ||
 
 		!ul_utils_between(
 			button_id,
 			UL_BS_BUTTON_1,
-			CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL
+			BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL
 		) ||
 
 		!ul_utils_between(
@@ -548,9 +583,9 @@ int8_t __id_button_and_state_to_pwm_index(uint8_t device_id, ul_bs_button_id_t b
 
 	// Mapping cube matrix (idle state is not used on the last index).
 	int8_t __id_button_and_state_to_pwm_index
-		[CONFIG_RS485_WALL_TERMINALS_COUNT]
-		[CONFIG_BUTTONS_MAX_NUMBER_PER_TERMINAL]
-		[UL_BS_BUTTON_STATE_MAX - 1] = CONFIG_BUTTON_MATRIX;
+		[WALL_TERMINALS_COUNT]
+		[BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL]
+		[UL_BS_BUTTON_STATE_MAX - 1] = RS485_KEYMAP_BUTTON;
 
 	return __id_button_and_state_to_pwm_index[device_id][button_id-1][button_state-1];
 }
@@ -569,8 +604,8 @@ void __rs485_task(void *parameters){
 	uint16_t trimmer_val, button_states;
 
 	// PWM values for each PWM index.
-	uint16_t pwm_duty[CONFIG_PWM_INDEXES];
-	bool pwm_enabled[CONFIG_PWM_INDEXES] = {0};
+	uint16_t pwm_duty[PWM_INDEXES];
+	bool pwm_enabled[PWM_INDEXES] = {0};
 
 	/* Code */
 
@@ -580,7 +615,7 @@ void __rs485_task(void *parameters){
 		i < sizeof(pwm_duty) / sizeof(uint16_t);
 		i++
 	)
-		pwm_duty[i] = pwm_led_gamma_correction(CONFIG_PWM_DEFAULT);
+		pwm_duty[i] = __led_gamma_correction(PWM_DEFAULT_VALUE);
 
 	ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_RS485_UART_PORT));
 	ESP_LOGI(TAG, "Polling slave devices");
@@ -605,13 +640,13 @@ void __rs485_task(void *parameters){
 
 		// Device ID check.
 		ESP_GOTO_ON_FALSE(
-			device_id < CONFIG_RS485_WALL_TERMINALS_COUNT,
+			device_id < WALL_TERMINALS_COUNT,
 
 			ESP_ERR_NOT_SUPPORTED,
 			task_error,
 			TAG,
 			"Error: the returned `device_id` is 0x%02X; max allowed is 0x%02X",
-			device_id, CONFIG_RS485_WALL_TERMINALS_COUNT - 1
+			device_id, WALL_TERMINALS_COUNT - 1
 		);
 
 		// Button pressed.

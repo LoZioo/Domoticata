@@ -39,17 +39,11 @@
 * Public Defines
 ************************************************************************************************************/
 
-/**
- * @brief Converts the linear scale of the PWM to logarithmic by applying a gamma correction with a coefficient `CONFIG_PWM_GAMMA_CORRECTION`.
- */
-#define pwm_led_gamma_correction(pwm_duty)( \
-	(uint16_t)( \
-		pow( \
-			(float)(pwm_duty) / CONFIG_PWM_DUTY_MAX, \
-			CONFIG_PWM_GAMMA_CORRECTION \
-		) * CONFIG_PWM_DUTY_MAX \
-	) \
-)
+// PWM max duty.
+#define PWM_DUTY_MAX	((1 << CONFIG_PWM_BIT_RES) - 1)
+
+// Number of logical PWM channels on the physical board.
+#define PWM_INDEXES		13
 
 /************************************************************************************************************
 * Public Types Definitions
@@ -60,7 +54,7 @@ typedef struct __attribute__((__packed__)) {
 	// 0: Fan controller, 1-12: LEDs.
 	uint8_t pwm_index: 4;
 
-	// Up to `CONFIG_PWM_DUTY_MAX`.
+	// Up to `PWM_DUTY_MAX`.
 	uint16_t target_duty: CONFIG_PWM_BIT_RES;
 
 	// Up to 1023ms.

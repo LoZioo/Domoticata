@@ -22,7 +22,7 @@
 /**
  * @brief Helper.
  */
-#define __gpio_to_bit_mask(x)	(1ULL << x)
+#define __gpio_to_bit_mask(gpio_num)	(1ULL << gpio_num)
 
 // `gpio_config_t::pin_bit_mask` for output GPIOs.
 #define GPIO_OUT_BIT_MASK	( \

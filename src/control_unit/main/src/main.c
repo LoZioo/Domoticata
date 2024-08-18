@@ -17,9 +17,6 @@
 	*/
 /* USER CODE END Header */
 
-// !!! SISTEMARE IL REBOOT IN CASO DI CRASH NEL MENUCONFIG SOTTO IL MENU Trace memory
-// !!! SISTEMARE PRIORITA' TASKS, CORE DI ESECUZIONE E STACK ALLOCATO
-
 /* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -42,11 +39,10 @@
 #include <pwm.h>
 #include <pm.h>
 
-// !!! SISTEMARE RITORNO A CAPO DEL HELP KCONFIG
-
-// !!! su ogni libreria, mettere a costante privata ogni numero
-
+// !!! SISTEMARE IL REBOOT IN CASO DI CRASH NEL MENUCONFIG SOTTO IL MENU Trace memory
 // !!! vedere se rimuovere configurazione bit pwm e lasciarla fissa a 10
+// !!! Transformer: 232.9V vs 14.29V
+// !!! Applique: a total of 12.19V for 4 led @ 248mA
 
 /* USER CODE END Includes */
 

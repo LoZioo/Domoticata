@@ -19,6 +19,9 @@
 
 #define LOG_TAG	"pm"
 
+// `adc_continuous_read()` timeout value (40ms = two 50Hz cycles).
+#define ADC_CONTINUOUS_READ_TIMEOUT_MS	40
+
 /**
  * @brief Convert the needed samples length for the "PowerMonitor" feature to the corresponding total byte length for the allocation of the `esp_adc/adc_continuous.h` driver's buffer.
  * @return `samples_len` * 2 channels * 2 bytes/sample.
@@ -239,7 +242,7 @@ void __pm_task(void *parameters){
 				(uint8_t*) samples,
 				__pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES),
 				&read_size,
-				40	// Two 50Hz cycles.
+				ADC_CONTINUOUS_READ_TIMEOUT_MS
 			),
 
 			task_error,

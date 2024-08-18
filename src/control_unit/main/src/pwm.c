@@ -19,6 +19,9 @@
 
 #define LOG_TAG	"pwm"
 
+// `__pwm_queue` max length in number of elements.
+#define PWM_QUEUE_BUFFER_LEN_ELEMENTS		10
+
 #define PWM_CH_TO_GPIO_INIT	{ \
 	CONFIG_GPIO_FAN, \
 	CONFIG_GPIO_LED_1, \
@@ -148,7 +151,10 @@ esp_err_t __ledc_driver_setup(){
 
 esp_err_t __pwm_task_setup(){
 
-	__pwm_queue = xQueueCreate(10, sizeof(pwm_data_t));
+	__pwm_queue = xQueueCreate(
+		PWM_QUEUE_BUFFER_LEN_ELEMENTS,
+		sizeof(pwm_data_t)
+	);
 
 	ESP_RETURN_ON_FALSE(
 		__pwm_queue != NULL,
@@ -281,16 +287,16 @@ esp_err_t pwm_write(uint8_t pwm_index, uint16_t target_duty, uint16_t fade_time_
 	);
 
 	ESP_RETURN_ON_FALSE(
-		pwm_index < CONFIG_PWM_INDEXES,
+		pwm_index < PWM_INDEXES,
 
 		ESP_ERR_INVALID_ARG,
 		TAG,
 		"Error: `pwm_index` must be between 0 and %u",
-		CONFIG_PWM_INDEXES - 1
+		PWM_INDEXES - 1
 	);
 
-	if(target_duty > CONFIG_PWM_DUTY_MAX)
-		target_duty = CONFIG_PWM_DUTY_MAX;
+	if(target_duty > PWM_DUTY_MAX)
+		target_duty = PWM_DUTY_MAX;
 
 	pwm_data_t pwm_data = {
 		.pwm_index = pwm_index,
