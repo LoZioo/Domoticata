@@ -27,7 +27,7 @@ menu "Project configurations"
 		config PWM_BIT_RES
 			int "Bit resolution"
 			range 1 20
-			default 7
+			default 10
 
 	endmenu
 
