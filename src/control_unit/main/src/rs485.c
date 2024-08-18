@@ -430,6 +430,10 @@ esp_err_t __handle_trimmer_change(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t
 
 	for(uint8_t i=0; i<sizeof(zones_arr); i++){
 
+		// Do not enable the channel by rotating the trimmer.
+		if(!pwm_enabled[zones_arr[i]])
+			continue;
+
 		// Update the corresponding PWM state.
 		pwm_enabled[zones_arr[i]] =
 			(trimmer_val > 0);
@@ -694,7 +698,7 @@ void __rs485_task(void *parameters){
 
 				task_error,
 				TAG,
-				"Error on `__handle_button_press(device_id=0x%02X, trimmer_val=%u)`",
+				"Error on `__handle_trimmer_change(device_id=0x%02X, trimmer_val=%u)`",
 				device_id, trimmer_val
 			);
 
