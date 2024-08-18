@@ -22,6 +22,7 @@
 #include <math.h>
 
 // UniLibC.
+#include <ul_configs.h>
 #include <ul_errors.h>
 
 /************************************************************************************************************
@@ -31,6 +32,27 @@
 /************************************************************************************************************
 * Public Types Definitions
 ************************************************************************************************************/
+
+#ifndef UL_CONFIG_PM_DOUBLE_BUFFER
+
+typedef enum __attribute__((__packed__)) {
+
+	UL_PM_SAMPLE_TYPE_VOLTAGE,
+	UL_PM_SAMPLE_TYPE_CURRENT
+
+} ul_pm_sample_type_t;
+
+/**
+ * @brief Callback to retrieve the samples needed for `ul_pm_evaluate()`.
+ * @param sample_type `UL_PM_SAMPLE_TYPE_VOLTAGE` or `UL_PM_SAMPLE_TYPE_CURRENT`.
+ * @param index Index of the sample wanted by the library.
+ * @param context A generic user context to be passed to this callback by the library; leave it to `NULL` if unused.
+ * @return The raw read sample.
+ * @note Only the first `ul_pm_init_t::sample_resolution_bits` will be considered.
+*/
+typedef uint16_t (*ul_pm_sample_callback_t)(ul_pm_sample_type_t sample_type, uint32_t index, void *context);
+
+#endif
 
 // Evaluation results.
 typedef struct __attribute__((__packed__)) {
@@ -88,6 +110,13 @@ typedef struct {
 	// Set to 1 if unused.
 	float i_correction_factor;
 
+	#ifndef UL_CONFIG_PM_DOUBLE_BUFFER
+
+	// Callback to retrieve the samples needed for `ul_pm_evaluate()`.
+	ul_pm_sample_callback_t sample_callback;
+
+	#endif
+
 } ul_pm_init_t;
 
 // Instance handler.
@@ -122,9 +151,27 @@ extern ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handle
 */
 extern void ul_pm_end(ul_pm_handler_t *self);
 
+#ifdef UL_CONFIG_PM_DOUBLE_BUFFER
+
 /**
- * @brief Evaluate the two buffers and store the results to `*res`.
+ * @brief Evaluate the provided data.
+ * @param v_samples AC voltage samples.
+ * @param i_samples AC current samples.
+ * @param samples_len Number of samples acquired.
+ * @param res Where to store the evaluated result.
  */
-extern ul_err_t ul_pm_evaluate(ul_pm_handler_t *self, uint16_t *v_samples, uint16_t *i_samples, uint32_t len, ul_pm_results_t *res);
+extern ul_err_t ul_pm_evaluate(ul_pm_handler_t *self, uint16_t *v_samples, uint16_t *i_samples, uint32_t samples_len, ul_pm_results_t *res);
+
+#else
+
+/**
+ * @brief Evaluate the provided data.
+ * @param samples_len Number of samples acquired.
+ * @param sample_callback_context A generic user context to be passed to the `ul_pm_sample_callback_t`; leave it to `NULL` if unused.
+ * @param res Where to store the evaluated result.
+ */
+extern ul_err_t ul_pm_evaluate(ul_pm_handler_t *self, void *sample_callback_context, uint32_t samples_len, ul_pm_results_t *res);
+
+#endif
 
 #endif  /* INC_UL_PM_H_ */

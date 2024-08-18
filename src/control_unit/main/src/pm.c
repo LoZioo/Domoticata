@@ -53,6 +53,8 @@ static esp_err_t __pm_code_setup();
 static esp_err_t __pm_task_setup();
 
 static void __pm_task(void *parameters);
+
+static uint16_t __pm_get_sample(ul_pm_sample_type_t sample_type, uint32_t index, void *context);
 static bool IRAM_ATTR __adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data);
 
 /************************************************************************************************************
@@ -170,7 +172,9 @@ esp_err_t __pm_code_setup(){
 		.i_clamp_resistor_ohm = 120,
 
 		.v_correction_factor = 1,
-		.i_correction_factor = 1
+		.i_correction_factor = 1,
+
+		.sample_callback = __pm_get_sample
 	};
 
 	ul_err_t ul_ret = ul_pm_begin(pm_init, &__pm);
@@ -231,11 +235,19 @@ void __pm_task(void *parameters){
 	// Timings.
 	int64_t t0;
 
-	// Must be multiple of 4.
-	static uint16_t samples[__pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES)];
+	/**
+	 * Must be multiple of 4.
+	 * Note: `sizeof(adc_digi_output_data_t)` = `sizeof(uint16_t)`
+	 */
+	static adc_digi_output_data_t samples[
+		__pm_samples_len_to_buf_size(
+			CONFIG_PM_ADC_SAMPLES
+		)
+	];
+
 	uint32_t read_size;
 
-	// `ul_pm_evaluate()` results.
+	// `ul_pm_evaluate()` pm_res.
 	ul_pm_results_t pm_res;
 
 	/* Code */
@@ -284,41 +296,60 @@ void __pm_task(void *parameters){
 		);
 
 		// !!! DEBUG
-		printf("samples: { ");
-		for(uint32_t i=0; i<16; i++){
+		// printf("samples: { ");
+		// for(uint32_t i=0; i<16; i++){
 
-			printf("(%d, %d)",
-				((adc_digi_output_data_t*) &samples[i])->type1.channel,
-				((adc_digi_output_data_t*) &samples[i])->type1.data
-			);
+		// 	printf("(%d, %d)",
+		// 		samples[i].type1.channel,
+		// 		samples[i].type1.data
+		// 	);
 
-			if(i < 15)
-				printf(", ");
-		}
-		printf(" }\n");
-		printf("read_size: %lu\n", read_size);
-		printf("samples_size: %u\n", __pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES));
-		printf("\n");
+		// 	if(i < 15)
+		// 		printf(", ");
+		// }
+		// printf(" }\n");
+		// printf("read_size: %lu\n", read_size);
+		// printf("samples_size: %u\n", __pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES));
+		// printf("\n");
 		// !!! DEBUG
 
 		// Conversion.
-		// ul_ret = ul_pm_evaluate(
-		// 	__pm,
-		// 	v_samples,
-		// 	i_samples,
-		// 	CONFIG_PM_ADC_SAMPLES,
-		// 	&pm_res
-		// );
+		ul_ret = ul_pm_evaluate(
+			__pm,
+			samples,
+			CONFIG_PM_ADC_SAMPLES,
+			&pm_res
+		);
 
-		// ESP_GOTO_ON_FALSE(
-		// 	ul_ret == UL_OK,
+		ESP_GOTO_ON_FALSE(
+			ul_ret == UL_OK,
 
-		// 	ESP_ERR_INVALID_STATE,
-		// 	task_error,
-		// 	TAG,
-		// 	"Error %d on `ul_pm_evaluate()`",
-		// 	ul_ret
-		// );
+			ESP_ERR_INVALID_STATE,
+			task_error,
+			TAG,
+			"Error %d on `ul_pm_evaluate()`",
+			ul_ret
+		);
+
+		// !!! DEBUG
+		printf("Voltage:\n");
+		printf("  V_pos_peak: %.2f\n", pm_res.v_pos_peak);
+		printf("  V_neg_peak: %.2f\n", pm_res.v_neg_peak);
+		printf("  V_pp: %.2f\n", pm_res.v_pp);
+		printf("  V_rms: %.2f\n", pm_res.v_rms);
+
+		printf("\nCurrent:\n");
+		printf("  I_pos_peak: %.2f\n", pm_res.i_pos_peak);
+		printf("  I_neg_peak: %.2f\n", pm_res.i_neg_peak);
+		printf("  I_pp: %.2f\n", pm_res.i_pp);
+		printf("  I_rms: %.2f\n", pm_res.i_rms);
+
+		printf("\nPower:\n");
+		printf("  P_va: %.2f\n", pm_res.p_va);
+		printf("  P_var: %.2f\n", pm_res.p_var);
+		printf("  P_w: %.2f\n", pm_res.p_w);
+		printf("  P_pf: %.2f\n\n", pm_res.p_pf);
+		// !!! DEBUG
 
 		// Delay before continuing.
 		goto task_continue;
@@ -333,6 +364,15 @@ void __pm_task(void *parameters){
 
 		delay_remainings(1000, t0);
 	}
+}
+
+uint16_t __pm_get_sample(ul_pm_sample_type_t sample_type, uint32_t index, void *context){
+
+	index *= 2;
+	if(sample_type == UL_PM_SAMPLE_TYPE_CURRENT)
+		index++;
+
+	return ((adc_digi_output_data_t*) context)[index].type1.data;
 }
 
 bool __adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data){

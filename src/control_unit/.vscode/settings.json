@@ -68,6 +68,8 @@
 		"rs485.h": "c",
 		"ul_master_slave.h": "c",
 		"main.h": "c",
-		"stdarg.h": "c"
+		"stdarg.h": "c",
+		"cstdint": "c",
+		"compare": "c"
 	}
 }

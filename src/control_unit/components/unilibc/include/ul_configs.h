@@ -22,7 +22,7 @@
 * ul_pm.h
 ************************************************************************************************************/
 
-#define UL_CONFIG_PM_DOUBLE_BUFFER									// Comment to disable the classic PowerMonitor double sample buffer mode. Instead, the callback sample selection mode will be used.
+// #define UL_CONFIG_PM_DOUBLE_BUFFER									// Comment to disable the classic PowerMonitor double sample buffer mode. Instead, the callback sample selection mode will be used.
 
 /************************************************************************************************************
 * ul_master_slave.h
