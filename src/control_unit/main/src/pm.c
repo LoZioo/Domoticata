@@ -42,6 +42,7 @@
 static const char *TAG = LOG_TAG;
 static TaskHandle_t __pm_task_handle;
 static adc_continuous_handle_t __adc_handle;
+static ul_pm_handler_t *__pm;
 
 /************************************************************************************************************
 * Private Functions Prototypes
@@ -155,8 +156,34 @@ esp_err_t __adc_driver_setup(){
 	return ESP_OK;
 }
 
-// !!! IMPLEMENTARE
 esp_err_t __pm_code_setup(){
+
+	ul_pm_init_t pm_init = {
+		.sample_resolution_bits = 12,
+		.adc_vcc_v = 3.3,
+
+		.v_transformer_gain = 0.06136,		// 232.9V : 14.29V
+		.v_divider_r1_ohm = 10000,
+		.v_divider_r2_ohm = 820,
+
+		.i_clamp_gain = 0.0005,						// 100A : 50mA
+		.i_clamp_resistor_ohm = 120,
+
+		.v_correction_factor = 1,
+		.i_correction_factor = 1
+	};
+
+	ul_err_t ul_ret = ul_pm_begin(pm_init, &__pm);
+
+	ESP_RETURN_ON_FALSE(
+		ul_ret == UL_OK,
+
+		ESP_ERR_INVALID_STATE,
+		TAG,
+		"Error %d on `ul_pm_begin()`",
+		ul_ret
+	);
+
 	return ESP_OK;
 }
 
@@ -198,12 +225,18 @@ void __pm_task(void *parameters){
 	// `ESP_GOTO_ON_ERROR()` return code.
 	esp_err_t ret;
 
+	// UniLibC return code.
+	ul_err_t ul_ret;
+
 	// Timings.
 	int64_t t0;
 
 	// Must be multiple of 4.
 	static uint16_t samples[__pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES)];
 	uint32_t read_size;
+
+	// `ul_pm_evaluate()` results.
+	ul_pm_results_t pm_res;
 
 	/* Code */
 
@@ -251,22 +284,41 @@ void __pm_task(void *parameters){
 		);
 
 		// !!! DEBUG
-		// printf("samples: { ");
-		// for(uint32_t i=0; i<16; i++){
+		printf("samples: { ");
+		for(uint32_t i=0; i<16; i++){
 
-		// 	printf("(%d, %d)",
-		// 		((adc_digi_output_data_t*) &samples[i])->type1.channel,
-		// 		((adc_digi_output_data_t*) &samples[i])->type1.data
-		// 	);
+			printf("(%d, %d)",
+				((adc_digi_output_data_t*) &samples[i])->type1.channel,
+				((adc_digi_output_data_t*) &samples[i])->type1.data
+			);
 
-		// 	if(i < 15)
-		// 		printf(", ");
-		// }
-		// printf(" }\n");
-		// printf("read_size: %lu\n", read_size);
-		// printf("samples_size: %u\n", __pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES));
-		// printf("\n");
+			if(i < 15)
+				printf(", ");
+		}
+		printf(" }\n");
+		printf("read_size: %lu\n", read_size);
+		printf("samples_size: %u\n", __pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES));
+		printf("\n");
 		// !!! DEBUG
+
+		// Conversion.
+		// ul_ret = ul_pm_evaluate(
+		// 	__pm,
+		// 	v_samples,
+		// 	i_samples,
+		// 	CONFIG_PM_ADC_SAMPLES,
+		// 	&pm_res
+		// );
+
+		// ESP_GOTO_ON_FALSE(
+		// 	ul_ret == UL_OK,
+
+		// 	ESP_ERR_INVALID_STATE,
+		// 	task_error,
+		// 	TAG,
+		// 	"Error %d on `ul_pm_evaluate()`",
+		// 	ul_ret
+		// );
 
 		// Delay before continuing.
 		goto task_continue;

@@ -40,7 +40,6 @@
 #include <pm.h>
 
 // !!! SISTEMARE IL REBOOT IN CASO DI CRASH NEL MENUCONFIG SOTTO IL MENU Trace memory
-// !!! Transformer: 232.9V vs 14.29V
 // !!! Applique: a total of 12.19V for 4 led @ 248mA
 
 /* USER CODE END Includes */
