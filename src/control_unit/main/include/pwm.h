@@ -46,7 +46,7 @@
 #define PWM_DUTY_MAX	((1 << PWM_BIT_RES) - 1)
 
 // Number of logical PWM channels on the physical board.
-#define PWM_INDEXES		13
+#define PWM_ZONES		13
 
 /************************************************************************************************************
 * Public Types Definitions
@@ -55,7 +55,7 @@
 typedef struct __attribute__((__packed__)) {
 
 	// 0: Fan controller, 1-12: LEDs.
-	uint8_t pwm_index: 4;
+	uint8_t zone: 4;
 
 	// Up to `PWM_DUTY_MAX`.
 	uint16_t target_duty: PWM_BIT_RES;
@@ -81,9 +81,9 @@ extern esp_err_t pwm_setup();
 /**
  * @brief Send `pwm_data` to `pwm_task` via `pwm_queue`.
  * @param TAG The `esp_log.h` tag.
- * @param index 0: Fan controller, 1-12: LEDs.
+ * @param zone 0: Fan controller, 1-12: LEDs.
  * @param target_duty 10-bit target duty (from 0 to (2^`CONFIG_LEDC_PWM_BIT_RES`) - 1 ).
  */
-extern esp_err_t pwm_write(uint8_t pwm_index, uint16_t target_duty, uint16_t fade_time_ms);
+extern esp_err_t pwm_write(uint8_t zone, uint16_t target_duty, uint16_t fade_time_ms);
 
 #endif  /* INC_PWM_H_ */

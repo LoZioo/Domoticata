@@ -46,21 +46,21 @@
 )
 
 /**
- * @return `ledc_mode_t`
+ * @return `ledc_mode_t` given the zone.
  * @note 0: Fan controller, 1-12: LEDs.
  */
-#define __pwm_get_port(i)( \
-	i < LEDC_CHANNEL_MAX ? \
+#define __pwm_get_port(zone)( \
+	zone < LEDC_CHANNEL_MAX ? \
 	LEDC_HIGH_SPEED_MODE : \
 	LEDC_LOW_SPEED_MODE \
 )
 
 /**
- * @return `ledc_channel_t`
+ * @return `ledc_channel_t` given the zone.
  * @note 0: Fan controller, 1-12: LEDs.
  */
-#define __pwm_get_channel(i)( \
-	(ledc_channel_t) (i % LEDC_CHANNEL_MAX) \
+#define __pwm_get_channel(zone)( \
+	(ledc_channel_t) (zone % LEDC_CHANNEL_MAX) \
 )
 
 /************************************************************************************************************
@@ -216,8 +216,8 @@ void __pwm_task(void *parameters){
 		// Set PWM parameters.
 		ESP_GOTO_ON_ERROR(
 			ledc_set_fade_with_time(
-				__pwm_get_port(pwm.pwm_index),
-				__pwm_get_channel(pwm.pwm_index),
+				__pwm_get_port(pwm.zone),
+				__pwm_get_channel(pwm.zone),
 				pwm.target_duty,
 				pwm.fade_time_ms
 			),
@@ -225,21 +225,21 @@ void __pwm_task(void *parameters){
 			task_error,
 			TAG,
 			"Error on `ledc_set_fade_with_time(speed_mode=%u, channel=%u, target_duty=%u, max_fade_time_ms=%u)`",
-			__pwm_get_port(pwm.pwm_index), __pwm_get_channel(pwm.pwm_index), pwm.target_duty, pwm.fade_time_ms
+			__pwm_get_port(pwm.zone), __pwm_get_channel(pwm.zone), pwm.target_duty, pwm.fade_time_ms
 		);
 
 		// Fade start.
 		ESP_GOTO_ON_ERROR(
 			ledc_fade_start(
-				__pwm_get_port(pwm.pwm_index),
-				__pwm_get_channel(pwm.pwm_index),
+				__pwm_get_port(pwm.zone),
+				__pwm_get_channel(pwm.zone),
 				LEDC_FADE_NO_WAIT
 			),
 
 			task_error,
 			TAG,
 			"Error on `ledc_fade_start(speed_mode=%u, channel=%u)`",
-			__pwm_get_port(pwm.pwm_index), __pwm_get_channel(pwm.pwm_index)
+			__pwm_get_port(pwm.zone), __pwm_get_channel(pwm.zone)
 		);
 
 		// Delay before continuing.
@@ -276,7 +276,7 @@ esp_err_t pwm_setup(){
 	return ESP_OK;
 }
 
-esp_err_t pwm_write(uint8_t pwm_index, uint16_t target_duty, uint16_t fade_time_ms){
+esp_err_t pwm_write(uint8_t zone, uint16_t target_duty, uint16_t fade_time_ms){
 
 	ESP_RETURN_ON_FALSE(
 		__is_initialized(),
@@ -287,19 +287,19 @@ esp_err_t pwm_write(uint8_t pwm_index, uint16_t target_duty, uint16_t fade_time_
 	);
 
 	ESP_RETURN_ON_FALSE(
-		pwm_index < PWM_INDEXES,
+		zone < PWM_ZONES,
 
 		ESP_ERR_INVALID_ARG,
 		TAG,
-		"Error: `pwm_index` must be between 0 and %u",
-		PWM_INDEXES - 1
+		"Error: `zone` must be between 0 and %u",
+		PWM_ZONES - 1
 	);
 
 	if(target_duty > PWM_DUTY_MAX)
 		target_duty = PWM_DUTY_MAX;
 
 	pwm_data_t pwm_data = {
-		.pwm_index = pwm_index,
+		.zone = zone,
 		.target_duty = target_duty,
 		.fade_time_ms = fade_time_ms
 	};

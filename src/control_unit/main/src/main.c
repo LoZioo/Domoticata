@@ -43,8 +43,6 @@
 // !!! Transformer: 232.9V vs 14.29V
 // !!! Applique: a total of 12.19V for 4 led @ 248mA
 
-// !!! SOSTITUIRE PWM_INDEX CON ZONES
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

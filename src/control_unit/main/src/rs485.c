@@ -58,16 +58,16 @@
 	) \
 )
 
-#define __log_event_button(TAG, pwm_index, pwm_enabled, pwm_duty, device_id, button_id, button_state) \
+#define __log_event_button(TAG, zone, pwm_enabled, pwm_duty, device_id, button_id, button_state) \
 	ESP_LOGI( \
 		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, button_id=%u, button_state=%u)", \
-		pwm_index, pwm_enabled, pwm_duty, device_id, button_id, button_state \
+		zone, pwm_enabled, pwm_duty, device_id, button_id, button_state \
 	)
 
-#define __log_event_trimmer(TAG, pwm_index, pwm_enabled, pwm_duty, device_id, trimmer_val) \
+#define __log_event_trimmer(TAG, zone, pwm_enabled, pwm_duty, device_id, trimmer_val) \
 	ESP_LOGI( \
 		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, trimmer_val=%u)", \
-		pwm_index, pwm_enabled, pwm_duty, device_id, trimmer_val \
+		zone, pwm_enabled, pwm_duty, device_id, trimmer_val \
 	)
 
 /************************************************************************************************************
@@ -446,7 +446,7 @@ esp_err_t __handle_trimmer_change(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t
 			),
 
 			TAG,
-			"Error on `pwm_write(pwm_index=%u, target_duty=%u)`",
+			"Error on `pwm_write(zone=%u, target_duty=%u)`",
 			zones_arr[i], trimmer_val
 		);
 
@@ -566,7 +566,7 @@ esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t d
 					),
 
 					TAG,
-					"Error on `pwm_write(pwm_index=%u, target_duty=%u)`",
+					"Error on `pwm_write(zone=%u, target_duty=%u)`",
 					zones_arr[i], pwm_final_duty
 				);
 
@@ -631,8 +631,8 @@ void __rs485_task(void *parameters){
 	uint16_t trimmer_val, button_states;
 
 	// PWM values for each PWM index.
-	uint16_t pwm_duty[PWM_INDEXES];
-	bool pwm_enabled[PWM_INDEXES] = {0};
+	uint16_t pwm_duty[PWM_ZONES];
+	bool pwm_enabled[PWM_ZONES] = {0};
 
 	/* Code */
 
