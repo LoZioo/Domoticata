@@ -42,8 +42,6 @@
 #include <pwm.h>
 #include <pm.h>
 
-// !!! su ogni libreria, sistemare include "Standard libraries"
-// !!! su ogni libreria, implementare assert di inizializzazione
 // !!! su ogni libreria, vedere se e' il caso di alleggerire assert su funzioni private
 // !!! su ogni libreria, mettere a costante privata ogni numero
 

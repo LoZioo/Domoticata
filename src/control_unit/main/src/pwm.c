@@ -36,6 +36,13 @@
 }
 
 /**
+ * @brief Statement to check if the library was initialized.
+ */
+#define __is_initialized()( \
+	__pwm_task_handle != NULL \
+)
+
+/**
  * @return `ledc_mode_t`
  * @note 0: Fan controller, 1-12: LEDs.
  */
@@ -62,7 +69,8 @@
  ************************************************************************************************************/
 
 static const char *TAG = LOG_TAG;
-static TaskHandle_t __pwm_task_handle;
+
+static TaskHandle_t __pwm_task_handle = NULL;
 static QueueHandle_t __pwm_queue;
 
 /************************************************************************************************************
@@ -258,6 +266,14 @@ esp_err_t pwm_setup(){
 }
 
 esp_err_t pwm_write(uint8_t pwm_index, uint16_t target_duty, uint16_t fade_time_ms){
+
+	ESP_RETURN_ON_FALSE(
+		__is_initialized(),
+
+		ESP_ERR_INVALID_STATE,
+		TAG,
+		"Error: library not initialized"
+	);
 
 	ESP_RETURN_ON_FALSE(
 		pwm_index < CONFIG_PWM_INDEXES,
