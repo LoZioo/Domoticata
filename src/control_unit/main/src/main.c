@@ -67,6 +67,8 @@
 // !!! su ogni libreria, vedere se e' il caso di alleggerire assert su funzioni private
 // !!! su ogni libreria, mettere a costante privata ogni numero
 
+// !!! vedere se rimuovere configurazione bit pwm e lasciarla fissa a 10
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -86,6 +88,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
+
+const char *TAG = "main";
 
 /* USER CODE END PV */
 
@@ -107,7 +111,6 @@ void app_main(){
 	/* MCU Configuration--------------------------------------------------------*/
 	/* USER CODE BEGIN SysInit */
 
-	const char *TAG = "setup_task";
 	ESP_LOGI(TAG, "Started");
 
 	ESP_LOGI(TAG, "gpio_setup()");
