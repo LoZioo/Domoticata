@@ -210,6 +210,7 @@ ul_err_t ul_pm_evaluate(
 
 	float v_quadratic_sum = 0, i_quadratic_sum = 0;
 	float instant_power_sum = 0;
+	float v_val, i_val;
 
 	res->v_pos_peak = res->i_pos_peak = -0xFFFF;
 	res->v_neg_peak = res->i_neg_peak = 0xFFFF;
@@ -217,8 +218,8 @@ ul_err_t ul_pm_evaluate(
 	for(int i=0; i<samples_len; i++){
 
 		// Remove the average from the sample and convert to AC voltage/current.
-		float v_val = ((float) v_samples_get(i) - v_samples_avg) * self->k_v;
-		float i_val = ((float) i_samples_get(i) - i_samples_avg) * self->k_i;
+		v_val = ((float) v_samples_get(i) - v_samples_avg) * self->k_v;
+		i_val = ((float) i_samples_get(i) - i_samples_avg) * self->k_i;
 
 		// Begin computing the RMS.
 		v_quadratic_sum += pow(v_val, 2);
