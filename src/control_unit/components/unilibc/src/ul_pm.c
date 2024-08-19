@@ -62,7 +62,7 @@ ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handler){
 	UL_GOTO_ON_FALSE(
 		self != NULL,
 		UL_ERR_NO_MEM,
-		ul_pm_begin_err,
+		label_error,
 		"Error on `malloc(sizeof(ul_pm_handler_t))`"
 	);
 
@@ -73,63 +73,63 @@ ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handler){
 	UL_GOTO_ON_FALSE(
 		self->init.adc_vcc_v > 0,
 		UL_ERR_INVALID_ARG,
-		ul_pm_begin_free,
+		label_free,
 		"Error: `self->init.adc_vcc_v` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
 		self->init.adc_value_at_adc_vcc > 0,
 		UL_ERR_INVALID_ARG,
-		ul_pm_begin_free,
+		label_free,
 		"Error: `self->init.adc_value_at_adc_vcc` is 0"
 	);
 
 	UL_GOTO_ON_FALSE(
 		self->init.v_transformer_gain > 0,
 		UL_ERR_INVALID_ARG,
-		ul_pm_begin_free,
+		label_free,
 		"Error: `self->init.v_transformer_gain` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
 		self->init.v_divider_r1_ohm > 0,
 		UL_ERR_INVALID_ARG,
-		ul_pm_begin_free,
+		label_free,
 		"Error: `self->init.v_divider_r1_ohm` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
 		self->init.v_divider_r2_ohm > 0,
 		UL_ERR_INVALID_ARG,
-		ul_pm_begin_free,
+		label_free,
 		"Error: `self->init.v_divider_r2_ohm` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
 		self->init.i_clamp_gain > 0,
 		UL_ERR_INVALID_ARG,
-		ul_pm_begin_free,
+		label_free,
 		"Error: `init.i_clamp_gain` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
 		self->init.i_clamp_resistor_ohm > 0,
 		UL_ERR_INVALID_ARG,
-		ul_pm_begin_free,
+		label_free,
 		"Error: `init.i_clamp_resistor_ohm` is 0"
 	);
 
 	UL_GOTO_ON_FALSE(
 		self->init.v_correction_factor > 0,
 		UL_ERR_INVALID_ARG,
-		ul_pm_begin_free,
+		label_free,
 		"Error: `init.v_correction_factor` is 0"
 	);
 
 	UL_GOTO_ON_FALSE(
 		self->init.i_correction_factor > 0,
 		UL_ERR_INVALID_ARG,
-		ul_pm_begin_free,
+		label_free,
 		"Error: `init.i_correction_factor` is 0"
 	);
 
@@ -138,7 +138,7 @@ ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handler){
 	UL_GOTO_ON_FALSE(
 		self->init.sample_callback != NULL,
 		UL_ERR_INVALID_ARG,
-		ul_pm_begin_free,
+		label_free,
 		"Error: `init.sample_callback` is NULL"
 	);
 
@@ -153,10 +153,10 @@ ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handler){
 	*returned_handler = self;
 	return ret;
 
-ul_pm_begin_free:
+label_free:
 	free(self);
 
-ul_pm_begin_err:
+label_error:
 	return ret;
 }
 
