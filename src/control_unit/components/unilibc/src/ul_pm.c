@@ -71,17 +71,17 @@ ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handler){
 	/* Parameters check */
 
 	UL_GOTO_ON_FALSE(
-		self->init.sample_resolution_bits > 0,
-		UL_ERR_INVALID_ARG,
-		ul_pm_begin_free,
-		"Error: `self->init.sample_resolution_bits` is 0"
-	);
-
-	UL_GOTO_ON_FALSE(
 		self->init.adc_vcc_v > 0,
 		UL_ERR_INVALID_ARG,
 		ul_pm_begin_free,
 		"Error: `self->init.adc_vcc_v` is less or equal to 0"
+	);
+
+	UL_GOTO_ON_FALSE(
+		self->init.adc_value_at_adc_vcc > 0,
+		UL_ERR_INVALID_ARG,
+		ul_pm_begin_free,
+		"Error: `self->init.adc_value_at_adc_vcc` is 0"
 	);
 
 	UL_GOTO_ON_FALSE(
@@ -146,9 +146,9 @@ ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handler){
 
 	/* Init configurations */
 
-	float k = self->init.adc_vcc_v / (1 << self->init.sample_resolution_bits);
-	self->k_v = self->init.v_correction_factor * k * (self->init.v_divider_r1_ohm + self->init.v_divider_r2_ohm) / (self->init.v_transformer_gain * self->init.v_divider_r2_ohm);
-	self->k_i = self->init.i_correction_factor * k / (self->init.i_clamp_gain * self->init.i_clamp_resistor_ohm);
+	float resolution = self->init.adc_vcc_v / self->init.adc_value_at_adc_vcc;
+	self->k_v = self->init.v_correction_factor * resolution * (self->init.v_divider_r1_ohm + self->init.v_divider_r2_ohm) / (self->init.v_transformer_gain * self->init.v_divider_r2_ohm);
+	self->k_i = self->init.i_correction_factor * resolution / (self->init.i_clamp_gain * self->init.i_clamp_resistor_ohm);
 
 	*returned_handler = self;
 	return ret;
@@ -189,11 +189,23 @@ ul_err_t ul_pm_evaluate(
 	UL_RETURN_ON_FALSE(res != NULL, UL_ERR_INVALID_ARG, "Error: `res` is NULL");
 
 	// Knuth running mean.
-	float v_samples_avg = 0, i_samples_avg = 0;
+	float v_samples_avg = 0, i_samples_avg = 0, tmp;
 
 	for(int i=0; i<samples_len; i++){
-		v_samples_avg += (v_samples_get(i) - v_samples_avg) / (i + 1);
-		i_samples_avg += (i_samples_get(i) - i_samples_avg) / (i + 1);
+
+		// Saturation.
+		tmp = v_samples_get(i);
+		if(tmp > self->init.adc_value_at_adc_vcc)
+			tmp = self->init.adc_value_at_adc_vcc;
+
+		v_samples_avg += (tmp - v_samples_avg) / (i + 1);
+
+		// Saturation.
+		tmp = i_samples_get(i);
+		if(tmp > self->init.adc_value_at_adc_vcc)
+			tmp = self->init.adc_value_at_adc_vcc;
+
+		i_samples_avg += (tmp - i_samples_avg) / (i + 1);
 	}
 
 	float v_quadratic_sum = 0, i_quadratic_sum = 0;

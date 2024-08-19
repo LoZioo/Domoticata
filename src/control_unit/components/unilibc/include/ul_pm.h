@@ -48,7 +48,6 @@ typedef enum __attribute__((__packed__)) {
  * @param index Index of the sample wanted by the library.
  * @param context A generic user context to be passed to this callback by the library; leave it to `NULL` if unused.
  * @return The raw read sample.
- * @note Only the first `ul_pm_init_t::sample_resolution_bits` will be considered.
 */
 typedef uint16_t (*ul_pm_sample_callback_t)(ul_pm_sample_type_t sample_type, uint32_t index, void *context);
 
@@ -77,11 +76,11 @@ typedef struct __attribute__((__packed__)) {
 // Instance configurations.
 typedef struct {
 
-	// Relevant bits of the single sample.
-	uint8_t sample_resolution_bits;
-
 	// ADC max voltage.
 	float adc_vcc_v;
+
+	// ADC value @ ADC max voltage.
+	uint16_t adc_value_at_adc_vcc;
 
 	/**
 	 * Transformer's gain (measured with the voltage divider attached to the secondary).
