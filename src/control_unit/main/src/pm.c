@@ -7,6 +7,8 @@
  *
 */
 
+// !!! SISTEMARE FREQUENZA CAMPIONAMENTO E NUMERO CAMPIONI PER INCLUDERE PIU' DI UN CICLO DI 50Hz
+
 /************************************************************************************************************
 * Included files
 ************************************************************************************************************/
@@ -119,7 +121,7 @@ esp_err_t __adc_driver_setup(){
 		// Channel configurations.
 		adc_channel_config[i].channel = adc_channel;
 		adc_channel_config[i].unit = ADC_UNIT_1;
-		adc_channel_config[i].atten = ADC_ATTEN_DB_0;
+		adc_channel_config[i].atten = ADC_ATTEN_DB_12;
 		adc_channel_config[i].bit_width = ADC_BITWIDTH_12;
 	}
 
@@ -247,7 +249,7 @@ void __pm_task(void *parameters){
 
 	uint32_t read_size;
 
-	// `ul_pm_evaluate()` pm_res.
+	// `ul_pm_evaluate()` results.
 	ul_pm_results_t pm_res;
 
 	/* Code */
@@ -295,23 +297,14 @@ void __pm_task(void *parameters){
 			"Error on `adc_continuous_read()`"
 		);
 
-		// !!! DEBUG
-		// printf("samples: { ");
-		// for(uint32_t i=0; i<16; i++){
+		// Stop the sample acquisition.
+		ESP_GOTO_ON_ERROR(
+			adc_continuous_stop(__adc_handle),
 
-		// 	printf("(%d, %d)",
-		// 		samples[i].type1.channel,
-		// 		samples[i].type1.data
-		// 	);
-
-		// 	if(i < 15)
-		// 		printf(", ");
-		// }
-		// printf(" }\n");
-		// printf("read_size: %lu\n", read_size);
-		// printf("samples_size: %u\n", __pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES));
-		// printf("\n");
-		// !!! DEBUG
+			task_error,
+			TAG,
+			"Error on `adc_continuous_stop()`"
+		);
 
 		// Conversion.
 		ul_ret = ul_pm_evaluate(
@@ -332,23 +325,41 @@ void __pm_task(void *parameters){
 		);
 
 		// !!! DEBUG
+		printf("samples: { ");
+		for(uint32_t i=0; i<16; i++){
+
+			printf("(%d, %d)",
+				samples[i].type1.channel,
+				samples[i].type1.data
+			);
+
+			if(i < 15)
+				printf(", ");
+		}
+		printf(" }\n");
+		printf("read_size: %lu\n", read_size);
+		printf("samples_size: %u\n", __pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES));
+		printf("\n");
+		// !!! DEBUG
+
+		// !!! DEBUG
 		printf("Voltage:\n");
 		printf("  V_pos_peak: %.2f\n", pm_res.v_pos_peak);
 		printf("  V_neg_peak: %.2f\n", pm_res.v_neg_peak);
 		printf("  V_pp: %.2f\n", pm_res.v_pp);
-		printf("  V_rms: %.2f\n", pm_res.v_rms);
+		printf("  V_rms: %.2f\n\n", pm_res.v_rms);
 
-		printf("\nCurrent:\n");
-		printf("  I_pos_peak: %.2f\n", pm_res.i_pos_peak);
-		printf("  I_neg_peak: %.2f\n", pm_res.i_neg_peak);
-		printf("  I_pp: %.2f\n", pm_res.i_pp);
-		printf("  I_rms: %.2f\n", pm_res.i_rms);
+		// printf("Current:\n");
+		// printf("  I_pos_peak: %.2f\n", pm_res.i_pos_peak);
+		// printf("  I_neg_peak: %.2f\n", pm_res.i_neg_peak);
+		// printf("  I_pp: %.2f\n", pm_res.i_pp);
+		// printf("  I_rms: %.2f\n\n", pm_res.i_rms);
 
-		printf("\nPower:\n");
-		printf("  P_va: %.2f\n", pm_res.p_va);
-		printf("  P_var: %.2f\n", pm_res.p_var);
-		printf("  P_w: %.2f\n", pm_res.p_w);
-		printf("  P_pf: %.2f\n\n", pm_res.p_pf);
+		// printf("Power:\n");
+		// printf("  P_va: %.2f\n", pm_res.p_va);
+		// printf("  P_var: %.2f\n", pm_res.p_var);
+		// printf("  P_w: %.2f\n", pm_res.p_w);
+		// printf("  P_pf: %.2f\n\n", pm_res.p_pf);
 		// !!! DEBUG
 
 		// Delay before continuing.
@@ -358,18 +369,15 @@ void __pm_task(void *parameters){
 		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
 
 		task_continue:
-		ESP_ERROR_CHECK_WITHOUT_ABORT(
-			adc_continuous_stop(__adc_handle)
-		);
-
 		delay_remainings(1000, t0);
 	}
 }
 
 uint16_t __pm_get_sample(ul_pm_sample_type_t sample_type, uint32_t index, void *context){
 
+	// !!! SISTEMARE RECUPERO CAMPIONI: I CANALI NON SONO MESSI NECESSARIAMENTE SEMPRE NELLO STESSO ORDINE
 	index *= 2;
-	if(sample_type == UL_PM_SAMPLE_TYPE_CURRENT)
+	if(sample_type == UL_PM_SAMPLE_TYPE_VOLTAGE)
 		index++;
 
 	return ((adc_digi_output_data_t*) context)[index].type1.data;
