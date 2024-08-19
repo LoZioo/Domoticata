@@ -7,8 +7,6 @@
  *
 */
 
-// !!! SISTEMARE FREQUENZA CAMPIONAMENTO E NUMERO CAMPIONI PER INCLUDERE PIU' DI UN CICLO DI 50Hz
-
 /************************************************************************************************************
 * Included files
 ************************************************************************************************************/
@@ -375,6 +373,7 @@ void __pm_task(void *parameters){
 
 uint16_t __pm_get_sample(ul_pm_sample_type_t sample_type, uint32_t index, void *context){
 
+	// !!! SISTEMARE FREQUENZA CAMPIONAMENTO E NUMERO CAMPIONI PER INCLUDERE PIU' DI UN CICLO DI 50Hz
 	// !!! SISTEMARE RECUPERO CAMPIONI: I CANALI NON SONO MESSI NECESSARIAMENTE SEMPRE NELLO STESSO ORDINE
 	index *= 2;
 	if(sample_type == UL_PM_SAMPLE_TYPE_VOLTAGE)
