@@ -163,12 +163,12 @@ esp_err_t __adc_driver_setup(){
 esp_err_t __pm_code_setup(){
 
 	ul_pm_init_t pm_init = {
-		.sample_resolution_bits = 12,
-		.adc_vcc_v = 3.3,
+		.adc_vcc_v = 3,
+		.adc_value_at_adc_vcc = 3840,
 
 		.v_transformer_gain = 0.06136,		// 232.9V : 14.29V
 		.v_divider_r1_ohm = 10000,
-		.v_divider_r2_ohm = 820,
+		.v_divider_r2_ohm = 680,
 
 		.i_clamp_gain = 0.0005,						// 100A : 50mA
 		.i_clamp_resistor_ohm = 120,
