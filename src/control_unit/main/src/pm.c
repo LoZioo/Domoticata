@@ -22,14 +22,8 @@
 // `adc_continuous_read()` timeout value (40ms = two 50Hz cycles).
 #define ADC_CONTINUOUS_READ_TIMEOUT_MS	40
 
-/**
- * @brief Convert the needed samples length for the "PowerMonitor" feature to the corresponding total byte length for the allocation of the `esp_adc/adc_continuous.h` driver's buffer.
- * @return `samples_len` * 2 channels * 2 bytes/sample.
- * @note The resulting number must be a multiple of `SOC_ADC_DIGI_DATA_BYTES_PER_CONV` on `soc/soc_caps.h`.
- */
-#define __pm_samples_len_to_buf_size(samples_len)( \
-	samples_len * 4 \
-)
+// This number must be a multiple of `SOC_ADC_DIGI_DATA_BYTES_PER_CONV` on `soc/soc_caps.h`.
+#define ADC_BUF_SIZE_BYTES	(4 * CONFIG_PM_ADC_SAMPLES)
 
 /************************************************************************************************************
 * Private Types Definitions
@@ -68,8 +62,8 @@ esp_err_t __adc_driver_setup(){
 	 * Please read the descriprion of `esp_adc/adc_continuous.h`.
 	 */
 	adc_continuous_handle_cfg_t adc_memory_config = {
-		.max_store_buf_size = __pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES),
-		.conv_frame_size = __pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES),
+		.max_store_buf_size = ADC_BUF_SIZE_BYTES,
+		.conv_frame_size = ADC_BUF_SIZE_BYTES,
 	};
 
 	ESP_RETURN_ON_ERROR(
@@ -171,6 +165,9 @@ esp_err_t __pm_code_setup(){
 		.i_clamp_gain = 0.0005,						// 100A : 50mA
 		.i_clamp_resistor_ohm = 120,
 
+		.v_rms_threshold = 10,
+		.i_rms_threshold = 0.05,
+
 		.v_correction_factor = 1,
 		.i_correction_factor = 1,
 
@@ -235,16 +232,8 @@ void __pm_task(void *parameters){
 	// Timings.
 	int64_t t0;
 
-	/**
-	 * Must be multiple of 4.
-	 * Note: `sizeof(adc_digi_output_data_t)` = `sizeof(uint16_t)`
-	 */
-	static adc_digi_output_data_t samples[
-		__pm_samples_len_to_buf_size(
-			CONFIG_PM_ADC_SAMPLES
-		)
-	];
-
+	// Sample buffer.
+	static adc_digi_output_data_t samples[ADC_BUF_SIZE_BYTES];
 	uint32_t read_size;
 
 	// `ul_pm_evaluate()` results.
@@ -285,7 +274,7 @@ void __pm_task(void *parameters){
 			adc_continuous_read(
 				__adc_handle,
 				(uint8_t*) samples,
-				__pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES),
+				ADC_BUF_SIZE_BYTES,
 				&read_size,
 				ADC_CONTINUOUS_READ_TIMEOUT_MS
 			),
@@ -324,19 +313,19 @@ void __pm_task(void *parameters){
 
 		// !!! DEBUG
 		printf("samples: { ");
-		for(uint32_t i=0; i<16; i++){
+		for(uint32_t i=0; i<4; i++){
 
 			printf("(%d, %d)",
 				samples[i].type1.channel,
 				samples[i].type1.data
 			);
 
-			if(i < 15)
+			if(i < 3)
 				printf(", ");
 		}
 		printf(" }\n");
 		printf("read_size: %lu\n", read_size);
-		printf("samples_size: %u\n", __pm_samples_len_to_buf_size(CONFIG_PM_ADC_SAMPLES));
+		printf("samples_size: %u\n", ADC_BUF_SIZE_BYTES);
 		printf("\n");
 		// !!! DEBUG
 
@@ -347,17 +336,17 @@ void __pm_task(void *parameters){
 		printf("  V_pp: %.2f\n", pm_res.v_pp);
 		printf("  V_rms: %.2f\n\n", pm_res.v_rms);
 
-		// printf("Current:\n");
-		// printf("  I_pos_peak: %.2f\n", pm_res.i_pos_peak);
-		// printf("  I_neg_peak: %.2f\n", pm_res.i_neg_peak);
-		// printf("  I_pp: %.2f\n", pm_res.i_pp);
-		// printf("  I_rms: %.2f\n\n", pm_res.i_rms);
+		printf("Current:\n");
+		printf("  I_pos_peak: %.2f\n", pm_res.i_pos_peak);
+		printf("  I_neg_peak: %.2f\n", pm_res.i_neg_peak);
+		printf("  I_pp: %.2f\n", pm_res.i_pp);
+		printf("  I_rms: %.2f\n\n", pm_res.i_rms);
 
-		// printf("Power:\n");
-		// printf("  P_va: %.2f\n", pm_res.p_va);
-		// printf("  P_var: %.2f\n", pm_res.p_var);
-		// printf("  P_w: %.2f\n", pm_res.p_w);
-		// printf("  P_pf: %.2f\n\n", pm_res.p_pf);
+		printf("Power:\n");
+		printf("  P_va: %.2f\n", pm_res.p_va);
+		printf("  P_var: %.2f\n", pm_res.p_var);
+		printf("  P_w: %.2f\n", pm_res.p_w);
+		printf("  P_pf: %.2f\n\n", pm_res.p_pf);
 		// !!! DEBUG
 
 		// Delay before continuing.
@@ -373,7 +362,7 @@ void __pm_task(void *parameters){
 
 uint16_t __pm_get_sample(ul_pm_sample_type_t sample_type, uint32_t index, void *context){
 
-	// !!! SISTEMARE FREQUENZA CAMPIONAMENTO E NUMERO CAMPIONI PER INCLUDERE PIU' DI UN CICLO DI 50Hz
+	// !!! VEDERE COME STOPPARE DRIVER E LEGGERE CAMPIONI
 	// !!! SISTEMARE RECUPERO CAMPIONI: I CANALI NON SONO MESSI NECESSARIAMENTE SEMPRE NELLO STESSO ORDINE
 	index *= 2;
 	if(sample_type == UL_PM_SAMPLE_TYPE_VOLTAGE)

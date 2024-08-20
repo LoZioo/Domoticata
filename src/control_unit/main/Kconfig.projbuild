@@ -106,7 +106,7 @@ menu "Project configurations"
 
 		config PM_ADC_SAMPLES
 			int "Number of samples per channel"
-			default 1000
+			default 4000
 
 	endmenu
 

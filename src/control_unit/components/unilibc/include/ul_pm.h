@@ -67,8 +67,8 @@ typedef struct __attribute__((__packed__)) {
 	float i_rms;
 
 	float p_va;
-	float p_var;
 	float p_w;
+	float p_var;
 	float p_pf;
 
 } ul_pm_results_t;
@@ -100,8 +100,14 @@ typedef struct {
 	 */
 	float i_clamp_gain;
 
-	// Current clamp resistor's value (Ohm).
-	uint16_t i_clamp_resistor_ohm;
+	// Current clamp resistor's value.
+	float i_clamp_resistor_ohm;
+
+	// If `ul_pm_results_t::v_rms` is under this threshold, all other `ul_pm_results_t` voltage fields will be 0.
+	float v_rms_threshold;
+
+	// If `ul_pm_results_t::i_rms` is under this threshold, all other `ul_pm_results_t` current fields will be 0.
+	float i_rms_threshold;
 
 	// Set to 1 if unused.
 	float v_correction_factor;

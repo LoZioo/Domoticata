@@ -116,21 +116,35 @@ ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handler){
 		self->init.i_clamp_resistor_ohm > 0,
 		UL_ERR_INVALID_ARG,
 		label_free,
-		"Error: `init.i_clamp_resistor_ohm` is 0"
+		"Error: `init.i_clamp_resistor_ohm` is less or equal to 0"
+	);
+
+	UL_GOTO_ON_FALSE(
+		self->init.v_rms_threshold > 0,
+		UL_ERR_INVALID_ARG,
+		label_free,
+		"Error: `init.v_rms_threshold` is less or equal to 0"
+	);
+
+	UL_GOTO_ON_FALSE(
+		self->init.i_rms_threshold > 0,
+		UL_ERR_INVALID_ARG,
+		label_free,
+		"Error: `init.i_rms_threshold` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
 		self->init.v_correction_factor > 0,
 		UL_ERR_INVALID_ARG,
 		label_free,
-		"Error: `init.v_correction_factor` is 0"
+		"Error: `init.v_correction_factor` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
 		self->init.i_correction_factor > 0,
 		UL_ERR_INVALID_ARG,
 		label_free,
-		"Error: `init.i_correction_factor` is 0"
+		"Error: `init.i_correction_factor` is less or equal to 0"
 	);
 
 	#ifndef UL_CONFIG_PM_DOUBLE_BUFFER
@@ -248,10 +262,25 @@ ul_err_t ul_pm_evaluate(
 	res->v_rms = sqrt(v_quadratic_sum / samples_len);
 	res->i_rms = sqrt(i_quadratic_sum / samples_len);
 
-	res->p_va = res->v_rms * res->i_rms;
-	res->p_w = instant_power_sum / samples_len;
-	res->p_var = sqrt(pow(res->p_va, 2) - pow(res->p_w, 2));
-	res->p_pf = res->p_w / res->p_va;
+	if(
+		res->v_rms < self->init.v_rms_threshold ||
+		res->i_rms < self->init.i_rms_threshold
+	){
+		res->p_va = res->p_w = res->p_var = res->p_pf = 0;
+
+		if(res->v_rms < self->init.v_rms_threshold)
+			res->v_rms = 0;
+
+		if(res->i_rms < self->init.i_rms_threshold)
+			res->i_rms = 0;
+	}
+
+	else {
+		res->p_va = res->v_rms * res->i_rms;
+		res->p_w = instant_power_sum / samples_len;
+		res->p_var = sqrt(pow(res->p_va, 2) - pow(res->p_w, 2));
+		res->p_pf = res->p_w / res->p_va;
+	}
 
 	return UL_OK;
 }
