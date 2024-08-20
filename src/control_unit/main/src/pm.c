@@ -29,6 +29,15 @@
 * Private Types Definitions
  ************************************************************************************************************/
 
+typedef struct __attribute__((__packed__)) {
+
+	adc_digi_output_data_t *samples;
+
+	uint8_t v_sample_offset: 1;
+	uint8_t i_sample_offset: 1;
+
+} sample_callback_context_t;
+
 /************************************************************************************************************
 * Private Variables
  ************************************************************************************************************/
@@ -37,6 +46,14 @@ static const char *TAG = LOG_TAG;
 static TaskHandle_t __pm_task_handle;
 static adc_continuous_handle_t __adc_handle;
 static ul_pm_handler_t *__pm;
+
+// Voltage and current channels.
+static struct __attribute__((__packed__)) {
+
+	adc_channel_t v_channel: 4;
+	adc_channel_t i_channel: 4;
+
+} adc_channels;
 
 /************************************************************************************************************
 * Private Functions Prototypes
@@ -110,6 +127,23 @@ esp_err_t __adc_driver_setup(){
 			"Error: `adc_unit` is not `ADC_UNIT_1` for item #%u",
 			i
 		);
+
+		// Save channel number.
+		switch(i){
+
+			// Voltage channel.
+			case 0:
+				adc_channels.v_channel = adc_channel;
+				break;
+
+			// Current channel.
+			case 1:
+				adc_channels.i_channel = adc_channel;
+				break;
+
+			default:
+				break;
+		}
 
 		// Channel configurations.
 		adc_channel_config[i].channel = adc_channel;
@@ -240,6 +274,11 @@ void __pm_task(void *parameters){
 	// `ul_pm_evaluate()` results.
 	ul_pm_results_t pm_res;
 
+	// Sample callback context.
+	sample_callback_context_t sample_callback_context = {
+		.samples = samples
+	};
+
 	/* Code */
 
 	ESP_LOGI(TAG, "Sampling from ADC");
@@ -294,10 +333,23 @@ void __pm_task(void *parameters){
 			"Error on `adc_continuous_stop()`"
 		);
 
+		// Sample order.
+		if(samples[0].type1.channel == adc_channels.v_channel){
+			sample_callback_context.v_sample_offset = 0;
+			sample_callback_context.i_sample_offset = 1;
+		}
+
+		else {
+			sample_callback_context.v_sample_offset = 1;
+			sample_callback_context.i_sample_offset = 0;
+		}
+
+		ESP_LOGW(TAG, "%u", sample_callback_context.v_sample_offset);
+
 		// Conversion.
 		ul_ret = ul_pm_evaluate(
 			__pm,
-			samples,
+			&sample_callback_context,
 			CONFIG_PM_ADC_SAMPLES,
 			&pm_res
 		);
@@ -363,13 +415,13 @@ void __pm_task(void *parameters){
 
 uint16_t __pm_get_sample(ul_pm_sample_type_t sample_type, uint32_t index, void *context){
 
-	// !!! VEDERE COME STOPPARE DRIVER E LEGGERE CAMPIONI
-	// !!! SISTEMARE RECUPERO CAMPIONI: I CANALI NON SONO MESSI NECESSARIAMENTE SEMPRE NELLO STESSO ORDINE
-	index *= 2;
-	if(sample_type == UL_PM_SAMPLE_TYPE_VOLTAGE)
-		index++;
+	index = (index * 2) + (
+		sample_type == UL_PM_SAMPLE_TYPE_VOLTAGE ?
+		((sample_callback_context_t*) context)->v_sample_offset :
+		((sample_callback_context_t*) context)->i_sample_offset
+	);
 
-	return ((adc_digi_output_data_t*) context)[index].type1.data;
+	return ((sample_callback_context_t*) context)->samples[index].type1.data;
 }
 
 bool __adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data){
