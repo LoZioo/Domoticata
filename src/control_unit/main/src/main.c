@@ -128,7 +128,7 @@ void app_main(){
 		printf("  I_pos_peak: %.2f\n", pm_res.i_pos_peak);
 		printf("  I_neg_peak: %.2f\n", pm_res.i_neg_peak);
 		printf("  I_pp: %.2f\n", pm_res.i_pp);
-		printf("  I_rms: %.2f\n\n", pm_res.i_rms);
+		printf("  I_rms (mA): %.2f\n\n", pm_res.i_rms * 1000);
 
 		printf("Power:\n");
 		printf("  P_va: %.2f\n", pm_res.p_va);
