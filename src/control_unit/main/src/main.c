@@ -107,12 +107,37 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
-	return;
+	// return;
 
 	/* Infinite loop */
-	// for(;;){
-	// 	delay(1);
-	// }
+	for(;;){
+
+		static int64_t t0;
+		static ul_pm_results_t pm_res;
+
+		t0 = millis();
+		ESP_ERROR_CHECK(pm_get_results(&pm_res));
+
+		printf("Voltage:\n");
+		printf("  V_pos_peak: %.2f\n", pm_res.v_pos_peak);
+		printf("  V_neg_peak: %.2f\n", pm_res.v_neg_peak);
+		printf("  V_pp: %.2f\n", pm_res.v_pp);
+		printf("  V_rms: %.2f\n\n", pm_res.v_rms);
+
+		printf("Current:\n");
+		printf("  I_pos_peak: %.2f\n", pm_res.i_pos_peak);
+		printf("  I_neg_peak: %.2f\n", pm_res.i_neg_peak);
+		printf("  I_pp: %.2f\n", pm_res.i_pp);
+		printf("  I_rms: %.2f\n\n", pm_res.i_rms);
+
+		printf("Power:\n");
+		printf("  P_va: %.2f\n", pm_res.p_va);
+		printf("  P_w: %.2f\n", pm_res.p_w);
+		printf("  P_var: %.2f\n", pm_res.p_var);
+		printf("  P_pf: %.2f\n\n", pm_res.p_pf);
+
+		delay_remainings(1000, t0);
+	}
 	/* USER CODE END 1 */
 }
 

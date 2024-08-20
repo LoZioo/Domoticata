@@ -19,11 +19,21 @@
 
 #define LOG_TAG	"pm"
 
-// `adc_continuous_read()` timeout value (40ms = two 50Hz cycles).
-#define ADC_CONTINUOUS_READ_TIMEOUT_MS	40
+// `adc_continuous_read()` timeout value (200ms = ten 50Hz cycles).
+#define ADC_CONTINUOUS_READ_TIMEOUT_MS	200
 
 // This number must be a multiple of `SOC_ADC_DIGI_DATA_BYTES_PER_CONV` on `soc/soc_caps.h`.
 #define ADC_BUF_SIZE_BYTES	(4 * CONFIG_PM_ADC_SAMPLES)
+
+// `__pm_res_mutex` timeout before refreshing data.
+#define MUTEX_TAKE_TIMEOUT_MS		ADC_CONTINUOUS_READ_TIMEOUT_MS
+
+/**
+ * @brief Statement to check if the library was initialized.
+ */
+#define __is_initialized()( \
+	__pm_task_handle != NULL \
+)
 
 /************************************************************************************************************
 * Private Types Definitions
@@ -43,7 +53,7 @@ typedef struct __attribute__((__packed__)) {
  ************************************************************************************************************/
 
 static const char *TAG = LOG_TAG;
-static TaskHandle_t __pm_task_handle;
+static TaskHandle_t __pm_task_handle = NULL;
 static adc_continuous_handle_t __adc_handle;
 static ul_pm_handler_t *__pm;
 
@@ -54,6 +64,10 @@ static struct __attribute__((__packed__)) {
 	adc_channel_t i_channel: 4;
 
 } adc_channels;
+
+// `ul_pm_evaluate()` results.
+static ul_pm_results_t __pm_res;
+static SemaphoreHandle_t __pm_res_mutex;
 
 /************************************************************************************************************
 * Private Functions Prototypes
@@ -225,6 +239,16 @@ esp_err_t __pm_code_setup(){
 
 esp_err_t __pm_task_setup(){
 
+	__pm_res_mutex = xSemaphoreCreateMutex();
+
+	ESP_RETURN_ON_FALSE(
+		__pm_res_mutex != NULL,
+
+		ESP_ERR_NO_MEM,
+		TAG,
+		"Error: unable to allocate \"__pm_res_mutex\""
+	);
+
 	BaseType_t ret_val = xTaskCreatePinnedToCore(
 		__pm_task,
 		LOG_TAG"_task",
@@ -264,15 +288,9 @@ void __pm_task(void *parameters){
 	// UniLibC return code.
 	ul_err_t ul_ret;
 
-	// Timings.
-	int64_t t0;
-
 	// Sample buffer.
 	static adc_digi_output_data_t samples[ADC_BUF_SIZE_BYTES];
 	uint32_t read_size;
-
-	// `ul_pm_evaluate()` results.
-	ul_pm_results_t pm_res;
 
 	// Sample callback context.
 	sample_callback_context_t sample_callback_context = {
@@ -285,7 +303,6 @@ void __pm_task(void *parameters){
 
 	/* Infinite loop */
 	for(;;){
-		t0 = millis();
 		ret = ESP_OK;
 
 		// Flush old samples.
@@ -344,14 +361,16 @@ void __pm_task(void *parameters){
 			sample_callback_context.i_sample_offset = 0;
 		}
 
-		ESP_LOGW(TAG, "%u", sample_callback_context.v_sample_offset);
+		// Sample to results conversion ready; taking mutex...
+		if(xSemaphoreTake(__pm_res_mutex, pdMS_TO_TICKS(MUTEX_TAKE_TIMEOUT_MS)) == pdFALSE)
+			continue;
 
 		// Conversion.
 		ul_ret = ul_pm_evaluate(
 			__pm,
 			&sample_callback_context,
 			CONFIG_PM_ADC_SAMPLES,
-			&pm_res
+			&__pm_res
 		);
 
 		ESP_GOTO_ON_FALSE(
@@ -364,52 +383,14 @@ void __pm_task(void *parameters){
 			ul_ret
 		);
 
-		// !!! DEBUG
-		printf("samples: { ");
-		for(uint32_t i=0; i<4; i++){
-
-			printf("(%d, %d)",
-				samples[i].type1.channel,
-				samples[i].type1.data
-			);
-
-			if(i < 3)
-				printf(", ");
-		}
-		printf(" }\n");
-		printf("read_size: %lu\n", read_size);
-		printf("samples_size: %u\n", ADC_BUF_SIZE_BYTES);
-		printf("\n");
-		// !!! DEBUG
-
-		// !!! DEBUG
-		printf("Voltage:\n");
-		printf("  V_pos_peak: %.2f\n", pm_res.v_pos_peak);
-		printf("  V_neg_peak: %.2f\n", pm_res.v_neg_peak);
-		printf("  V_pp: %.2f\n", pm_res.v_pp);
-		printf("  V_rms: %.2f\n\n", pm_res.v_rms);
-
-		printf("Current:\n");
-		printf("  I_pos_peak: %.2f\n", pm_res.i_pos_peak);
-		printf("  I_neg_peak: %.2f\n", pm_res.i_neg_peak);
-		printf("  I_pp: %.2f\n", pm_res.i_pp);
-		printf("  I_rms: %.2f\n\n", pm_res.i_rms);
-
-		printf("Power:\n");
-		printf("  P_va: %.2f\n", pm_res.p_va);
-		printf("  P_var: %.2f\n", pm_res.p_var);
-		printf("  P_w: %.2f\n", pm_res.p_w);
-		printf("  P_pf: %.2f\n\n", pm_res.p_pf);
-		// !!! DEBUG
+		// Sample to results conversion ready; releasing mutex...
+		xSemaphoreGive(__pm_res_mutex);
 
 		// Delay before continuing.
-		goto task_continue;
+		continue;
 
 		task_error:
 		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
-
-		task_continue:
-		delay_remainings(1000, t0);
 	}
 }
 
@@ -458,6 +439,41 @@ esp_err_t pm_setup(){
 		TAG,
 		"Error on `__pm_task_setup()`"
 	);
+
+	return ESP_OK;
+}
+
+esp_err_t pm_get_results(ul_pm_results_t *ul_pm_results){
+
+	ESP_RETURN_ON_FALSE(
+		__is_initialized(),
+
+		ESP_ERR_INVALID_STATE,
+		TAG,
+		"Error: library not initialized"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		ul_pm_results != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `ul_pm_results` is NULL"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		xSemaphoreTake(
+			__pm_res_mutex,
+			pdMS_TO_TICKS(MUTEX_TAKE_TIMEOUT_MS)
+		) == pdTRUE,
+
+		ESP_ERR_TIMEOUT,
+		TAG,
+		"Error: can not take `__pm_res_mutex`"
+	);
+
+	*ul_pm_results = __pm_res;
+	xSemaphoreGive(__pm_res_mutex);
 
 	return ESP_OK;
 }

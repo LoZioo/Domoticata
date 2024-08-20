@@ -61,4 +61,9 @@
  */
 extern esp_err_t pm_setup();
 
+/**
+ * @brief Get the latest PowerMonitor measurements.
+ */
+extern esp_err_t pm_get_results(ul_pm_results_t *ul_pm_results);
+
 #endif  /* INC_PM_H_ */
