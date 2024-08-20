@@ -64,6 +64,7 @@ esp_err_t __adc_driver_setup(){
 	adc_continuous_handle_cfg_t adc_memory_config = {
 		.max_store_buf_size = ADC_BUF_SIZE_BYTES,
 		.conv_frame_size = ADC_BUF_SIZE_BYTES,
+		.flags.flush_pool = false
 	};
 
 	ESP_RETURN_ON_ERROR(
