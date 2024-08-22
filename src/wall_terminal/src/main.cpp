@@ -21,7 +21,7 @@
 	*		- Select the `env:oscillator_tuner` PlatformIO environment.
 	*		- Upload the sketch.
 	*		- Open the serial monitor and spam 'x' to detect the right `OSCCAL`.
-	*		- Open the `conf_var.h` header, update the `CONFIG_UART_DEVICE_ID`.
+	*		- Open the `conf_var.h` header, update the `CONFIG_RS485_DEVICE_ID`.
 	*		- Select the `env:main` PlatformIO environment.
 	*		- Upload the sketch.
 	*		- Enjoy.
@@ -285,7 +285,7 @@ bool send_task(){
 		 */
 		if(
 			ul_ms_is_master_byte(b) &&
-			ul_ms_decode_master_byte(b) == ul_ms_decode_master_byte(CONFIG_UART_DEVICE_ID) &&
+			ul_ms_decode_master_byte(b) == ul_ms_decode_master_byte(CONFIG_RS485_DEVICE_ID) &&
 			(
 				#ifdef CONFIG_HW_TRIMMER
 					adc_is_changed
@@ -348,7 +348,7 @@ void send_states(){
 	uart_tx_mode();
 
 	// Reply with my ID to get the master's attention.
-	uart_write_byte(ul_ms_encode_slave_byte(CONFIG_UART_DEVICE_ID));
+	uart_write_byte(ul_ms_encode_slave_byte(CONFIG_RS485_DEVICE_ID));
 
 	struct __attribute__((__packed__)){
 		uint16_t trimmer_val: 10;
