@@ -16,20 +16,26 @@
 * ul_errors.h
 ************************************************************************************************************/
 
-// #define UL_CONF_ERRORS_PRINT_DEBUG					// Comment to disable the text debug output.
+// #define UL_CONFIG_ERRORS_PRINT_DEBUG								// Comment to disable the text debug output.
+
+/************************************************************************************************************
+* ul_pm.h
+************************************************************************************************************/
+
+#define UL_CONFIG_PM_DOUBLE_BUFFER									// Comment to disable the classic PowerMonitor double sample buffer mode. Instead, the callback sample selection mode will be used.
 
 /************************************************************************************************************
 * ul_master_slave.h
 ************************************************************************************************************/
 
-// #define UL_CONF_MS_UINT8_IS_BUF_SIZE_T			// Comment to set the max buffer sizes from (2^32)-1 to (2^8)-1 and save some RAM.
+// #define UL_CONFIG_MS_UINT8_IS_BUF_SIZE_T						// Comment to set the max buffer sizes from (2^32)-1 to (2^8)-1 and save some RAM.
 
 /************************************************************************************************************
-* ul_master_slave.h
+* ul_crc.h
 ************************************************************************************************************/
 
-#define UL_CRC_CRC8_POLYNOMIAL				0x07		// Standard CRC8 configurations.
-#define UL_CRC_CRC8_INITIAL_VALUE			0x00
-#define UL_CRC_CRC8_FINAL_XOR_VALUE		0x00
+#define UL_CONFIG_CRC_CRC8_POLYNOMIAL				0x07		// Standard CRC8 configurations.
+#define UL_CONFIG_CRC8_INITIAL_VALUE				0x00
+#define UL_CONFIG_CRC_CRC8_FINAL_XOR_VALUE	0x00
 
 #endif  /* INC_UL_CONFIGS_H_ */

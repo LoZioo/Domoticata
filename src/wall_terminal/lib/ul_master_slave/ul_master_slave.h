@@ -38,7 +38,7 @@
 ************************************************************************************************************/
 
 // Conditional typings.
-#ifdef UL_CONF_MS_UINT8_IS_BUF_SIZE_T
+#ifdef UL_CONFIG_MS_UINT8_IS_BUF_SIZE_T
 	#define UL_MS_BUF_SIZE_T	uint32_t
 #else
 	#define UL_MS_BUF_SIZE_T	uint8_t
