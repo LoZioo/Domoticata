@@ -41,11 +41,48 @@
 // #define CONFIG_HW_TRIMMER	// Trimmer attached to `CONFIG_GPIO_ADC`.
 
 // Situational hardware configurations.
-#if CONFIG_UART_DEVICE_ID == 0x00
+#if CONFIG_UART_DEVICE_ID == 0
 	#define CONFIG_HW_BTN_1
-#elif CONFIG_UART_DEVICE_ID == 0x01
+	#define CONFIG_HW_TRIMMER
+#elif CONFIG_UART_DEVICE_ID == 1
 	#define CONFIG_HW_BTN_1
 	#define CONFIG_HW_BTN_2
+	#define CONFIG_HW_TRIMMER
+#elif CONFIG_UART_DEVICE_ID == 2
+	#define CONFIG_HW_BTN_1
+#elif CONFIG_UART_DEVICE_ID == 3
+	#define CONFIG_HW_BTN_1
+	#define CONFIG_HW_BTN_2
+#elif CONFIG_UART_DEVICE_ID == 4
+	#define CONFIG_HW_BTN_1
+	#define CONFIG_HW_BTN_2
+	#define CONFIG_HW_TRIMMER
+#elif CONFIG_UART_DEVICE_ID == 5
+	#define CONFIG_HW_BTN_1
+	#define CONFIG_HW_BTN_2
+	#define CONFIG_HW_TRIMMER
+#elif CONFIG_UART_DEVICE_ID == 6
+	#define CONFIG_HW_BTN_1
+	#define CONFIG_HW_BTN_2
+	#define CONFIG_HW_TRIMMER
+#elif CONFIG_UART_DEVICE_ID == 7
+	#define CONFIG_HW_BTN_1
+	#define CONFIG_HW_BTN_2
+	#define CONFIG_HW_TRIMMER
+#elif CONFIG_UART_DEVICE_ID == 8
+	#define CONFIG_HW_BTN_1
+	#define CONFIG_HW_TRIMMER
+#elif CONFIG_UART_DEVICE_ID == 9
+	#define CONFIG_HW_BTN_1
+	#define CONFIG_HW_TRIMMER
+#elif CONFIG_UART_DEVICE_ID == 10
+	#define CONFIG_HW_BTN_1
+#elif CONFIG_UART_DEVICE_ID == 11
+	#define CONFIG_HW_BTN_1
+	#define CONFIG_HW_BTN_2
+	#define CONFIG_HW_TRIMMER
+#elif CONFIG_UART_DEVICE_ID == 12
+	#define CONFIG_HW_BTN_1
 	#define CONFIG_HW_TRIMMER
 #else
 	#error Device ID does not correspond to any hardware configuration.

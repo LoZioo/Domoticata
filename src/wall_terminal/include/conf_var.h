@@ -13,6 +13,6 @@
 #define INC_CONF_VAR_H_
 
 // RS-485 ID up to 127 or 0x7F.
-#define CONFIG_UART_DEVICE_ID		0x00
+#define CONFIG_UART_DEVICE_ID		0
 
 #endif  /* INC_CONF_VAR_H_ */
