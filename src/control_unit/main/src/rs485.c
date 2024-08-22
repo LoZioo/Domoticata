@@ -19,6 +19,9 @@
 
 #define LOG_TAG	"rs485"
 
+// Enable `__handle_trimmer_change` and `__handle_button_press` log stub functions.
+// #define LOG_STUB
+
 // Should be greater than `UART_HW_FIFO_LEN(uart_num)`.
 #define UART_RX_BUFFER_LEN_BYTES	(UART_HW_FIFO_LEN(CONFIG_RS485_UART_PORT) * 2)
 
@@ -377,6 +380,8 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 	return ESP_OK;
 }
 
+#ifndef LOG_STUB
+
 esp_err_t __handle_trimmer_change(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t trimmer_val){
 
 	ESP_RETURN_ON_FALSE(
@@ -589,6 +594,31 @@ esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t d
 
 	return ESP_OK;
 }
+
+#else
+
+esp_err_t __handle_trimmer_change(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t trimmer_val){
+	ESP_LOGW(TAG, "Device ID: %02u", device_id);
+	ESP_LOGI(TAG, "Trimmer val: %u", trimmer_val);
+	return ESP_OK;
+}
+
+esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t button_states){
+	ul_bs_set_button_states(button_states);
+
+	ESP_LOGW(TAG, "Device ID: %02u", device_id);
+	for(uint8_t button=UL_BS_BUTTON_1; button<=BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL; button++)
+		ESP_LOGI(
+			TAG,
+			"Button %u: %u",
+			button,
+			ul_bs_get_button_state(button)
+		);
+
+	return ESP_OK;
+}
+
+#endif
 
 rs485_keymap_t __id_button_and_state_to_zones(uint8_t device_id, ul_bs_button_id_t button_id, ul_bs_button_state_t button_state){
 
