@@ -59,16 +59,16 @@
 	) \
 )
 
-#define __log_event_button(TAG, zone, pwm_enabled, pwm_duty, device_id, button_id, button_state) \
+#define __log_event_button(TAG, zone, enabled, duty, device_id, button_id) \
 	ESP_LOGI( \
-		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=%02u, button_id=%u, button_state=%u)", \
-		zone, pwm_enabled, pwm_duty, device_id, button_id, button_state \
+		TAG, "(zone=%u, enabled=%u, duty=%u) triggered by (device_id=%02u, button_id=%u)", \
+		zone, enabled, duty, device_id, button_id \
 	)
 
-#define __log_event_trimmer(TAG, zone, pwm_enabled, pwm_duty, device_id, trimmer_val) \
+#define __log_event_trimmer(TAG, zone, enabled, duty, device_id, trimmer_val) \
 	ESP_LOGI( \
-		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=%02u, trimmer_val=%u)", \
-		zone, pwm_enabled, pwm_duty, device_id, trimmer_val \
+		TAG, "(zone=%u, enabled=%u, duty=%u) triggered by (device_id=%02u, trimmer_val=%u)", \
+		zone, enabled, duty, device_id, trimmer_val \
 	)
 
 /************************************************************************************************************
@@ -606,8 +606,7 @@ esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t d
 					pwm_enabled[zones_arr[i]],
 					pwm_duty[zones_arr[i]],
 					device_id,
-					button_id,
-					button_state
+					button_id
 				);
 			}
 	}
