@@ -18,6 +18,7 @@
 ************************************************************************************************************/
 
 #define LOG_TAG	"pm"
+// #define LOG_STUB
 
 // `adc_continuous_read()` timeout value (200ms = ten 50Hz cycles).
 #define ADC_CONTINUOUS_READ_TIMEOUT_MS	200
@@ -386,9 +387,31 @@ void __pm_task(void *parameters){
 		// Sample to results conversion ready; releasing mutex...
 		xSemaphoreGive(__pm_res_mutex);
 
-		// Delay before continuing.
-		continue;
+		#ifdef LOG_STUB
+		ESP_LOGW(TAG, "LOG_STUB");
 
+		ESP_LOGI(TAG, "Voltage:");
+		ESP_LOGI(TAG, "  V_pos_peak: %.2f", __pm_res.v_pos_peak);
+		ESP_LOGI(TAG, "  V_neg_peak: %.2f", __pm_res.v_neg_peak);
+		ESP_LOGI(TAG, "  V_pp: %.2f", __pm_res.v_pp);
+		ESP_LOGI(TAG, "  V_rms: %.2f", __pm_res.v_rms);
+
+		ESP_LOGI(TAG, "Current:");
+		ESP_LOGI(TAG, "  I_pos_peak: %.2f", __pm_res.i_pos_peak);
+		ESP_LOGI(TAG, "  I_neg_peak: %.2f", __pm_res.i_neg_peak);
+		ESP_LOGI(TAG, "  I_pp: %.2f", __pm_res.i_pp);
+		ESP_LOGI(TAG, "  I_rms (mA): %.2f", __pm_res.i_rms * 1000);
+
+		ESP_LOGI(TAG, "Power:");
+		ESP_LOGI(TAG, "  P_va: %.2f", __pm_res.p_va);
+		ESP_LOGI(TAG, "  P_w: %.2f", __pm_res.p_w);
+		ESP_LOGI(TAG, "  P_var: %.2f", __pm_res.p_var);
+		ESP_LOGI(TAG, "  P_pf: %.2f", __pm_res.p_pf);
+
+		delay(1000);
+		#endif
+
+		continue;
 		task_error:
 		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
 	}

@@ -18,6 +18,7 @@
 ************************************************************************************************************/
 
 #define LOG_TAG	"pwm"
+// #define LOG_STUB
 
 // `__pwm_queue` max length in number of elements.
 #define PWM_QUEUE_BUFFER_LEN_ELEMENTS		10
@@ -201,7 +202,7 @@ void __pwm_task(void *parameters){
 	esp_err_t ret;
 
 	// PWM incoming data.
-	pwm_data_t pwm;
+	pwm_data_t pwm_data;
 
 	/* Code */
 
@@ -210,37 +211,49 @@ void __pwm_task(void *parameters){
 		ret = ESP_OK;
 
 		// Waiting for `pwm_write()` requests.
-		if(xQueueReceive(__pwm_queue, &pwm, portMAX_DELAY) == pdFALSE)
+		if(xQueueReceive(__pwm_queue, &pwm_data, portMAX_DELAY) == pdFALSE)
 			goto task_continue;
+
+		#ifdef LOG_STUB
+		ESP_LOGW(TAG, "LOG_STUB");
+		ESP_LOGI(TAG, "PWM zone: %u", pwm_data.zone);
+		ESP_LOGI(TAG, "Target duty: %u", pwm_data.target_duty);
+		ESP_LOGI(TAG, "Fade time %ums", pwm_data.fade_time_ms);
+
+		// Avoid "label 'task_error' defined but not used" compiler error.
+		if(0) goto task_error;
+		#else
 
 		// Set PWM parameters.
 		ESP_GOTO_ON_ERROR(
 			ledc_set_fade_with_time(
-				__pwm_get_port(pwm.zone),
-				__pwm_get_channel(pwm.zone),
-				pwm.target_duty,
-				pwm.fade_time_ms
+				__pwm_get_port(pwm_data.zone),
+				__pwm_get_channel(pwm_data.zone),
+				pwm_data.target_duty,
+				pwm_data.fade_time_ms
 			),
 
 			task_error,
 			TAG,
 			"Error on `ledc_set_fade_with_time(speed_mode=%u, channel=%u, target_duty=%u, max_fade_time_ms=%u)`",
-			__pwm_get_port(pwm.zone), __pwm_get_channel(pwm.zone), pwm.target_duty, pwm.fade_time_ms
+			__pwm_get_port(pwm_data.zone), __pwm_get_channel(pwm_data.zone), pwm_data.target_duty, pwm_data.fade_time_ms
 		);
 
 		// Fade start.
 		ESP_GOTO_ON_ERROR(
 			ledc_fade_start(
-				__pwm_get_port(pwm.zone),
-				__pwm_get_channel(pwm.zone),
+				__pwm_get_port(pwm_data.zone),
+				__pwm_get_channel(pwm_data.zone),
 				LEDC_FADE_NO_WAIT
 			),
 
 			task_error,
 			TAG,
 			"Error on `ledc_fade_start(speed_mode=%u, channel=%u)`",
-			__pwm_get_port(pwm.zone), __pwm_get_channel(pwm.zone)
+			__pwm_get_port(pwm_data.zone), __pwm_get_channel(pwm_data.zone)
 		);
+
+		#endif
 
 		// Delay before continuing.
 		goto task_continue;
