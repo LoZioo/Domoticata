@@ -61,13 +61,13 @@
 
 #define __log_event_button(TAG, zone, pwm_enabled, pwm_duty, device_id, button_id, button_state) \
 	ESP_LOGI( \
-		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, button_id=%u, button_state=%u)", \
+		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=%02u, button_id=%u, button_state=%u)", \
 		zone, pwm_enabled, pwm_duty, device_id, button_id, button_state \
 	)
 
 #define __log_event_trimmer(TAG, zone, pwm_enabled, pwm_duty, device_id, trimmer_val) \
 	ESP_LOGI( \
-		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=0x%02X, trimmer_val=%u)", \
+		TAG, "PWM index %u: (enabled=%u, value=%u), triggered by: (device_id=%02u, trimmer_val=%u)", \
 		zone, pwm_enabled, pwm_duty, device_id, trimmer_val \
 	)
 
@@ -287,7 +287,7 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 
 		ESP_ERR_INVALID_RESPONSE,
 		TAG,
-		"Error: slave device 0x%02X answered with different ID 0x%02X",
+		"Error: slave device %02u answered with different ID %02u",
 		poll_device_id, read_device_id
 	);
 
@@ -315,7 +315,7 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 
 		ESP_ERR_TIMEOUT,
 		TAG,
-		"Error on `uart_read_bytes()` for slave device 0x%02X",
+		"Error on `uart_read_bytes()` for slave device %02u",
 		poll_device_id
 	);
 
@@ -325,7 +325,7 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 
 		ESP_ERR_TIMEOUT,
 		TAG,
-		"Error: slave device 0x%02X exceeded the prefixed %ums timeout for sending its state",
+		"Error: slave device %02u exceeded the prefixed %ums timeout for sending its state",
 		poll_device_id, WALL_TERMINAL_CONN_TIMEOUT_MS
 	);
 
@@ -335,7 +335,7 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 
 		ESP_ERR_INVALID_RESPONSE,
 		TAG,
-		"Error: slave device 0x%02X sent %u bytes; 4 expected",
+		"Error: slave device %02u sent %u bytes; 4 expected",
 		poll_device_id, read_bytes
 	);
 
@@ -352,7 +352,7 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 
 		ESP_FAIL,
 		TAG,
-		"Error #%u on `ul_ms_decode_slave_message()` for slave device 0x%02X",
+		"Error #%u on `ul_ms_decode_slave_message()` for slave device %02u",
 		ret_val, poll_device_id
 	);
 
@@ -366,7 +366,7 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 
 		ESP_ERR_INVALID_CRC,
 		TAG,
-		"Error: invalid CRC8 for slave device 0x%02X; sent CRC8 is 0x%02X but computed CRC8 is 0x%02X",
+		"Error: invalid CRC8 for slave device %02u; sent CRC8 is %02u but computed CRC8 is %02u",
 		poll_device_id, decoded_data.crc8, crc8
 	);
 
@@ -687,7 +687,7 @@ void __rs485_task(void *parameters){
 
 			task_error,
 			TAG,
-			"Error on `__wall_terminals_poll(device_id=0x%02X, trimmer_val=%u, button_states=%u)`",
+			"Error on `__wall_terminals_poll(device_id=%02u, trimmer_val=%u, button_states=%u)`",
 			device_id, trimmer_val, button_states
 		);
 
@@ -702,7 +702,7 @@ void __rs485_task(void *parameters){
 			ESP_ERR_NOT_SUPPORTED,
 			task_error,
 			TAG,
-			"Error: the returned `device_id` is 0x%02X; max allowed is 0x%02X",
+			"Error: the returned `device_id` is %02u; max allowed is %02u",
 			device_id, WALL_TERMINALS_COUNT - 1
 		);
 
@@ -713,7 +713,7 @@ void __rs485_task(void *parameters){
 
 				task_error,
 				TAG,
-				"Error on `__handle_button_press(device_id=0x%02X, button_states=%u)`",
+				"Error on `__handle_button_press(device_id=%02u, button_states=%u)`",
 				device_id, button_states
 			);
 
@@ -724,7 +724,7 @@ void __rs485_task(void *parameters){
 
 				task_error,
 				TAG,
-				"Error on `__handle_trimmer_change(device_id=0x%02X, trimmer_val=%u)`",
+				"Error on `__handle_trimmer_change(device_id=%02u, trimmer_val=%u)`",
 				device_id, trimmer_val
 			);
 
