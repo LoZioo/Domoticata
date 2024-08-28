@@ -20,7 +20,7 @@ menu "Project configurations"
 			help
 				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority)
 
-		choice
+		choice RS485_TASK_CORE_AFFINITY
 			prompt "Task core affinity"
 			default RS485_TASK_CORE_AFFINITY_APPLICATION
 
@@ -31,6 +31,11 @@ menu "Project configurations"
 				bool "Application core (1)"
 
 		endchoice
+
+		config RS485_TASK_CORE_AFFINITY
+			int
+			default 0 if RS485_TASK_CORE_AFFINITY_PROTOCOL
+			default 1 if RS485_TASK_CORE_AFFINITY_APPLICATION
 
 		config RS485_UART_PORT
 			int "UART port number"
@@ -56,7 +61,7 @@ menu "Project configurations"
 			help
 				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority)
 
-		choice
+		choice PWM_TASK_CORE_AFFINITY
 			prompt "Task core affinity"
 			default PWM_TASK_CORE_AFFINITY_APPLICATION
 
@@ -67,6 +72,11 @@ menu "Project configurations"
 				bool "Application core (1)"
 
 		endchoice
+
+		config PWM_TASK_CORE_AFFINITY
+			int
+			default 0 if PWM_TASK_CORE_AFFINITY_PROTOCOL
+			default 1 if PWM_TASK_CORE_AFFINITY_APPLICATION
 
 		config PWM_FREQUENCY_HZ
 			int "PWM frequency (Hz)"
@@ -87,7 +97,7 @@ menu "Project configurations"
 			help
 				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority)
 
-		choice
+		choice PM_TASK_CORE_AFFINITY
 			prompt "Task core affinity"
 			default PM_TASK_CORE_AFFINITY_APPLICATION
 
@@ -98,6 +108,11 @@ menu "Project configurations"
 				bool "Application core (1)"
 
 		endchoice
+
+		config PM_TASK_CORE_AFFINITY
+			int
+			default 0 if PM_TASK_CORE_AFFINITY_PROTOCOL
+			default 1 if PM_TASK_CORE_AFFINITY_APPLICATION
 
 		config PM_ADC_SAMPLE_RATE
 			int "Sample rate (Hz)"

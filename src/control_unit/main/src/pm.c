@@ -257,12 +257,7 @@ esp_err_t __pm_task_setup(){
 		NULL,
 		CONFIG_PM_TASK_PRIORITY,
 		&__pm_task_handle,
-
-		#ifdef CONFIG_PM_TASK_CORE_AFFINITY_APPLICATION
-			ESP_APPLICATION_CORE
-		#else
-			ESP_PROTOCOL_CORE
-		#endif
+		CONFIG_PM_TASK_CORE_AFFINITY
 	);
 
 	ESP_RETURN_ON_FALSE(
