@@ -2,7 +2,12 @@
  *  @brief  Created on: Aug 17, 2024
  *          Davide Scalisi
  *
- * 					Description:	RS485 code.
+ * 					Description:	WiFi code.
+ * 					Note:					You must enable these options from the menuconfig to support
+ * 												multiple access points with same SSID and different channels:
+ * 													- Enable 802.11k, 802.11v APIs Support
+ * 													- Keep scan results in cache
+ * 													- Enable Multi Band Operation Certification Support
  *
  * @copyright [2024] Davide Scalisi *
  * @copyright All Rights Reserved. *
