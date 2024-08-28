@@ -26,6 +26,7 @@
 // Platform libraries.
 #include <esp_err.h>
 #include <esp_check.h>
+#include <esp_log.h>
 
 #include <driver/gpio.h>
 
