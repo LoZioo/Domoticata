@@ -25,10 +25,10 @@ menu "Project configurations"
 			default RS485_TASK_CORE_AFFINITY_APPLICATION
 
 			config RS485_TASK_CORE_AFFINITY_PROTOCOL
-				bool "Protocol core"
+				bool "Protocol core (0)"
 
 			config RS485_TASK_CORE_AFFINITY_APPLICATION
-				bool "Application core"
+				bool "Application core (1)"
 
 		endchoice
 
@@ -61,10 +61,10 @@ menu "Project configurations"
 			default PWM_TASK_CORE_AFFINITY_APPLICATION
 
 			config PWM_TASK_CORE_AFFINITY_PROTOCOL
-				bool "Protocol core"
+				bool "Protocol core (0)"
 
 			config PWM_TASK_CORE_AFFINITY_APPLICATION
-				bool "Application core"
+				bool "Application core (1)"
 
 		endchoice
 
@@ -92,10 +92,10 @@ menu "Project configurations"
 			default PM_TASK_CORE_AFFINITY_APPLICATION
 
 			config PM_TASK_CORE_AFFINITY_PROTOCOL
-				bool "Protocol core"
+				bool "Protocol core (0)"
 
 			config PM_TASK_CORE_AFFINITY_APPLICATION
-				bool "Application core"
+				bool "Application core (1)"
 
 		endchoice
 
