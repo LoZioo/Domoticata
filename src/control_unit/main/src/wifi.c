@@ -28,9 +28,7 @@
  ************************************************************************************************************/
 
 static const char *TAG = LOG_TAG;
-
-// !!!
-SemaphoreHandle_t __net_ok_semaphore = NULL;
+static TaskHandle_t __wifi_task_handle = NULL;
 
 /************************************************************************************************************
 * Private Functions Prototypes
@@ -68,9 +66,9 @@ void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, 
 	){
 		ESP_LOGI(TAG, "`IP_EVENT_STA_GOT_IP` triggered");
 
-		// Give the semafore if `wifi_setup()` was called.
-		if(__net_ok_semaphore != NULL)
-			xSemaphoreGive(__net_ok_semaphore);
+		// Set the event if `wifi_setup()` was called.
+		if(__wifi_task_handle != NULL)
+			xTaskNotifyGive(__wifi_task_handle);
 	}
 }
 
@@ -79,6 +77,9 @@ void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, 
  ************************************************************************************************************/
 
 esp_err_t wifi_setup(){
+
+	// Set current task handle.
+	__wifi_task_handle = xTaskGetCurrentTaskHandle();
 
 	// Initialize NVS partition (Non-Volatile Storage) for storing WiFi auxiliary data.
 	esp_err_t ret = nvs_flash_init();
@@ -116,16 +117,6 @@ esp_err_t wifi_setup(){
 	 * - On the default ESP event loop, '__net_event_callback()' is called with `WIFI_EVENT_STA_DISCONNECTED` or `IP_EVENT_STA_GOT_IP`.
 	 * - If `IP_EVENT_STA_GOT_IP`, set the `__net_ok_semaphore` semaphore and unlock the calling task.
 	 */
-
-	// Initialize the semaphore to 0.
-	__net_ok_semaphore = xSemaphoreCreateBinary();
-	ESP_RETURN_ON_FALSE(
-		__net_ok_semaphore != NULL,
-
-		ESP_ERR_NO_MEM,
-		TAG,
-		"Error on `xSemaphoreCreateBinary()`"
-	);
 
 	// Initialize the underlying LwIP (TCP/IP) stack.
 	ESP_RETURN_ON_ERROR(
@@ -216,12 +207,11 @@ esp_err_t wifi_setup(){
 		"Error on `esp_wifi_start()`"
 	);
 
-	// Wait for the semaphore to become 1.
-	xSemaphoreTake(__net_ok_semaphore, portMAX_DELAY);
+	// Wait for `IP_EVENT_STA_GOT_IP` and clear the notification (act as a binary semaphore; `pdTRUE`).
+	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-	// Delete the semaphore.
-	vSemaphoreDelete(__net_ok_semaphore);
-	__net_ok_semaphore = NULL;
+	// Reset current task handle.
+	__wifi_task_handle = NULL;
 
 	return ESP_OK;
 }
