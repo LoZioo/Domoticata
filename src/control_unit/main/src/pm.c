@@ -54,6 +54,7 @@ typedef struct __attribute__((__packed__)) {
  ************************************************************************************************************/
 
 static const char *TAG = LOG_TAG;
+
 static TaskHandle_t __pm_task_handle = NULL;
 static adc_continuous_handle_t __adc_handle;
 static ul_pm_handler_t *__pm;
@@ -487,7 +488,7 @@ esp_err_t pm_get_results(ul_pm_results_t *ul_pm_results){
 
 		ESP_ERR_TIMEOUT,
 		TAG,
-		"Error: can not take `__pm_res_mutex`"
+		"Error: unable to take `__pm_res_mutex`"
 	);
 
 	*ul_pm_results = __pm_res;
