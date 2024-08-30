@@ -58,8 +58,8 @@
 ************************************************************************************************************/
 
 /**
- * @brief Initialize the library.
+ * @brief Trigger a firmware update.
  */
-extern esp_err_t ota_setup();
+extern esp_err_t ota_update_fw();
 
 #endif  /* INC_OTA_H_ */

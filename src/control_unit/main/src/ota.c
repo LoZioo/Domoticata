@@ -177,10 +177,7 @@ esp_err_t __log_firmware_versions(uint8_t *ota_buffer){
 * Public Functions Definitions
  ************************************************************************************************************/
 
-// !!!
-// esp_wifi_set_ps(WIFI_PS_NONE);
-
-esp_err_t ota_setup(){
+esp_err_t ota_update_fw(){
 	esp_err_t ret;
 
 	ESP_RETURN_ON_ERROR(
