@@ -189,6 +189,7 @@ esp_err_t wifi_setup(){
 	// Station mode.
 	ESP_RETURN_ON_ERROR(
 		esp_wifi_set_mode(WIFI_MODE_STA),
+
 		TAG,
 		"Error on `esp_wifi_set_mode()`"
 	);
@@ -196,6 +197,7 @@ esp_err_t wifi_setup(){
 	// Set configurations.
 	ESP_RETURN_ON_ERROR(
 		esp_wifi_set_config(WIFI_IF_STA, &wifi_sta_config),
+
 		TAG,
 		"Error on `esp_wifi_set_config()`"
 	);
@@ -203,6 +205,7 @@ esp_err_t wifi_setup(){
 	// Start the connection async procedure described above.
 	ESP_RETURN_ON_ERROR(
 		esp_wifi_start(),
+
 		TAG,
 		"Error on `esp_wifi_start()`"
 	);
