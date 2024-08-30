@@ -20,7 +20,7 @@
 #define LOG_TAG	"ota"
 
 // !!! METTERE IN KCONFIG
-#define UPDATE_URL					"http://192.168.1.2:5500/build/control_unit.bin"
+#define UPDATE_URL					"http://192.168.1.2:5500/build/hello_world.bin"
 #define UPDATE_TIMEOUT_MS		5000
 #define OTA_BUFFER_LEN			1024
 
@@ -266,6 +266,8 @@ esp_err_t ota_update_fw(){
 	int data_len;
 	bool app_header_was_checked = false;
 
+	ESP_LOGI(TAG, "Writing binary file to flash...");
+
 	// Begin sequential data reading loop.
 	for(;;){
 
@@ -344,12 +346,12 @@ esp_err_t ota_update_fw(){
 		);
 
 		data_total_len += data_len;
-		ESP_LOGI(TAG, "Written %lu bytes...", data_total_len);
 	}
+
 	ESP_LOGI(TAG, "Total written bytes: %lu", data_total_len);
 
 	ESP_GOTO_ON_FALSE(
-		errno > 0,
+		errno == 0,
 
 		ESP_ERR_INVALID_STATE,
 		label_free_ota,
