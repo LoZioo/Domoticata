@@ -258,15 +258,11 @@ esp_err_t ota_update_fw(){
 		target_partition->subtype, target_partition->address
 	);
 
-	// !!! VEDERE SE RIMUOVERE STATIC
-	static uint8_t ota_buffer[OTA_BUFFER_LEN];
-
 	esp_ota_handle_t ota_handle;
+	uint8_t ota_buffer[OTA_BUFFER_LEN];
 	uint32_t data_total_len = 0;
 	int data_len;
 	bool app_header_was_checked = false;
-
-	ESP_LOGI(TAG, "Writing binary file to flash...");
 
 	// Begin sequential data reading loop.
 	for(;;){
@@ -319,6 +315,7 @@ esp_err_t ota_update_fw(){
 
 			// App header ok.
 			app_header_was_checked = true;
+			ESP_LOGI(TAG, "Downloading and writing OTA app to flash...");
 
 			ESP_GOTO_ON_ERROR(
 				esp_ota_begin(
