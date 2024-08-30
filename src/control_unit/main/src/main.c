@@ -111,6 +111,12 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
+
+	uint16_t delay_val = 3;
+	ESP_LOGI(TAG, "Starting OTA in %u seconds...", delay_val);
+	delay(delay_val * 1000);
+
+	ESP_ERROR_CHECK(ota_update_fw());
 	return;
 
 	/* Infinite loop */
