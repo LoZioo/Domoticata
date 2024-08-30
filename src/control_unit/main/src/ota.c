@@ -205,6 +205,23 @@ esp_err_t ota_update_fw(){
 
 	__log_running_partition_info();
 
+	const esp_partition_t *target_partition =
+		esp_ota_get_next_update_partition(NULL);
+
+	ESP_GOTO_ON_FALSE(
+		target_partition != NULL,
+
+		ESP_ERR_NOT_FOUND,
+		label_restore_wifi_ps_mode,
+		TAG,
+		"Error on `esp_ota_get_next_update_partition()`"
+	);
+
+	ESP_LOGI(
+		TAG, "Writing to partition subtype %d at offset 0x%"PRIx32,
+		target_partition->subtype, target_partition->address
+	);
+
 	esp_http_client_config_t http_client_config = {
 		.url = UPDATE_URL,
 		.timeout_ms = UPDATE_TIMEOUT_MS,
@@ -239,23 +256,6 @@ esp_err_t ota_update_fw(){
 		label_free_http_client,
 		TAG,
 		"Error on `esp_http_client_fetch_headers()`"
-	);
-
-	const esp_partition_t *target_partition =
-		esp_ota_get_next_update_partition(NULL);
-
-	ESP_GOTO_ON_FALSE(
-		target_partition != NULL,
-
-		ESP_ERR_NOT_FOUND,
-		label_free_http_client,
-		TAG,
-		"Error on `esp_ota_get_next_update_partition()`"
-	);
-
-	ESP_LOGI(
-		TAG, "Writing to partition subtype %d at offset 0x%"PRIx32,
-		target_partition->subtype, target_partition->address
 	);
 
 	esp_ota_handle_t ota_handle;
