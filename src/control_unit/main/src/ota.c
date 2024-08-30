@@ -180,9 +180,25 @@ esp_err_t __log_firmware_versions(uint8_t *ota_buffer){
 esp_err_t ota_update_fw(){
 	esp_err_t ret;
 
+	ESP_RETURN_ON_FALSE(
+		wifi_is_network_ready(),
+
+		ESP_ERR_INVALID_STATE,
+		TAG,
+		"Error: network service not available"
+	);
+
 	ESP_RETURN_ON_ERROR(
+		wifi_power_save_mode(false),
+
+		TAG,
+		"Error on `wifi_power_save_mode(power_save_mode_enabled=false)`"
+	);
+
+	ESP_GOTO_ON_ERROR(
 		__log_partitions_sha256(),
 
+		label_restore_wifi_ps_mode,
 		TAG,
 		"Error on `__log_partitions_sha256()`"
 	);
@@ -198,10 +214,11 @@ esp_err_t ota_update_fw(){
 	esp_http_client_handle_t http_client_handle =
 		esp_http_client_init(&http_client_config);
 
-	ESP_RETURN_ON_FALSE(
+	ESP_GOTO_ON_FALSE(
 		http_client_handle != NULL,
 
 		ESP_FAIL,
+		label_restore_wifi_ps_mode,
 		TAG,
 		"Error on `esp_http_client_init()`"
 	);
@@ -269,7 +286,7 @@ esp_err_t ota_update_fw(){
 		ESP_GOTO_ON_ERROR(
 			__esp_http_client_ret_to_esp_err_t(data_len),
 
-			label_free_ota_and_http_client,
+			label_free_ota,
 			TAG,
 			"Error on `esp_http_client_read()`"
 		);
@@ -321,7 +338,7 @@ esp_err_t ota_update_fw(){
 				sizeof(ota_buffer)
 			),
 
-			label_free_ota_and_http_client,
+			label_free_ota,
 			TAG,
 			"Error on `esp_ota_write()`"
 		);
@@ -335,7 +352,7 @@ esp_err_t ota_update_fw(){
 		errno > 0,
 
 		ESP_ERR_INVALID_STATE,
-		label_free_ota_and_http_client,
+		label_free_ota,
 		TAG,
 		"Error: TCP/IP error; errno=%d",
 		errno
@@ -347,7 +364,7 @@ esp_err_t ota_update_fw(){
 		),
 
 		ESP_ERR_OTA_VALIDATE_FAILED,
-		label_free_ota_and_http_client,
+		label_free_ota,
 		TAG,
 		"Error on `esp_http_client_is_complete_data_received()`"
 	);
@@ -355,7 +372,7 @@ esp_err_t ota_update_fw(){
 	ESP_GOTO_ON_ERROR(
 		esp_ota_end(ota_handle),
 
-		label_free_ota_and_http_client,
+		label_free_ota,
 		TAG,
 		"Error on `esp_ota_end()`"
 	);
@@ -363,7 +380,7 @@ esp_err_t ota_update_fw(){
 	ESP_GOTO_ON_ERROR(
 		esp_ota_set_boot_partition(target_partition),
 
-		label_free_ota_and_http_client,
+		label_free_ota,
 		TAG,
 		"Error on `esp_ota_set_boot_partition()`"
 	);
@@ -372,11 +389,14 @@ esp_err_t ota_update_fw(){
 	esp_restart();
 	return ESP_OK;
 
-	label_free_ota_and_http_client:
+	label_free_ota:
 	esp_ota_end(ota_handle);
 
 	label_free_http_client:
 	esp_http_client_cleanup(http_client_handle);
+
+	label_restore_wifi_ps_mode:
+	wifi_power_save_mode(true);
 
 	return ret;
 }
