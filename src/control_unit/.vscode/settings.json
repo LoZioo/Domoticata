@@ -72,6 +72,9 @@
 		"cstdint": "c",
 		"compare": "c",
 		"math.h": "c",
-		"nvs_flash.h": "c"
+		"nvs_flash.h": "c",
+		"wifi.h": "c",
+		"pwm.h": "c",
+		"esp_app_format.h": "c"
 	}
 }

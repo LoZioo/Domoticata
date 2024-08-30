@@ -37,8 +37,10 @@
 #include <esp_event.h>
 #include <esp_wifi.h>
 
-#include <freertos/FreeRTOS.h>
 #include <nvs_flash.h>
+#include <nvs.h>
+
+#include <freertos/FreeRTOS.h>
 
 // UniLibC libraries.
 #include <ul_errors.h>
