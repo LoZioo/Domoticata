@@ -38,6 +38,7 @@
 #include <rs485.h>
 #include <pwm.h>
 #include <wifi.h>
+#include <ota.h>
 // #include <pm.h>
 
 // !!! SISTEMARE IL REBOOT IN CASO DI CRASH NEL MENUCONFIG SOTTO IL MENU Trace memory
@@ -97,6 +98,9 @@ void app_main(){
 
 	ESP_LOGI(TAG, "wifi_setup()");
 	ESP_ERROR_CHECK(wifi_setup());
+
+	ESP_LOGI(TAG, "ota_setup()");
+	ESP_ERROR_CHECK(ota_setup());
 
 	// ESP_LOGI(TAG, "pm_setup()");
 	// ESP_ERROR_CHECK(pm_setup());
