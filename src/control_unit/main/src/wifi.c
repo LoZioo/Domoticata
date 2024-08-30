@@ -210,6 +210,8 @@ esp_err_t wifi_setup(){
 	// Wait for `IP_EVENT_STA_GOT_IP` and clear the notification (act as a binary semaphore; `pdTRUE`).
 	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
+	// !!! METTERE WIFI AP IN CASO DI FAIL NELLA CONNESSIONE
+
 	// Reset current task handle.
 	__wifi_task_handle = NULL;
 

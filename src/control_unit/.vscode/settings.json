@@ -75,6 +75,7 @@
 		"nvs_flash.h": "c",
 		"wifi.h": "c",
 		"pwm.h": "c",
-		"esp_app_format.h": "c"
+		"esp_app_format.h": "c",
+		"errno.h": "c"
 	}
 }
