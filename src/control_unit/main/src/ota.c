@@ -19,10 +19,20 @@
 
 #define LOG_TAG	"ota"
 
-// !!! METTERE IN KCONFIG
-#define UPDATE_URL					"http://192.168.1.2:5500/build/hello_world.bin"
+#define STRINGIFY(x)	#x
+#define TOSTRING(x)		STRINGIFY(x)
+
+#define UPDATE_FW_URL	\
+	"http://" \
+	CONFIG_OTA_HTTP_SERVER_IP_ADDR \
+	":" \
+	TOSTRING(CONFIG_OTA_HTTP_SERVER_PORT) \
+	CONFIG_OTA_HTTP_BINARY_FILE_PATH \
+	"/" \
+	CONFIG_OTA_HTTP_BINARY_FILE_NAME \
+	".bin"
+
 #define UPDATE_TIMEOUT_MS		5000
-#define OTA_BUFFER_LEN			1024
 
 /************************************************************************************************************
 * Private Types Definitions
@@ -180,6 +190,9 @@ esp_err_t __log_firmware_versions(uint8_t *ota_buffer){
 esp_err_t ota_update_fw(){
 	esp_err_t ret;
 
+	ESP_LOGI(TAG, "Beginning firmware update");
+	ESP_LOGI(TAG, "Target URL is \"" UPDATE_FW_URL "\"");
+
 	ESP_RETURN_ON_FALSE(
 		wifi_is_network_ready(),
 
@@ -223,7 +236,7 @@ esp_err_t ota_update_fw(){
 	);
 
 	esp_http_client_config_t http_client_config = {
-		.url = UPDATE_URL,
+		.url = UPDATE_FW_URL,
 		.timeout_ms = UPDATE_TIMEOUT_MS,
 		.keep_alive_enable = true,
 	};
@@ -259,7 +272,7 @@ esp_err_t ota_update_fw(){
 	);
 
 	esp_ota_handle_t ota_handle;
-	uint8_t ota_buffer[OTA_BUFFER_LEN];
+	uint8_t ota_buffer[CONFIG_OTA_BUFFER_LEN_BYTES];
 	uint32_t data_total_len = 0;
 	int data_len;
 	bool app_header_was_checked = false;
@@ -384,6 +397,7 @@ esp_err_t ota_update_fw(){
 		"Error on `esp_ota_set_boot_partition()`"
 	);
 
+	ESP_LOGI(TAG, "Firmware update done");
 	ESP_LOGW(TAG, "Triggering system reset...");
 	esp_restart();
 	return ESP_OK;

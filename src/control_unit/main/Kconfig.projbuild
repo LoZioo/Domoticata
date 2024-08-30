@@ -125,6 +125,29 @@ menu "Project configurations"
 
 	endmenu
 
+	menu "OTA update"
+		config OTA_HTTP_SERVER_IP_ADDR
+			string "HTTP server IP address"
+			default "192.168.1.2"
+
+		config OTA_HTTP_SERVER_PORT
+			int "HTTP server port"
+			default 5500
+
+		config OTA_HTTP_BINARY_FILE_PATH
+			string "Binary file path (without ending '/')"
+			default "/build"
+
+		config OTA_HTTP_BINARY_FILE_NAME
+			string "Binary file name (without \".bin\" extension)"
+			default "control_unit"
+
+		config OTA_BUFFER_LEN_BYTES
+			int "RAM buffer length (bytes)"
+			default 1024
+
+	endmenu
+
 	menu "GPIO mapping"
 		config GPIO_UART_TX
 			int "RS-485 UART TX"
