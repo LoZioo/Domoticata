@@ -22,11 +22,21 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <errno.h>
 
 // Platform libraries.
 #include <esp_err.h>
 #include <esp_check.h>
 #include <esp_log.h>
+
+#include <esp_system.h>
+#include <esp_ota_ops.h>
+#include <esp_app_format.h>
+#include <esp_flash_partitions.h>
+#include <esp_partition.h>
+#include <esp_http_client.h>
+
+#include <freertos/FreeRTOS.h>
 
 // Project libraries.
 #include <main.h>

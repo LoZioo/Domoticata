@@ -76,6 +76,8 @@
 		"wifi.h": "c",
 		"pwm.h": "c",
 		"esp_app_format.h": "c",
-		"errno.h": "c"
+		"errno.h": "c",
+		"esp_http_client.h": "c",
+		"esp_system.h": "c"
 	}
 }
