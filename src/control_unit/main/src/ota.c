@@ -287,7 +287,7 @@ esp_err_t ota_setup(){
 					sizeof(esp_app_desc_t)
 				),
 
-				ESP_ERR_INVALID_SIZE,
+				ESP_ERR_OTA_VALIDATE_FAILED,
 				label_free_http_client,
 				TAG,
 				"Error: HTTP server answered with an invalid app header"
@@ -349,7 +349,7 @@ esp_err_t ota_setup(){
 			http_client_handle
 		),
 
-		ESP_ERR_INVALID_RESPONSE,
+		ESP_ERR_OTA_VALIDATE_FAILED,
 		label_free_ota_and_http_client,
 		TAG,
 		"Error on `esp_http_client_is_complete_data_received()`"
