@@ -28,7 +28,9 @@
  ************************************************************************************************************/
 
 static const char *TAG = LOG_TAG;
+
 static TaskHandle_t __wifi_task_handle = NULL;
+static bool __network_ready = false;
 
 /************************************************************************************************************
 * Private Functions Prototypes
@@ -56,6 +58,8 @@ void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, 
 		event_base == WIFI_EVENT &&
 		event_id == WIFI_EVENT_STA_DISCONNECTED
 	){
+		__network_ready = false;
+
 		ESP_LOGW(TAG, "`WIFI_EVENT_STA_DISCONNECTED` triggered, reconnecting...");
 		ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_connect());
 	}
@@ -64,6 +68,7 @@ void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, 
 		event_base == IP_EVENT &&
 		event_id == IP_EVENT_STA_GOT_IP
 	){
+		__network_ready = true;
 		ESP_LOGI(TAG, "`IP_EVENT_STA_GOT_IP` triggered");
 
 		// Set the event if `wifi_setup()` was called.
@@ -219,4 +224,16 @@ esp_err_t wifi_setup(){
 	__wifi_task_handle = NULL;
 
 	return ESP_OK;
+}
+
+bool wifi_is_network_ready(){
+	return __network_ready;
+}
+
+esp_err_t wifi_power_save_mode(bool power_save_mode_enabled){
+	return esp_wifi_set_ps(
+		power_save_mode_enabled ?
+		WIFI_PS_MIN_MODEM :
+		WIFI_PS_NONE
+	);
 }

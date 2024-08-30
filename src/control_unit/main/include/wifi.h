@@ -73,4 +73,14 @@
  */
 extern esp_err_t wifi_setup();
 
+/**
+ * @brief Check if the network service is available.
+ */
+extern bool wifi_is_network_ready();
+
+/**
+ * @brief Enable/disable the WiFi power safe mode.
+ */
+extern esp_err_t wifi_power_save_mode(bool power_save_mode_enabled);
+
 #endif  /* INC_WIFI_H_ */
