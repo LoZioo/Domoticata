@@ -148,6 +148,27 @@ menu "Project configurations"
 
 	endmenu
 
+	menu "Wi-Fi"
+		config WIFI_STA_CONNECTION_TIMEOUT_SECONDS
+			int "Maximum connection time to saved Wi-Fi network (seconds)"
+			range 3 30
+			default 10
+
+		config WIFI_SOFTAP_SSID
+			string "Soft AP SSID"
+			default "Domoticata"
+
+		config WIFI_SOFTAP_PSK
+			string "Soft AP password"
+			default "domoticata"
+
+		config WIFI_SOFTAP_MAX_CONNECTIONS
+			int "Soft AP maximum number of simultaneous connections"
+			range 1 100
+			default 1
+
+	endmenu
+
 	menu "GPIO mapping"
 		config GPIO_UART_TX
 			int "RS-485 UART TX"
