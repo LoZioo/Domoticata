@@ -36,6 +36,7 @@
 #include <esp_event_base.h>
 #include <esp_event.h>
 #include <esp_wifi.h>
+#include <esp_mac.h>
 
 #include <nvs_flash.h>
 #include <nvs.h>
@@ -76,7 +77,7 @@ extern esp_err_t wifi_setup();
 /**
  * @brief Check if the network service is available.
  */
-extern bool wifi_is_network_ready();
+extern bool wifi_network_available();
 
 /**
  * @brief Enable/disable the WiFi power save mode.
