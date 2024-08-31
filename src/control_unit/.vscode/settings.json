@@ -78,6 +78,10 @@
 		"esp_app_format.h": "c",
 		"errno.h": "c",
 		"esp_http_client.h": "c",
-		"esp_system.h": "c"
+		"esp_system.h": "c",
+		"esp_wifi_types_private.h": "c",
+		"esp_wifi_default.h": "c",
+		"esp_wifi_types.h": "c",
+		"esp_wifi_he_types.h": "c"
 	}
 }

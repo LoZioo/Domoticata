@@ -194,7 +194,7 @@ esp_err_t ota_update_fw(){
 	ESP_LOGI(TAG, "Target URL is \"" UPDATE_FW_URL "\"");
 
 	ESP_RETURN_ON_FALSE(
-		wifi_is_network_ready(),
+		wifi_network_available(),
 
 		ESP_ERR_INVALID_STATE,
 		TAG,
@@ -403,13 +403,13 @@ esp_err_t ota_update_fw(){
 	return ESP_OK;
 
 	label_free_ota:
-	esp_ota_end(ota_handle);
+	ESP_ERROR_CHECK_WITHOUT_ABORT(esp_ota_end(ota_handle));
 
 	label_free_http_client:
-	esp_http_client_cleanup(http_client_handle);
+	ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_cleanup(http_client_handle));
 
 	label_restore_wifi_ps_mode:
-	wifi_power_save_mode(true);
+	ESP_ERROR_CHECK_WITHOUT_ABORT(wifi_power_save_mode(true));
 
 	return ret;
 }
