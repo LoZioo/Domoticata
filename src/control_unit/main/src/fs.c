@@ -42,5 +42,35 @@ static const char *TAG = LOG_TAG;
  ************************************************************************************************************/
 
 esp_err_t fs_setup(){
+
+	esp_vfs_littlefs_conf_t vfs_littlefs_conf = {
+		.base_path = FS_LITTLEFS_BASE_PATH,
+		.partition_label = "fs",
+		.format_if_mount_failed = false,
+		.read_only = false,
+		.dont_mount = false,
+		.grow_on_mount = true
+	};
+
+	ESP_RETURN_ON_ERROR(
+		esp_vfs_littlefs_register(&vfs_littlefs_conf),
+
+		TAG,
+		"Error on `esp_vfs_littlefs_register()`"
+	);
+
+	size_t total_bytes = 0, used_bytes = 0;
+	ESP_RETURN_ON_ERROR(
+		esp_littlefs_info(
+			vfs_littlefs_conf.partition_label,
+			&total_bytes,
+			&used_bytes
+		),
+
+		TAG,
+		"Error on `esp_vfs_littlefs_register()`"
+	);
+
+	ESP_LOGI(TAG, "Partition size: total bytes: %d, used bytes: %d", total_bytes, used_bytes);
 	return ESP_OK;
 }

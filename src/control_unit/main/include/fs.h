@@ -3,6 +3,11 @@
  *          Davide Scalisi
  *
  * 					Description:	Filesystem code.
+ * 					Notes:
+ * 						-	You must install the LittleFS component via the IDF Component Registry.
+ * 						-	You must specify a LittleFS partition in a custom .csv partition table.
+ * 						-	You must add `littlefs_create_partition_image(partition_name path_to_folder_containing_files)`
+ * 							to the project CMakeLists.txt
  *
  * @copyright [2024] Davide Scalisi *
  * @copyright All Rights Reserved. *
@@ -28,12 +33,23 @@
 #include <esp_check.h>
 #include <esp_log.h>
 
+#include <esp_littlefs.h>
+
 // Project libraries.
 #include <main.h>
 
 /************************************************************************************************************
 * Public Defines
 ************************************************************************************************************/
+
+// Filesystem base path.
+#define FS_LITTLEFS_BASE_PATH		"/littlefs"
+
+/**
+ * @brief `FS_LITTLEFS_BASE_PATH` + `path`
+ */
+#define fs_full_path(path) \
+	FS_LITTLEFS_BASE_PATH path
 
 /************************************************************************************************************
 * Public Types Definitions
