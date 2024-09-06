@@ -28,6 +28,7 @@
  ************************************************************************************************************/
 
 static const char *TAG = LOG_TAG;
+static bool fs_mounted_on_vfs = false;
 
 /************************************************************************************************************
 * Private Functions Prototypes
@@ -72,5 +73,11 @@ esp_err_t fs_setup(){
 	);
 
 	ESP_LOGI(TAG, "Partition size: total bytes: %d, used bytes: %d", total_bytes, used_bytes);
+	fs_mounted_on_vfs = true;
+
 	return ESP_OK;
+}
+
+bool fs_available(){
+	return fs_mounted_on_vfs;
 }

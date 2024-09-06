@@ -68,4 +68,9 @@
  */
 extern esp_err_t fs_setup();
 
+/**
+ * @brief Check if the filesystem service is available.
+ */
+extern bool fs_available();
+
 #endif  /* INC_FS_H_ */
