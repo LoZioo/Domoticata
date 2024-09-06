@@ -6,4 +6,6 @@ cmake_minimum_required(VERSION 3.16)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(control_unit)
-littlefs_create_partition_image(fs littlefs)
+
+# LittleFS folder to partition link.
+littlefs_create_partition_image(fs littlefs FLASH_IN_PROJECT)

@@ -6,8 +6,9 @@
  * 					Notes:
  * 						-	You must install the LittleFS component via the IDF Component Registry.
  * 						-	You must specify a LittleFS partition in a custom .csv partition table.
- * 						-	You must add `littlefs_create_partition_image(partition_name path_to_folder_containing_files)`
+ * 						-	You must add `littlefs_create_partition_image(partition_name path_to_folder_containing_files FLASH_IN_PROJECT)`
  * 							to the project CMakeLists.txt
+ * 						-	The `FLASH_IN_PROJECT` flag means that the fs image must be flashed together with the fw image.
  *
  * @copyright [2024] Davide Scalisi *
  * @copyright All Rights Reserved. *
