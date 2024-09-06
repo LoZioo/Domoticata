@@ -2,7 +2,7 @@ import os, sys, csv, json, esptool
 
 PARTITIONS_CSV = "partitions.csv"
 SETTINGS_JSON = ".vscode/settings.json"
-FS_BIN = "build/fs.bin"
+FS_BIN = "build/fs_0.bin"
 
 if __name__ == "__main__":
 	assert os.path.exists(PARTITIONS_CSV)
