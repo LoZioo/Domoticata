@@ -114,6 +114,23 @@ void app_main(){
 
 	/* USER CODE BEGIN 1 */
 
+	FILE *file;
+
+	// file = fopen(fs_full_path("/hello_world.txt"), "w");
+	// ESP_ERROR_CHECK(file == NULL ? ESP_FAIL : ESP_OK);
+
+	// fprintf(file, "ciaooo");
+	// fclose(file);
+
+	file = fopen(fs_full_path("/hello_world.txt"), "r");
+	ESP_ERROR_CHECK(file == NULL ? ESP_ERR_NOT_FOUND : ESP_OK);
+
+	char file_content[40];
+	fscanf(file, "%s\n", file_content);
+	fclose(file);
+
+	ESP_LOGI(TAG, "Read from file: %s", file_content);
+
 	ESP_LOGI(TAG, "Completed");
 	return;
 

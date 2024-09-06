@@ -3,12 +3,17 @@
  *          Davide Scalisi
  *
  * 					Description:	Filesystem code.
- * 					Notes:
- * 						-	You must install the LittleFS component via the IDF Component Registry.
- * 						-	You must specify a LittleFS partition in a custom .csv partition table.
- * 						-	You must add `littlefs_create_partition_image(partition_name path_to_folder_containing_files FLASH_IN_PROJECT)`
- * 							to the project CMakeLists.txt
- * 						-	The `FLASH_IN_PROJECT` flag means that the fs image must be flashed together with the fw image.
+ * 					Preliminary settings:
+ * 						-	Install the LittleFS component via the IDF Component Registry.
+ * 						-	Add a LittleFS partition in your "partitions.csv".
+ * 						-	Add the `idf.flashBaudRate` key in your "settings.json".
+ * 						-	Add `littlefs_create_partition_image(partition_name path_to_folder_containing_files)`
+ * 							to the project "CMakeLists.txt" in order to build the LittleFS image together with the fw image.
+ * 						-	Add the `FLASH_IN_PROJECT` flag to flash the LittleFS image together with the fw image (annoying).
+ * 							[ `littlefs_create_partition_image(partition_name path_to_folder_containing_files FLASH_IN_PROJECT)` ]
+ * 						-	To manually flash the built LittleFS image (much better):
+ * 							-	`pip install -r requirements.txt`
+ * 							-	Right click on `flash_littlefs_image.py` and "Run Python File in Terminal".
  *
  * @copyright [2024] Davide Scalisi *
  * @copyright All Rights Reserved. *
