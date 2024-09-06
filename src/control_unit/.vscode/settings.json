@@ -83,6 +83,7 @@
 		"esp_wifi_default.h": "c",
 		"esp_wifi_types.h": "c",
 		"esp_wifi_he_types.h": "c",
-		"esp_vfs.h": "c"
+		"esp_vfs.h": "c",
+		"nvs.h": "c"
 	}
 }

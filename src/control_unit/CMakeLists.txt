@@ -8,4 +8,4 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(control_unit)
 
 # LittleFS folder to partition link.
-littlefs_create_partition_image(fs littlefs)
+littlefs_create_partition_image(fs_0 littlefs)

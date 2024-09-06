@@ -44,6 +44,16 @@ static bool __fs_mounted_on_vfs = false;
 
 esp_err_t fs_setup(){
 
+	// !!! SISTEMARE CON SCELTA DINAMICA DELLA PARTIZIONE FS IN BASE A CONFIGURAZIONI IN NVS
+
+	ESP_RETURN_ON_FALSE(
+		nvs_available(),
+
+		ESP_ERR_NVS_NOT_INITIALIZED,
+		TAG,
+		"Error: NVS not initialized"
+	);
+
 	esp_vfs_littlefs_conf_t vfs_littlefs_conf = {
 		.base_path = FS_LITTLEFS_BASE_PATH,
 		.partition_label = "fs",

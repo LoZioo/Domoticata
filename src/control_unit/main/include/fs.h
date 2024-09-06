@@ -43,6 +43,7 @@
 
 // Project libraries.
 #include <main.h>
+#include <non_volatile_storage.h>
 
 /************************************************************************************************************
 * Public Defines
