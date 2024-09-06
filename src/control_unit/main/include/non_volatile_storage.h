@@ -1,21 +1,16 @@
-/** @file wifi.h
- *  @brief  Created on: Aug 17, 2024
+/** @file non_volatile_storage.h
+ *  @brief  Created on: Sep 6, 2024
  *          Davide Scalisi
  *
- * 					Description:	WiFi code.
- * 					Note:					You must enable these options from the menuconfig to support
- * 												multiple access points with same SSID and different channels:
- * 													- Enable 802.11k, 802.11v APIs Support
- * 													- Keep scan results in cache
- * 													- Enable Multi Band Operation Certification Support
+ * 					Description:	Non-Volatile Storage code.
  *
  * @copyright [2024] Davide Scalisi *
  * @copyright All Rights Reserved. *
  *
 */
 
-#ifndef INC_WIFI_H_
-#define INC_WIFI_H_
+#ifndef INC_NON_VOLATILE_STORAGE_H_
+#define INC_NON_VOLATILE_STORAGE_H_
 
 /************************************************************************************************************
 * Included files
@@ -33,19 +28,15 @@
 #include <esp_check.h>
 #include <esp_log.h>
 
-#include <esp_event_base.h>
-#include <esp_event.h>
-#include <esp_wifi.h>
-#include <esp_mac.h>
+#include <nvs_flash.h>
+#include <nvs.h>
 
-#include <freertos/FreeRTOS.h>
+// UniLibC libraries.
+#include <ul_errors.h>
+#include <ul_utils.h>
 
 // Project libraries.
 #include <main.h>
-#include <non_volatile_storage.h>
-
-// !!! DEBUG
-#include <password.h>
 
 /************************************************************************************************************
 * Public Defines
@@ -66,16 +57,11 @@
 /**
  * @brief Initialize the library.
  */
-extern esp_err_t wifi_setup();
+extern esp_err_t nvs_setup();
 
 /**
- * @brief Check if the network service is available.
+ * @brief Check if the Non-Volatile Storage service is available.
  */
-extern bool wifi_network_available();
+extern bool nvs_available();
 
-/**
- * @brief Enable/disable the WiFi power save mode.
- */
-extern esp_err_t wifi_power_save_mode(bool power_save_mode_enabled);
-
-#endif  /* INC_WIFI_H_ */
+#endif  /* INC_NON_VOLATILE_STORAGE_H_ */

@@ -50,46 +50,12 @@ static SemaphoreHandle_t __network_ready_semaphore = NULL;
 * Private Functions Prototypes
  ************************************************************************************************************/
 
-static esp_err_t __nvs_setup();
 static esp_err_t __wifi_netif_up();
-
 static void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
 
 /************************************************************************************************************
 * Private Functions Definitions
  ************************************************************************************************************/
-
-esp_err_t __nvs_setup(){
-
-	// Initialize NVS partition (Non-Volatile Storage) for storing WiFi auxiliary data.
-	esp_err_t ret = nvs_flash_init();
-
-	if(
-		ul_utils_either(
-			ESP_ERR_NVS_NO_FREE_PAGES,
-			ESP_ERR_NVS_NEW_VERSION_FOUND,
-			==, ret
-		)
-	){
-		ESP_RETURN_ON_ERROR(
-			nvs_flash_erase(),
-
-			TAG,
-			"Error on `nvs_flash_erase()`"
-		);
-
-		ret = nvs_flash_init();
-	}
-
-	ESP_RETURN_ON_ERROR(
-		ret,
-
-		TAG,
-		"Error on `nvs_flash_init()`"
-	);
-
-	return ESP_OK;
-}
 
 esp_err_t __wifi_netif_up(){
 
@@ -258,11 +224,12 @@ esp_err_t wifi_setup(){
 		"Error on `xSemaphoreCreateBinary()`"
 	);
 
-	ESP_RETURN_ON_ERROR(
-		__nvs_setup(),
+	ESP_RETURN_ON_FALSE(
+		nvs_available(),
 
+		ESP_ERR_NVS_NOT_INITIALIZED,
 		TAG,
-		"Error on `__nvs_setup()`"
+		"Error: NVS not initialized"
 	);
 
 	/**
