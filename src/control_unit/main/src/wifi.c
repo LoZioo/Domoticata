@@ -213,6 +213,14 @@ void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, 
 
 esp_err_t wifi_setup(){
 
+	ESP_RETURN_ON_FALSE(
+		nvs_available(),
+
+		ESP_ERR_NVS_NOT_INITIALIZED,
+		TAG,
+		"Error: NVS not initialized"
+	);
+
 	__wifi_task_handle = xTaskGetCurrentTaskHandle();
 	__network_ready_semaphore = xSemaphoreCreateBinary();
 
@@ -222,14 +230,6 @@ esp_err_t wifi_setup(){
 		ESP_ERR_NO_MEM,
 		TAG,
 		"Error on `xSemaphoreCreateBinary()`"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		nvs_available(),
-
-		ESP_ERR_NVS_NOT_INITIALIZED,
-		TAG,
-		"Error: NVS not initialized"
 	);
 
 	/**
