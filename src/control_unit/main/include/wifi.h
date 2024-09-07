@@ -37,15 +37,13 @@
 #include <esp_event.h>
 #include <esp_wifi.h>
 #include <esp_mac.h>
+#include <esp_smartconfig.h>
 
 #include <freertos/FreeRTOS.h>
 
 // Project libraries.
 #include <main.h>
 #include <non_volatile_storage.h>
-
-// !!! DEBUG
-#include <password.h>
 
 /************************************************************************************************************
 * Public Defines

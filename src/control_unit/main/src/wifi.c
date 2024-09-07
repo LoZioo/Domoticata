@@ -19,6 +19,13 @@
 
 #define LOG_TAG	"wifi"
 
+// Local NVS namespace.
+#define NVS_NAMESPACE		"wifi_configs"
+
+// NVS keys.
+#define NVS_KEY_STA_SSID	"sta_ssid"
+#define NVS_KEY_STA_PSK		"sta_psk"
+
 /**
  * @brief Statement to check if the library was initialized.
  */
@@ -46,85 +53,193 @@ static const char *TAG = LOG_TAG;
 static TaskHandle_t __wifi_task_handle = NULL;
 static SemaphoreHandle_t __network_ready_semaphore = NULL;
 
+// Wi-Fi configurations.
+wifi_config_t wifi_sta_config = {
+	.sta.ssid = ""
+};
+
 /************************************************************************************************************
 * Private Functions Prototypes
  ************************************************************************************************************/
 
-static esp_err_t __wifi_netif_up();
+/**
+ * @return `ESP_ERR_NVS_NOT_FOUND` if no valid Wi-Fi configurations were found in the NVS.
+ */
+static esp_err_t __nvs_load_wifi_configs();
+static esp_err_t __nvs_store_wifi_configs();
+
+/**
+ * @return `ESP_ERR_WIFI_NOT_CONNECT` on station connection fail.
+ */
+static esp_err_t __wifi_mode_sta();
+static esp_err_t __wifi_mode_smart_config();
+
 static void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
 
 /************************************************************************************************************
 * Private Functions Definitions
  ************************************************************************************************************/
 
-esp_err_t __wifi_netif_up(){
+esp_err_t __nvs_load_wifi_configs(){
+	esp_err_t ret = ESP_OK;
+
+	nvs_handle_t nvs_handle;
+	ESP_RETURN_ON_ERROR(
+		nvs_new_handle(&nvs_handle, NVS_NAMESPACE),
+
+		TAG,
+		"Error on `nvs_new_handle()`"
+	);
+
+	size_t required_size;
+
+	// Retrive the `required_size`.
+	ESP_GOTO_ON_ERROR(
+		nvs_get_str(
+			nvs_handle,
+			NVS_KEY_STA_SSID,
+			NULL,
+			&required_size
+		),
+
+		label_check_err_nvs_not_found,
+		TAG,
+		"Error on `nvs_get_str(key=NVS_KEY_STA_SSID, out_value=NULL)`"
+	);
+
+	// Now use `required_size` to retrive the string.
+	ESP_GOTO_ON_ERROR(
+		nvs_get_str(
+			nvs_handle,
+			NVS_KEY_STA_SSID,
+			(char*) wifi_sta_config.sta.ssid,
+			&required_size
+		),
+
+		label_free,
+		TAG,
+		"Error on `nvs_get_str(key=NVS_KEY_STA_SSID)`"
+	);
+
+	ESP_GOTO_ON_ERROR(
+		nvs_get_str(
+			nvs_handle,
+			NVS_KEY_STA_PSK,
+			NULL,
+			&required_size
+		),
+
+		label_check_err_nvs_not_found,
+		TAG,
+		"Error on `nvs_get_str(key=NVS_KEY_STA_PSK, out_value=NULL)`"
+	);
+
+	ESP_GOTO_ON_ERROR(
+		nvs_get_str(
+			nvs_handle,
+			NVS_KEY_STA_PSK,
+			(char*) wifi_sta_config.sta.password,
+			&required_size
+		),
+
+		label_free,
+		TAG,
+		"Error on `nvs_get_str(key=NVS_KEY_STA_PSK)`"
+	);
+
+	label_check_err_nvs_not_found:
+	if(ret == ESP_ERR_NVS_NOT_FOUND)
+		ESP_LOGW(TAG, "No valid Wi-Fi configurations were found in the NVS");
+
+	label_free:
+	nvs_close(nvs_handle);
+	return ret;
+}
+
+esp_err_t __nvs_store_wifi_configs(){
+	esp_err_t ret = ESP_OK;
+
+	nvs_handle_t nvs_handle;
+	ESP_RETURN_ON_ERROR(
+		nvs_new_handle(&nvs_handle, NVS_NAMESPACE),
+
+		TAG,
+		"Error on `nvs_new_handle()`"
+	);
+
+	ESP_GOTO_ON_ERROR(
+		nvs_set_str(
+			nvs_handle,
+			NVS_KEY_STA_SSID,
+			(char*) wifi_sta_config.sta.ssid
+		),
+
+		label_free,
+		TAG,
+		"Error on `nvs_set_str()` (STA_SSID)"
+	);
+
+	ESP_GOTO_ON_ERROR(
+		nvs_set_str(
+			nvs_handle,
+			NVS_KEY_STA_PSK,
+			(char*) wifi_sta_config.sta.password
+		),
+
+		label_free,
+		TAG,
+		"Error on `nvs_set_str()` (STA_PSK)"
+	);
+
+	ESP_GOTO_ON_ERROR(
+		nvs_commit(nvs_handle),
+
+		label_free,
+		TAG,
+		"Error on `nvs_commit()`"
+	);
+
+	label_free:
+	nvs_close(nvs_handle);
+	return ret;
+}
+
+esp_err_t __wifi_mode_sta(){
 
 	/**
-	 * `NULL` -> wifi_sta:	first call
-	 * wifi_sta -> wifi_ap:	other calls
+	 * The connection-to-station async execution pattern is:
+	 * - `esp_wifi_start()`
+	 * - Wait for a task notification (a simple UNIX signal).
+	 * - On the default ESP event loop, `__net_event_callback()` is called with `WIFI_EVENT_STA_START`.
+	 * - ...so, `esp_wifi_connect()`
+	 * - On the default ESP event loop, '__net_event_callback()' is called with `WIFI_EVENT_STA_DISCONNECTED` or `IP_EVENT_STA_GOT_IP`.
+	 * - If `IP_EVENT_STA_GOT_IP`, send the task notification and unlock the calling task.
 	 */
-	static esp_netif_t *netif_handle = NULL;
-	bool wifi_sta = (netif_handle == NULL);
 
-	// If not first time, destroy the previously created wifi_sta netif.
-	if(!wifi_sta){
-		ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_disconnect());
-		ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_stop());
-		esp_netif_destroy_default_wifi(netif_handle);
-	}
-
-	// WiFi configurations.
-	wifi_config_t wifi_sta_config = (
-		wifi_sta ?
-
-		(wifi_config_t){
-			.sta.ssid = CONFIG_STA_SSID,
-			.sta.password = CONFIG_STA_PSK
-		} :
-
-		(wifi_config_t){
-			.ap = {
-				.ssid = CONFIG_WIFI_SOFTAP_SSID,
-				.ssid_len = strlen(CONFIG_WIFI_SOFTAP_SSID),
-				.password = CONFIG_WIFI_SOFTAP_PSK,
-				.authmode = WIFI_AUTH_WPA2_PSK,
-				.max_connection = CONFIG_WIFI_SOFTAP_MAX_CONNECTIONS,
-				.pmf_cfg.required = true
-			}
-		}
-	);
+	ESP_LOGI(TAG, "(STA mode) connecting to station \"%s\"...", wifi_sta_config.sta.ssid);
 
 	// Handle network interface events on the default event loop.
-	netif_handle = (
-		wifi_sta ?
-		esp_netif_create_default_wifi_sta() :
-		esp_netif_create_default_wifi_ap()
-	);
+	esp_netif_create_default_wifi_sta();
 
 	// Station mode.
 	ESP_RETURN_ON_ERROR(
-		esp_wifi_set_mode(
-			wifi_sta ?
-			WIFI_MODE_STA :
-			WIFI_MODE_AP
-		),
+		esp_wifi_set_mode(WIFI_MODE_STA),
 
 		TAG,
 		"Error on `esp_wifi_set_mode()`"
 	);
 
 	// Set configurations.
-	ESP_RETURN_ON_ERROR(
-		esp_wifi_set_config(
-			wifi_sta ?
-			WIFI_IF_STA :
-			WIFI_IF_AP,
-			&wifi_sta_config
-		),
+	if(strcmp(wifi_sta_config.sta.ssid, "") != 0)
+		ESP_RETURN_ON_ERROR(
+			esp_wifi_set_config(
+				WIFI_IF_STA,
+				&wifi_sta_config
+			),
 
-		TAG,
-		"Error on `esp_wifi_set_config()`"
-	);
+			TAG,
+			"Error on `esp_wifi_set_config()`"
+		);
 
 	// Start the async connection procedure.
 	ESP_RETURN_ON_ERROR(
@@ -134,16 +249,35 @@ esp_err_t __wifi_netif_up(){
 		"Error on `esp_wifi_start()`"
 	);
 
+	// Block the caller and clear the notification when it's set (`pdTRUE` = act as a binary semaphore).
+	ESP_RETURN_ON_FALSE(
+		ulTaskNotifyTake(
+			pdTRUE,
+			pdMS_TO_TICKS(CONFIG_WIFI_STA_CONNECTION_TIMEOUT_SECONDS * 1000)
+		) > 0,
+
+		ESP_ERR_WIFI_NOT_CONNECT,
+		TAG,
+		"(STA mode) setup failed`"
+	);
+
+	ESP_LOGI(TAG, "(STA mode) setup ok");
+	return ESP_OK;
+}
+
+esp_err_t __wifi_mode_smart_config(){
+
+	ESP_LOGI(TAG, "(SmartConfig mode) waiting for EspTouch app...");
 	return ESP_OK;
 }
 
 void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, int32_t event_id, void* event_data){
 
-	// WiFi events.
+	// Wi-Fi events.
 	if(event_base == WIFI_EVENT)
 		switch(event_id){
 			case WIFI_EVENT_STA_START: {
-				ESP_LOGI(TAG, "WiFi station mode initialized; connecting...");
+				ESP_LOGI(TAG, "Wi-Fi station mode initialized; connecting...");
 				ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_connect());
 			} break;
 
@@ -151,7 +285,7 @@ void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, 
 				xSemaphoreTake(__network_ready_semaphore, 0);
 
 				wifi_event_sta_disconnected_t *event = event_data;
-				ESP_LOGI(TAG, "WiFi station mode disconnected ((wifi_err_reason_t) reason=%u)", event->reason);
+				ESP_LOGI(TAG, "Wi-Fi station mode disconnected ((wifi_err_reason_t) reason=%u)", event->reason);
 
 				// `esp_wifi_disconnect()` not called.
 				if(event->reason != WIFI_REASON_ASSOC_LEAVE){
@@ -161,7 +295,7 @@ void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, 
 			} break;
 
 			case WIFI_EVENT_AP_START: {
-				ESP_LOGI(TAG, "WiFi soft AP mode initialized");
+				ESP_LOGI(TAG, "Wi-Fi soft AP mode initialized");
 				__unblock_caller();
 			} break;
 
@@ -181,30 +315,57 @@ void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, 
 
 	// IP events.
 	else if(event_base == IP_EVENT)
-	switch(event_id){
-		case IP_EVENT_STA_GOT_IP: {
-			xSemaphoreGive(__network_ready_semaphore);
+		switch(event_id){
+			case IP_EVENT_STA_GOT_IP: {
+				xSemaphoreGive(__network_ready_semaphore);
 
-			ip_event_got_ip_t* event = event_data;
-			ESP_LOGI(TAG, "DHCP data received");
-			ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&event->ip_info.ip));
-			ESP_LOGI(TAG, "Netmask: " IPSTR, IP2STR(&event->ip_info.netmask));
-			ESP_LOGI(TAG, "Gateway: " IPSTR, IP2STR(&event->ip_info.gw));
+				ip_event_got_ip_t* event = event_data;
+				ESP_LOGI(TAG, "DHCP data received");
+				ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&event->ip_info.ip));
+				ESP_LOGI(TAG, "Netmask: " IPSTR, IP2STR(&event->ip_info.netmask));
+				ESP_LOGI(TAG, "Gateway: " IPSTR, IP2STR(&event->ip_info.gw));
 
-			__unblock_caller();
-		} break;
+				__unblock_caller();
+			} break;
 
-		case IP_EVENT_AP_STAIPASSIGNED: {
-			ip_event_ap_staipassigned_t* event = event_data;
-			ESP_LOGI(
-				TAG, "Station " MACSTR " got IP " IPSTR,
-				MAC2STR(event->mac), IP2STR(&event->ip)
-			);
-		} break;
+			case IP_EVENT_AP_STAIPASSIGNED: {
+				ip_event_ap_staipassigned_t* event = event_data;
+				ESP_LOGI(
+					TAG, "Station " MACSTR " got IP " IPSTR,
+					MAC2STR(event->mac), IP2STR(&event->ip)
+				);
+			} break;
 
-		default:
-			break;
-	}
+			default:
+				break;
+		}
+	
+	// SmartConfig events.
+	else if(event_base == SC_EVENT)
+		switch(event_id){
+			// case IP_EVENT_STA_GOT_IP: {
+			// 	xSemaphoreGive(__network_ready_semaphore);
+
+			// 	ip_event_got_ip_t* event = event_data;
+			// 	ESP_LOGI(TAG, "DHCP data received");
+			// 	ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&event->ip_info.ip));
+			// 	ESP_LOGI(TAG, "Netmask: " IPSTR, IP2STR(&event->ip_info.netmask));
+			// 	ESP_LOGI(TAG, "Gateway: " IPSTR, IP2STR(&event->ip_info.gw));
+
+			// 	__unblock_caller();
+			// } break;
+
+			// case IP_EVENT_AP_STAIPASSIGNED: {
+			// 	ip_event_ap_staipassigned_t* event = event_data;
+			// 	ESP_LOGI(
+			// 		TAG, "Station " MACSTR " got IP " IPSTR,
+			// 		MAC2STR(event->mac), IP2STR(&event->ip)
+			// 	);
+			// } break;
+
+			default:
+				break;
+		}
 }
 
 /************************************************************************************************************
@@ -221,6 +382,7 @@ esp_err_t wifi_setup(){
 		"Error: NVS not initialized"
 	);
 
+	// Save current task handle.
 	__wifi_task_handle = xTaskGetCurrentTaskHandle();
 	__network_ready_semaphore = xSemaphoreCreateBinary();
 
@@ -231,16 +393,6 @@ esp_err_t wifi_setup(){
 		TAG,
 		"Error on `xSemaphoreCreateBinary()`"
 	);
-
-	/**
-	 * The async execution pattern is:
-	 * - `esp_wifi_start()`
-	 * - Wait for a task notification (a simple UNIX signal).
-	 * - On the default ESP event loop, `__net_event_callback()` is called with `WIFI_EVENT_STA_START`.
-	 * - ...so, `esp_wifi_connect()`
-	 * - On the default ESP event loop, '__net_event_callback()' is called with `WIFI_EVENT_STA_DISCONNECTED` or `IP_EVENT_STA_GOT_IP`.
-	 * - If `IP_EVENT_STA_GOT_IP`, send the task notification and unlock the calling task.
-	 */
 
 	// Initialize the underlying LwIP (TCP/IP) stack.
 	ESP_RETURN_ON_ERROR(
@@ -258,7 +410,7 @@ esp_err_t wifi_setup(){
 		"Error on `esp_event_loop_create_default()`"
 	);
 
-	// WiFi driver initialization.
+	// Wi-Fi driver initialization.
 	wifi_init_config_t wifi_init_config = WIFI_INIT_CONFIG_DEFAULT();
 	ESP_RETURN_ON_ERROR(
 		esp_wifi_init(&wifi_init_config),
@@ -268,6 +420,7 @@ esp_err_t wifi_setup(){
 	);
 
 	// Register events to the default event loop.
+	// Wi-Fi
 	ESP_RETURN_ON_ERROR(
 		esp_event_handler_instance_register(
 			WIFI_EVENT,
@@ -281,6 +434,7 @@ esp_err_t wifi_setup(){
 		"Error on `esp_event_handler_instance_register(event_base=WIFI_EVENT)`"
 	);
 
+	// IP
 	ESP_RETURN_ON_ERROR(
 		esp_event_handler_instance_register(
 			IP_EVENT,
@@ -294,38 +448,59 @@ esp_err_t wifi_setup(){
 		"Error on `esp_event_handler_instance_register(event_base=IP_EVENT)`"
 	);
 
-	// First call: STA mode.
+	// SmartConfig
 	ESP_RETURN_ON_ERROR(
-		__wifi_netif_up(),
+		esp_event_handler_instance_register(
+			SC_EVENT,
+			ESP_EVENT_ANY_ID,
+			__net_event_callback,
+			NULL,
+			NULL
+		),
 
 		TAG,
-		"Error on `__wifi_netif_up()` (WiFi station mode)"
+		"Error on `esp_event_handler_instance_register(event_base=SC_EVENT)`"
 	);
 
-	ESP_LOGI(TAG, "Station SSID: \"" CONFIG_STA_SSID "\"");
+	// Load Wi-Fi credentials from NVS.
+	esp_err_t ret = __nvs_load_wifi_configs();
 
-	/**
-	 * Block the caller and clear the notification when it's set (`pdTRUE` = act as a binary semaphore).
-	 * If a timeout occurs, set the wifi_ap mode.
-	 */
-	if(ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(CONFIG_WIFI_STA_CONNECTION_TIMEOUT_SECONDS * 1000)) == 0){
-		ESP_LOGW(TAG, "WiFi station mode setup failed; starting WiFi soft AP mode setup");
+	// No Wi-Fi settings stored in the NVS.
+	if(ret == ESP_ERR_NVS_NOT_FOUND)
 		ESP_RETURN_ON_ERROR(
-			__wifi_netif_up(),
+			__wifi_mode_smart_config(),
 
 			TAG,
-			"Error on `__wifi_netif_up()` (WiFi soft AP mode)"
+			"Error on `__wifi_mode_smart_config()`"
 		);
 
-		ESP_LOGI(TAG, "Soft AP SSID: \"" CONFIG_WIFI_SOFTAP_SSID "\"");
+	else {
+		ESP_RETURN_ON_ERROR(
+			ret,
 
-		// Block the caller.
-		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-		ESP_LOGI(TAG, "WiFi soft AP mode setup ok");
+			TAG,
+			"Error on `__nvs_load_wifi_configs()`"
+		);
+
+		ret = __wifi_mode_sta();
+
+		// Wi-Fi station connection failed.
+		if(ret == ESP_ERR_WIFI_NOT_CONNECT)
+			ESP_RETURN_ON_ERROR(
+				__wifi_mode_smart_config(),
+
+				TAG,
+				"Error on `__wifi_mode_smart_config()`"
+			);
+
+		else
+			ESP_RETURN_ON_ERROR(
+				ret,
+
+				TAG,
+				"Error on `__wifi_mode_sta()`"
+			);
 	}
-
-	else
-		ESP_LOGI(TAG, "WiFi station mode setup ok");
 
 	// Reset current task handle.
 	__wifi_task_handle = NULL;
