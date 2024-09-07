@@ -19,13 +19,6 @@
 
 #define LOG_TAG	"wifi"
 
-// Local NVS namespace.
-#define NVS_NAMESPACE		"wifi_configs"
-
-// NVS keys.
-#define NVS_KEY_STA_SSID	"sta_ssid"
-#define NVS_KEY_STA_PSK		"sta_psk"
-
 /**
  * @brief Statement to check if the library was initialized.
  */
