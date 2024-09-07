@@ -188,7 +188,7 @@ esp_err_t __littlefs_partition_mount(){
 	);
 
 	ESP_LOGI(
-		TAG, "Partition size: %d bytes (%.1f%% used)",
+		TAG, "Partition size is %d bytes (%.1f%% used)",
 		total_bytes,
 		((float) used_bytes / (float) total_bytes) * 100
 	);

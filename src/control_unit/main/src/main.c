@@ -100,11 +100,11 @@ void app_main(){
 	ESP_LOGI(TAG, "nvs_setup()");
 	ESP_ERROR_CHECK(nvs_setup());
 
-	ESP_LOGI(TAG, "wifi_setup()");
-	ESP_ERROR_CHECK(wifi_setup());
+	// ESP_LOGI(TAG, "wifi_setup()");
+	// ESP_ERROR_CHECK(wifi_setup());
 
-	// ESP_LOGI(TAG, "fs_setup()");
-	// ESP_ERROR_CHECK(fs_setup());
+	ESP_LOGI(TAG, "fs_setup()");
+	ESP_ERROR_CHECK(fs_setup());
 
 	// ESP_LOGI(TAG, "pm_setup()");
 	// ESP_ERROR_CHECK(pm_setup());
@@ -117,30 +117,30 @@ void app_main(){
 
 	/* USER CODE BEGIN 1 */
 
-	// FILE *file;
-	// char file_content[40];
+	FILE *file;
+	char file_content[40];
 
-	// // ----------------------------------------------------------
-	// file = fopen(fs_full_path("/hello_world.txt"), "r");
-	// ESP_ERROR_CHECK(file == NULL ? ESP_ERR_NOT_FOUND : ESP_OK);
+	// ----------------------------------------------------------
+	file = fopen(fs_full_path("/hello_world.txt"), "r");
+	ESP_ERROR_CHECK(file == NULL ? ESP_ERR_NOT_FOUND : ESP_OK);
 
-	// fscanf(file, "%s\n", file_content);
-	// fclose(file);
+	fgets(file_content, sizeof(file_content), file);
+	fclose(file);
 
-	// ESP_LOGI(TAG, "Read from file: %s", file_content);
-	// // ----------------------------------------------------------
+	ESP_LOGI(TAG, "Read from file: %s", file_content);
+	// ----------------------------------------------------------
 
-	// ESP_ERROR_CHECK(fs_part_swap());
+	ESP_ERROR_CHECK(fs_part_swap());
 
-	// // ----------------------------------------------------------
-	// file = fopen(fs_full_path("/hello_world.txt"), "r");
-	// ESP_ERROR_CHECK(file == NULL ? ESP_ERR_NOT_FOUND : ESP_OK);
+	// ----------------------------------------------------------
+	file = fopen(fs_full_path("/hello_world.txt"), "r");
+	ESP_ERROR_CHECK(file == NULL ? ESP_ERR_NOT_FOUND : ESP_OK);
 
-	// fscanf(file, "%s\n", file_content);
-	// fclose(file);
+	fgets(file_content, sizeof(file_content), file);
+	fclose(file);
 
-	// ESP_LOGI(TAG, "Read from file: %s", file_content);
-	// // ----------------------------------------------------------
+	ESP_LOGI(TAG, "Read from file: %s", file_content);
+	// ----------------------------------------------------------
 
 	ESP_LOGI(TAG, "Completed");
 	return;
