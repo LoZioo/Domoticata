@@ -122,8 +122,6 @@ esp_err_t __nvs_get_partition_name_to_mount(char *partition_name_to_mount){
 * Public Functions Definitions
  ************************************************************************************************************/
 
-// !!! TESTARE CODICE E METTERE API DI SWAP DELLA PARTIZIONE
-
 esp_err_t fs_setup(){
 
 	char part_name[PART_NAME_MAXLEN];
@@ -161,7 +159,7 @@ esp_err_t fs_setup(){
 		),
 
 		TAG,
-		"Error on `esp_vfs_littlefs_register()`"
+		"Error on `esp_littlefs_info()`"
 	);
 
 	ESP_LOGI(TAG, "Partition size: total bytes: %d, used bytes: %d", total_bytes, used_bytes);
