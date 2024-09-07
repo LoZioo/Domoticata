@@ -80,4 +80,14 @@ extern esp_err_t fs_setup();
  */
 extern bool fs_available();
 
+/**
+ * @brief Swap between the two LittleFS partitions.
+ */
+extern esp_err_t fs_part_swap();
+
+/**
+ * @brief Get the current active LittleFS partition index.
+ */
+extern esp_err_t fs_get_current_part_index(uint8_t *fs_current_partition_index);
+
 #endif  /* INC_FS_H_ */
