@@ -84,6 +84,8 @@
 		"esp_wifi_types.h": "c",
 		"esp_wifi_he_types.h": "c",
 		"esp_vfs.h": "c",
-		"nvs.h": "c"
+		"nvs.h": "c",
+		"non_volatile_storage.h": "c",
+		"fs.h": "c"
 	}
 }

@@ -64,4 +64,12 @@ extern esp_err_t nvs_setup();
  */
 extern bool nvs_available();
 
+/**
+ * @brief Build a new NVS handle given the relative NVS namespace.
+ * @param nvs_handle A pointer where to store the newly created NVS handle.
+ * @param nvs_namespace The relative NVS namespace.
+ * @note Destroy the returned handle with `nvs_close(nvs_handle)` after using it.
+ */
+extern esp_err_t nvs_new_handle(nvs_handle_t *nvs_handle, const char *nvs_namespace);
+
 #endif  /* INC_NON_VOLATILE_STORAGE_H_ */

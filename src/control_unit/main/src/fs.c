@@ -47,8 +47,6 @@ static bool __fs_mounted_on_vfs = false;
 * Private Functions Prototypes
  ************************************************************************************************************/
 
-static esp_err_t __nvs_get_handle(nvs_handle_t *nvs_handle);
-
 static esp_err_t __nvs_load_current_fs_partition_index();
 static esp_err_t __nvs_store_current_fs_partition_index();
 
@@ -59,46 +57,14 @@ static esp_err_t __littlefs_partition_umount();
 * Private Functions Definitions
  ************************************************************************************************************/
 
-esp_err_t __nvs_get_handle(nvs_handle_t *nvs_handle){
-
-	ESP_RETURN_ON_FALSE(
-		nvs_handle != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `nvs_handle` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		nvs_available(),
-
-		ESP_ERR_NVS_NOT_INITIALIZED,
-		TAG,
-		"Error: NVS not initialized"
-	);
-
-	ESP_RETURN_ON_ERROR(
-		nvs_open(
-			NVS_NAMESPACE,
-			NVS_READWRITE,
-			nvs_handle
-		),
-
-		TAG,
-		"Error on `nvs_open()`"
-	);
-
-	return ESP_OK;
-}
-
 esp_err_t __nvs_load_current_fs_partition_index(){
 
 	nvs_handle_t nvs_handle;
 	ESP_RETURN_ON_ERROR(
-		__nvs_get_handle(&nvs_handle),
+		nvs_new_handle(&nvs_handle, NVS_NAMESPACE),
 
 		TAG,
-		"Error on `__nvs_get_handle()`"
+		"Error on `nvs_new_handle()`"
 	);
 
 	esp_err_t ret = nvs_get_u8(
@@ -144,10 +110,10 @@ esp_err_t __nvs_store_current_fs_partition_index(){
 
 	nvs_handle_t nvs_handle;
 	ESP_RETURN_ON_ERROR(
-		__nvs_get_handle(&nvs_handle),
+		nvs_new_handle(&nvs_handle, NVS_NAMESPACE),
 
 		TAG,
-		"Error on `__nvs_get_handle()`"
+		"Error on `nvs_new_handle()`"
 	);
 
 	ESP_RETURN_ON_ERROR(
