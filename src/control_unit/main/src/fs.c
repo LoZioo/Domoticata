@@ -58,6 +58,7 @@ static esp_err_t __littlefs_partition_umount();
  ************************************************************************************************************/
 
 esp_err_t __nvs_load_current_fs_partition_index(){
+	esp_err_t ret = ESP_OK;
 
 	nvs_handle_t nvs_handle;
 	ESP_RETURN_ON_ERROR(
@@ -67,46 +68,49 @@ esp_err_t __nvs_load_current_fs_partition_index(){
 		"Error on `nvs_new_handle()`"
 	);
 
-	esp_err_t ret = nvs_get_u8(
-		nvs_handle,
-		NVS_KEY_PART_INDEX,
-		&__fs_current_partition_index
+	ESP_GOTO_ON_ERROR(
+		nvs_get_u8(
+			nvs_handle,
+			NVS_KEY_PART_INDEX,
+			&__fs_current_partition_index
+		),
+
+		label_check_err_nvs_not_found,
+		TAG,
+		"Error on `nvs_get_u8()`"
 	);
 
+	label_check_err_nvs_not_found:
 	if(ret == ESP_ERR_NVS_NOT_FOUND){
 		ESP_LOGW(TAG, "Key \"" NVS_KEY_PART_INDEX "\" uninitialized; set to default=%u", PART_INDEX_DEFAULT);
-		ESP_RETURN_ON_ERROR(
+		ESP_GOTO_ON_ERROR(
 			nvs_set_u8(
 				nvs_handle,
 				NVS_KEY_PART_INDEX,
 				PART_INDEX_DEFAULT
 			),
 
+			label_free,
 			TAG,
 			"Error on `nvs_set_u8()`"
 		);
 
-		ESP_RETURN_ON_ERROR(
+		ESP_GOTO_ON_ERROR(
 			nvs_commit(nvs_handle),
 
+			label_free,
 			TAG,
 			"Error on `nvs_commit()`"
 		);
 	}
 
-	else
-		ESP_RETURN_ON_ERROR(
-			ret,
-
-			TAG,
-			"Error on `nvs_get_u8()`"
-		);
-
+	label_free:
 	nvs_close(nvs_handle);
-	return ESP_OK;
+	return ret;
 }
 
 esp_err_t __nvs_store_current_fs_partition_index(){
+	esp_err_t ret = ESP_OK;
 
 	nvs_handle_t nvs_handle;
 	ESP_RETURN_ON_ERROR(
@@ -116,26 +120,29 @@ esp_err_t __nvs_store_current_fs_partition_index(){
 		"Error on `nvs_new_handle()`"
 	);
 
-	ESP_RETURN_ON_ERROR(
+	ESP_GOTO_ON_ERROR(
 		nvs_set_u8(
 			nvs_handle,
 			NVS_KEY_PART_INDEX,
 			__fs_current_partition_index
 		),
 
+		label_free,
 		TAG,
 		"Error on `nvs_set_u8()`"
 	);
 
-	ESP_RETURN_ON_ERROR(
+	ESP_GOTO_ON_ERROR(
 		nvs_commit(nvs_handle),
 
+		label_free,
 		TAG,
 		"Error on `nvs_commit()`"
 	);
 
+	label_free:
 	nvs_close(nvs_handle);
-	return ESP_OK;
+	return ret;
 }
 
 esp_err_t __littlefs_partition_mount(){
