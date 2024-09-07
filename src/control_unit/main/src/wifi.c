@@ -53,20 +53,21 @@ static const char *TAG = LOG_TAG;
 static TaskHandle_t __wifi_task_handle = NULL;
 static SemaphoreHandle_t __network_ready_semaphore = NULL;
 
-// Wi-Fi configurations.
-wifi_config_t wifi_sta_config = {
-	.sta.ssid = ""
+// Valid Wi-Fi station configurations loaded.
+static bool __valid_sta_configurations;
+
+// SmartConfig ACK.
+static struct {
+	bool send_ack;
+	uint8_t token;
+	uint8_t cellphone_ip[4];
+} __smartconfig_ack = {
+	.send_ack = false
 };
 
 /************************************************************************************************************
 * Private Functions Prototypes
  ************************************************************************************************************/
-
-/**
- * @return `ESP_ERR_NVS_NOT_FOUND` if no valid Wi-Fi configurations were found in the NVS.
- */
-static esp_err_t __nvs_load_wifi_configs();
-static esp_err_t __nvs_store_wifi_configs();
 
 /**
  * @return `ESP_ERR_WIFI_NOT_CONNECT` on station connection fail.
@@ -80,130 +81,6 @@ static void __net_event_callback(void* event_handler_arg, esp_event_base_t event
 * Private Functions Definitions
  ************************************************************************************************************/
 
-esp_err_t __nvs_load_wifi_configs(){
-	esp_err_t ret = ESP_OK;
-
-	nvs_handle_t nvs_handle;
-	ESP_RETURN_ON_ERROR(
-		nvs_new_handle(&nvs_handle, NVS_NAMESPACE),
-
-		TAG,
-		"Error on `nvs_new_handle()`"
-	);
-
-	size_t required_size;
-
-	// Retrive the `required_size`.
-	ESP_GOTO_ON_ERROR(
-		nvs_get_str(
-			nvs_handle,
-			NVS_KEY_STA_SSID,
-			NULL,
-			&required_size
-		),
-
-		label_check_err_nvs_not_found,
-		TAG,
-		"Error on `nvs_get_str(key=NVS_KEY_STA_SSID, out_value=NULL)`"
-	);
-
-	// Now use `required_size` to retrive the string.
-	ESP_GOTO_ON_ERROR(
-		nvs_get_str(
-			nvs_handle,
-			NVS_KEY_STA_SSID,
-			(char*) wifi_sta_config.sta.ssid,
-			&required_size
-		),
-
-		label_free,
-		TAG,
-		"Error on `nvs_get_str(key=NVS_KEY_STA_SSID)`"
-	);
-
-	ESP_GOTO_ON_ERROR(
-		nvs_get_str(
-			nvs_handle,
-			NVS_KEY_STA_PSK,
-			NULL,
-			&required_size
-		),
-
-		label_check_err_nvs_not_found,
-		TAG,
-		"Error on `nvs_get_str(key=NVS_KEY_STA_PSK, out_value=NULL)`"
-	);
-
-	ESP_GOTO_ON_ERROR(
-		nvs_get_str(
-			nvs_handle,
-			NVS_KEY_STA_PSK,
-			(char*) wifi_sta_config.sta.password,
-			&required_size
-		),
-
-		label_free,
-		TAG,
-		"Error on `nvs_get_str(key=NVS_KEY_STA_PSK)`"
-	);
-
-	label_check_err_nvs_not_found:
-	if(ret == ESP_ERR_NVS_NOT_FOUND)
-		ESP_LOGW(TAG, "No valid Wi-Fi configurations were found in the NVS");
-
-	label_free:
-	nvs_close(nvs_handle);
-	return ret;
-}
-
-esp_err_t __nvs_store_wifi_configs(){
-	esp_err_t ret = ESP_OK;
-
-	nvs_handle_t nvs_handle;
-	ESP_RETURN_ON_ERROR(
-		nvs_new_handle(&nvs_handle, NVS_NAMESPACE),
-
-		TAG,
-		"Error on `nvs_new_handle()`"
-	);
-
-	ESP_GOTO_ON_ERROR(
-		nvs_set_str(
-			nvs_handle,
-			NVS_KEY_STA_SSID,
-			(char*) wifi_sta_config.sta.ssid
-		),
-
-		label_free,
-		TAG,
-		"Error on `nvs_set_str()` (STA_SSID)"
-	);
-
-	ESP_GOTO_ON_ERROR(
-		nvs_set_str(
-			nvs_handle,
-			NVS_KEY_STA_PSK,
-			(char*) wifi_sta_config.sta.password
-		),
-
-		label_free,
-		TAG,
-		"Error on `nvs_set_str()` (STA_PSK)"
-	);
-
-	ESP_GOTO_ON_ERROR(
-		nvs_commit(nvs_handle),
-
-		label_free,
-		TAG,
-		"Error on `nvs_commit()`"
-	);
-
-	label_free:
-	nvs_close(nvs_handle);
-	return ret;
-}
-
 esp_err_t __wifi_mode_sta(){
 
 	/**
@@ -216,10 +93,26 @@ esp_err_t __wifi_mode_sta(){
 	 * - If `IP_EVENT_STA_GOT_IP`, send the task notification and unlock the calling task.
 	 */
 
-	ESP_LOGI(TAG, "(STA mode) connecting to station \"%s\"...", wifi_sta_config.sta.ssid);
+	// Get configs from NVS.
+	wifi_config_t wifi_sta_config;
+	ESP_RETURN_ON_ERROR(
+		esp_wifi_get_config(
+			WIFI_IF_STA,
+			&wifi_sta_config
+		),
 
-	// Handle network interface events on the default event loop.
-	esp_netif_create_default_wifi_sta();
+		TAG,
+		"Error on `esp_wifi_get_config()`"
+	);
+
+	__valid_sta_configurations = (strcmp((char*) wifi_sta_config.sta.ssid, "") != 0);
+
+	// Wi-Fi configurations not found.
+	if(__valid_sta_configurations)
+		ESP_LOGI(TAG, "(STA mode) saved SSID is \"%s\"", wifi_sta_config.sta.ssid);
+
+	else
+		ESP_LOGW(TAG, "(STA mode) no saved SSID in NVS");
 
 	// Station mode.
 	ESP_RETURN_ON_ERROR(
@@ -228,18 +121,6 @@ esp_err_t __wifi_mode_sta(){
 		TAG,
 		"Error on `esp_wifi_set_mode()`"
 	);
-
-	// Set configurations.
-	if(strcmp(wifi_sta_config.sta.ssid, "") != 0)
-		ESP_RETURN_ON_ERROR(
-			esp_wifi_set_config(
-				WIFI_IF_STA,
-				&wifi_sta_config
-			),
-
-			TAG,
-			"Error on `esp_wifi_set_config()`"
-		);
 
 	// Start the async connection procedure.
 	ESP_RETURN_ON_ERROR(
@@ -250,24 +131,71 @@ esp_err_t __wifi_mode_sta(){
 	);
 
 	// Block the caller and clear the notification when it's set (`pdTRUE` = act as a binary semaphore).
-	ESP_RETURN_ON_FALSE(
-		ulTaskNotifyTake(
-			pdTRUE,
-			pdMS_TO_TICKS(CONFIG_WIFI_STA_CONNECTION_TIMEOUT_SECONDS * 1000)
-		) > 0,
+	if(
+		!__valid_sta_configurations ||
+		ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(CONFIG_WIFI_STA_CONNECTION_TIMEOUT_SECONDS * 1000)) == 0
+	){
+		__valid_sta_configurations = false;
 
-		ESP_ERR_WIFI_NOT_CONNECT,
-		TAG,
-		"(STA mode) setup failed`"
-	);
+		ESP_LOGE(TAG, "(STA mode) connection failed");
+		ESP_RETURN_ON_ERROR(
+			esp_wifi_stop(),
 
-	ESP_LOGI(TAG, "(STA mode) setup ok");
+			TAG,
+			"Error on `esp_wifi_stop()`"
+		);
+
+		return ESP_ERR_WIFI_NOT_CONNECT;
+	}
+
+	ESP_LOGI(TAG, "(STA mode) connected");
 	return ESP_OK;
 }
 
 esp_err_t __wifi_mode_smart_config(){
 
+	ESP_LOGI(TAG, "(SmartConfig mode) start provisioning...");
+	ESP_RETURN_ON_ERROR(
+		esp_wifi_start(),
+
+		TAG,
+		"Error on `esp_wifi_start()`"
+	);
+
+	ESP_RETURN_ON_ERROR(
+		esp_smartconfig_set_type(SC_TYPE_ESPTOUCH),
+
+		TAG,
+		"Error on `esp_smartconfig_set_type()`"
+	);
+
+	smartconfig_start_config_t smartconfig_start_config =
+		SMARTCONFIG_START_CONFIG_DEFAULT();
+
+	ESP_RETURN_ON_ERROR(
+		esp_smartconfig_start(&smartconfig_start_config),
+
+		TAG,
+		"Error on `esp_smartconfig_start()`"
+	);
+
 	ESP_LOGI(TAG, "(SmartConfig mode) waiting for EspTouch app...");
+	while(ulTaskNotifyTake(pdTRUE, portMAX_DELAY) == 0);
+
+	ESP_RETURN_ON_ERROR(
+		esp_smartconfig_stop(),
+
+		TAG,
+		"Error on `esp_smartconfig_stop()`"
+	);
+
+	ESP_RETURN_ON_ERROR(
+		esp_wifi_stop(),
+
+		TAG,
+		"Error on `esp_wifi_stop()`"
+	);
+
 	return ESP_OK;
 }
 
@@ -277,36 +205,21 @@ void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, 
 	if(event_base == WIFI_EVENT)
 		switch(event_id){
 			case WIFI_EVENT_STA_START: {
-				ESP_LOGI(TAG, "Wi-Fi station mode initialized; connecting...");
-				ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_connect());
+				if(__valid_sta_configurations)
+					ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_connect());
 			} break;
 
 			case WIFI_EVENT_STA_DISCONNECTED: {
 				xSemaphoreTake(__network_ready_semaphore, 0);
 
 				wifi_event_sta_disconnected_t *event = event_data;
-				ESP_LOGI(TAG, "Wi-Fi station mode disconnected ((wifi_err_reason_t) reason=%u)", event->reason);
+				ESP_LOGW(TAG, "(STA mode) disconnected ((wifi_err_reason_t) reason=%u)", event->reason);
 
 				// `esp_wifi_disconnect()` not called.
 				if(event->reason != WIFI_REASON_ASSOC_LEAVE){
-					ESP_LOGI(TAG, "reconnecting...");
+					ESP_LOGI(TAG, "(STA mode) reconnecting...");
 					ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_connect());
 				}
-			} break;
-
-			case WIFI_EVENT_AP_START: {
-				ESP_LOGI(TAG, "Wi-Fi soft AP mode initialized");
-				__unblock_caller();
-			} break;
-
-			case WIFI_EVENT_AP_STACONNECTED: {
-				wifi_event_ap_staconnected_t* event = event_data;
-				ESP_LOGI(TAG, "Station " MACSTR " join, AID=%d", MAC2STR(event->mac), event->aid);
-			} break;
-
-			case WIFI_EVENT_AP_STADISCONNECTED: {
-				wifi_event_ap_stadisconnected_t* event = event_data;
-				ESP_LOGI(TAG, "Station " MACSTR " leave, AID=%d", MAC2STR(event->mac), event->aid);
 			} break;
 
 			default:
@@ -328,40 +241,63 @@ void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, 
 				__unblock_caller();
 			} break;
 
-			case IP_EVENT_AP_STAIPASSIGNED: {
-				ip_event_ap_staipassigned_t* event = event_data;
-				ESP_LOGI(
-					TAG, "Station " MACSTR " got IP " IPSTR,
-					MAC2STR(event->mac), IP2STR(&event->ip)
-				);
-			} break;
-
 			default:
 				break;
 		}
-	
+
 	// SmartConfig events.
 	else if(event_base == SC_EVENT)
 		switch(event_id){
-			// case IP_EVENT_STA_GOT_IP: {
-			// 	xSemaphoreGive(__network_ready_semaphore);
+			case SC_EVENT_SCAN_DONE: {
+				ESP_LOGI(TAG, "(SmartConfig mode) scan done");
+			} break;
 
-			// 	ip_event_got_ip_t* event = event_data;
-			// 	ESP_LOGI(TAG, "DHCP data received");
-			// 	ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&event->ip_info.ip));
-			// 	ESP_LOGI(TAG, "Netmask: " IPSTR, IP2STR(&event->ip_info.netmask));
-			// 	ESP_LOGI(TAG, "Gateway: " IPSTR, IP2STR(&event->ip_info.gw));
+			case SC_EVENT_FOUND_CHANNEL: {
+				ESP_LOGI(TAG, "(SmartConfig mode) found channel");
+			} break;
 
-			// 	__unblock_caller();
-			// } break;
+			case SC_EVENT_GOT_SSID_PSWD: {
+				smartconfig_event_got_ssid_pswd_t *event = event_data;
+				ESP_LOGI(TAG, "(SmartConfig mode) got SSID and password");
 
-			// case IP_EVENT_AP_STAIPASSIGNED: {
-			// 	ip_event_ap_staipassigned_t* event = event_data;
-			// 	ESP_LOGI(
-			// 		TAG, "Station " MACSTR " got IP " IPSTR,
-			// 		MAC2STR(event->mac), IP2STR(&event->ip)
-			// 	);
-			// } break;
+				wifi_config_t wifi_sta_config;
+				memcpy(
+					wifi_sta_config.sta.ssid,
+					event->ssid,
+					sizeof(wifi_sta_config.sta.ssid)
+				);
+
+				memcpy(
+					wifi_sta_config.sta.password,
+					event->password,
+					sizeof(wifi_sta_config.sta.password)
+				);
+
+				// Save Wi-Fi configurations to NVS.
+				ESP_ERROR_CHECK_WITHOUT_ABORT(
+					esp_wifi_set_config(
+						WIFI_IF_STA,
+						&wifi_sta_config
+					)
+				);
+
+				// When connected, send the SmartConfig ACK.
+				__smartconfig_ack.send_ack = true;
+				__smartconfig_ack.token = event->token;
+
+				memcpy(
+					__smartconfig_ack.cellphone_ip,
+					event->cellphone_ip,
+					sizeof(__smartconfig_ack.cellphone_ip)
+				);
+
+				__unblock_caller();
+			} break;
+
+			case SC_EVENT_SEND_ACK_DONE: {
+				ESP_LOGI(TAG, "(SmartConfig mode) provisioning done");
+				sc_send_ack_stop();
+			} break;
 
 			default:
 				break;
@@ -462,36 +398,30 @@ esp_err_t wifi_setup(){
 		"Error on `esp_event_handler_instance_register(event_base=SC_EVENT)`"
 	);
 
-	// Load Wi-Fi credentials from NVS.
-	esp_err_t ret = __nvs_load_wifi_configs();
+	// Handle network interface events on the default event loop.
+	esp_netif_create_default_wifi_sta();
 
-	// No Wi-Fi settings stored in the NVS.
-	if(ret == ESP_ERR_NVS_NOT_FOUND)
-		ESP_RETURN_ON_ERROR(
-			__wifi_mode_smart_config(),
+	esp_err_t ret;
+	do {
 
-			TAG,
-			"Error on `__wifi_mode_smart_config()`"
-		);
-
-	else {
-		ESP_RETURN_ON_ERROR(
-			ret,
-
-			TAG,
-			"Error on `__nvs_load_wifi_configs()`"
-		);
-
+		// Wi-Fi station connection attempt.
 		ret = __wifi_mode_sta();
 
 		// Wi-Fi station connection failed.
-		if(ret == ESP_ERR_WIFI_NOT_CONNECT)
+		if(ret == ESP_ERR_WIFI_NOT_CONNECT){
+
+			ESP_LOGE(
+				TAG, "`__wifi_mode_sta()` return code is %u (%s)",
+				ret, esp_err_to_name(ret)
+			);
+
 			ESP_RETURN_ON_ERROR(
 				__wifi_mode_smart_config(),
 
 				TAG,
 				"Error on `__wifi_mode_smart_config()`"
 			);
+		}
 
 		else
 			ESP_RETURN_ON_ERROR(
@@ -500,7 +430,21 @@ esp_err_t wifi_setup(){
 				TAG,
 				"Error on `__wifi_mode_sta()`"
 			);
-	}
+
+	} while(ret != ESP_OK);
+
+	// Send SmartConfig ACK if needed.
+	if(__smartconfig_ack.send_ack)
+		ESP_RETURN_ON_ERROR(
+			sc_send_ack_start(
+				SC_TYPE_ESPTOUCH,
+				__smartconfig_ack.token,
+				__smartconfig_ack.cellphone_ip
+			),
+
+			TAG,
+			"Error on `__wifi_mode_sta()`"
+		);
 
 	// Reset current task handle.
 	__wifi_task_handle = NULL;

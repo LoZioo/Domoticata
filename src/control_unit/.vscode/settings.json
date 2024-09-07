@@ -86,6 +86,9 @@
 		"esp_vfs.h": "c",
 		"nvs.h": "c",
 		"non_volatile_storage.h": "c",
-		"fs.h": "c"
+		"fs.h": "c",
+		"esp_event_base.h": "c",
+		"esp_smartconfig.h": "c",
+		"smartconfig_ack.h": "c"
 	}
 }
