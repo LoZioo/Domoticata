@@ -82,6 +82,10 @@ esp_err_t __nvs_load_current_fs_partition_index(){
 
 	label_check_err_nvs_not_found:
 	if(ret == ESP_ERR_NVS_NOT_FOUND){
+
+		// Reset the error.
+		ret = ESP_OK;
+
 		ESP_LOGW(TAG, "Key \"" NVS_KEY_PART_INDEX "\" uninitialized; set to default=%u", PART_INDEX_DEFAULT);
 		ESP_GOTO_ON_ERROR(
 			nvs_set_u8(
