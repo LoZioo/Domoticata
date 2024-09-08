@@ -59,6 +59,11 @@
 ************************************************************************************************************/
 
 /**
+ * @brief Trigger a filesystem update.
+ */
+extern esp_err_t ota_update_fs();
+
+/**
  * @brief Trigger a firmware update.
  */
 extern esp_err_t ota_update_fw();

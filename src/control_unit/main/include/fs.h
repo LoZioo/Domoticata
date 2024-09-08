@@ -40,6 +40,7 @@
 #include <esp_log.h>
 
 #include <esp_littlefs.h>
+#include <esp_partition.h>
 
 // Project libraries.
 #include <main.h>
@@ -51,6 +52,8 @@
 
 // Filesystem base path.
 #define FS_LITTLEFS_BASE_PATH		"/littlefs"
+
+#define FS_PART_LABEL_MAXLEN		10
 
 /**
  * @brief `FS_LITTLEFS_BASE_PATH` + `path`
@@ -83,11 +86,24 @@ extern bool fs_available();
 /**
  * @brief Swap between the two LittleFS partitions.
  */
-extern esp_err_t fs_part_swap();
+extern esp_err_t fs_partition_swap();
 
 /**
  * @brief Get the current active LittleFS partition index.
  */
-extern esp_err_t fs_get_current_part_index(uint8_t *fs_current_partition_index);
+extern esp_err_t fs_get_current_partition_index(uint8_t *fs_current_partition_index);
+
+/**
+ * @brief Get the current active LittleFS partition label.
+ * @param fs_current_partition_label It's size must be `FS_PART_LABEL_MAXLEN`.
+ */
+extern esp_err_t fs_get_current_partition_label(char *fs_current_partition_label);
+
+/**
+ * @brief Get the current active LittleFS partition.
+ */
+extern esp_err_t fs_get_current_partition(esp_partition_t **fs_current_partition);
+
+// !!! METTERE API PER OTTENERE INFORMAZIONI DELL'ALTRA PARTIZIONE
 
 #endif  /* INC_FS_H_ */
