@@ -74,7 +74,7 @@ extern esp_err_t wifi_setup();
 extern bool wifi_network_available();
 
 /**
- * @brief Enable/disable the WiFi power save mode.
+ * @brief Enable/disable WiFi power save mode.
  */
 extern esp_err_t wifi_power_save_mode(bool power_save_mode_enabled);
 
