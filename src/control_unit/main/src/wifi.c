@@ -436,7 +436,7 @@ esp_err_t wifi_setup(){
 			),
 
 			TAG,
-			"Error on `__wifi_mode_sta()`"
+			"Error on `sc_send_ack_start()`"
 		);
 
 	// Reset current task handle.
