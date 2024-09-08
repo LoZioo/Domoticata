@@ -138,8 +138,12 @@ menu "Project configurations"
 			string "Binary file path (without ending '/')"
 			default "/build"
 
-		config OTA_HTTP_BINARY_FILE_NAME
-			string "Binary file name (without \".bin\" extension)"
+		config OTA_FS_BINARY_FILE_NAME
+			string "Filesystem binary file name (without \".bin\" extension)"
+			default "fs_0"
+
+		config OTA_FW_BINARY_FILE_NAME
+			string "Firmware binary file name (without \".bin\" extension)"
 			default "control_unit"
 
 		config OTA_BUFFER_LEN_BYTES

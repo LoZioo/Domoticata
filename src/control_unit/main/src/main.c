@@ -100,8 +100,8 @@ void app_main(){
 	ESP_LOGI(TAG, "nvs_setup()");
 	ESP_ERROR_CHECK(nvs_setup());
 
-	// ESP_LOGI(TAG, "wifi_setup()");
-	// ESP_ERROR_CHECK(wifi_setup());
+	ESP_LOGI(TAG, "wifi_setup()");
+	ESP_ERROR_CHECK(wifi_setup());
 
 	ESP_LOGI(TAG, "fs_setup()");
 	ESP_ERROR_CHECK(fs_setup());
@@ -116,6 +116,11 @@ void app_main(){
 	/* USER CODE END Init */
 
 	/* USER CODE BEGIN 1 */
+
+	ESP_LOGI(TAG, "Triggering FS update in 5s...");
+	delay(5000);
+
+	ESP_ERROR_CHECK(ota_update_fs());
 
 	uint8_t part_index;
 	esp_partition_t const *part;
