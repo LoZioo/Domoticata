@@ -118,20 +118,17 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	uint8_t part_index;
-	char part_label[FS_PART_LABEL_MAXLEN];
-	esp_partition_t part;
+	esp_partition_t const *part;
 
 	FILE *file;
 	char file_content[40];
 
 	// ----------------------------------------------------------
-	ESP_ERROR_CHECK(fs_get_current_partition_index(&part_index));
-	ESP_ERROR_CHECK(fs_get_current_partition_label(&part_label));
-	ESP_ERROR_CHECK(fs_get_current_partition(&part));
+	ESP_ERROR_CHECK(fs_get_partition_index(true, &part_index));
+	ESP_ERROR_CHECK(fs_get_partition(true, &part));
 
 	ESP_LOGI(TAG, "part_index=%u", part_index);
-	ESP_LOGI(TAG, "part_label=%s", part_label);
-	// !!! STAMPARE INFO PARTIZIONE E RIPETERE IL BLOCCO SOTTO
+	ESP_LOGI(TAG, "label=%s", part->label);
 	// ----------------------------------------------------------
 
 	// ----------------------------------------------------------
@@ -145,6 +142,14 @@ void app_main(){
 	// ----------------------------------------------------------
 
 	ESP_ERROR_CHECK(fs_partition_swap());
+
+	// ----------------------------------------------------------
+	ESP_ERROR_CHECK(fs_get_partition_index(true, &part_index));
+	ESP_ERROR_CHECK(fs_get_partition(true, &part));
+
+	ESP_LOGI(TAG, "part_index=%u", part_index);
+	ESP_LOGI(TAG, "label=%s", part->label);
+	// ----------------------------------------------------------
 
 	// ----------------------------------------------------------
 	file = fopen(fs_full_path("/hello_world.txt"), "r");

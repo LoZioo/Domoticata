@@ -53,8 +53,6 @@
 // Filesystem base path.
 #define FS_LITTLEFS_BASE_PATH		"/littlefs"
 
-#define FS_PART_LABEL_MAXLEN		10
-
 /**
  * @brief `FS_LITTLEFS_BASE_PATH` + `path`
  */
@@ -89,21 +87,15 @@ extern bool fs_available();
 extern esp_err_t fs_partition_swap();
 
 /**
- * @brief Get the current active LittleFS partition index.
+ * @brief Get the current active or inactive filesystem partition index.
+ * @param mounted_partition If `true`, the currently mounted filesystem partition index is returned; otherwise the unmounted partition index is returned.
  */
-extern esp_err_t fs_get_current_partition_index(uint8_t *fs_current_partition_index);
+extern esp_err_t fs_get_partition_index(bool mounted_partition, uint8_t *partition_index);
 
 /**
- * @brief Get the current active LittleFS partition label.
- * @param fs_current_partition_label It's size must be `FS_PART_LABEL_MAXLEN`.
+ * @brief Get the current active or inactive filesystem partition pointer.
+ * @param mounted_partition If `true`, the currently mounted filesystem partition pointer is returned; otherwise the unmounted partition pointer is returned.
  */
-extern esp_err_t fs_get_current_partition_label(char *fs_current_partition_label);
-
-/**
- * @brief Get the current active LittleFS partition.
- */
-extern esp_err_t fs_get_current_partition(esp_partition_t **fs_current_partition);
-
-// !!! METTERE API PER OTTENERE INFORMAZIONI DELL'ALTRA PARTIZIONE
+extern esp_err_t fs_get_partition(bool mounted_partition, esp_partition_t const **partition);
 
 #endif  /* INC_FS_H_ */

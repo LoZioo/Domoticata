@@ -25,8 +25,11 @@
 // NVS keys.
 #define NVS_KEY_PART_INDEX	"part_index"
 
+#define PART_COUNT					2
 #define PART_INDEX_DEFAULT	0
+
 #define PART_LABEL_PREFIX		"fs_"
+#define PART_LABEL_MAXLEN		10
 
 /************************************************************************************************************
 * Private Types Definitions
@@ -39,6 +42,9 @@
 static const char *TAG = LOG_TAG;
 static uint8_t __current_partition_index = PART_INDEX_DEFAULT;
 
+// Filesystem partitions.
+static esp_partition_t const *__fs_partitions[PART_COUNT];
+
 // Used by `__littlefs_partition_mount/umount()`.
 static bool __fs_mounted_on_vfs = false;
 
@@ -46,10 +52,13 @@ static bool __fs_mounted_on_vfs = false;
 * Private Functions Prototypes
  ************************************************************************************************************/
 
+/**
+ * @brief Initialize `__fs_partitions` array.
+ */
+static esp_err_t __get_littlefs_partitions();
+
 static esp_err_t __nvs_load_current_fs_partition_index();
 static esp_err_t __nvs_store_current_fs_partition_index();
-
-static void __get_current_partition_label(char *fs_current_partition_label);
 
 static esp_err_t __littlefs_partition_mount();
 static esp_err_t __littlefs_partition_umount();
@@ -57,6 +66,41 @@ static esp_err_t __littlefs_partition_umount();
 /************************************************************************************************************
 * Private Functions Definitions
  ************************************************************************************************************/
+
+esp_err_t __get_littlefs_partitions(){
+	esp_err_t ret = ESP_OK;
+
+	char part_label[PART_LABEL_MAXLEN];
+	for(uint8_t i=0; i<PART_COUNT; i++){
+		sprintf(part_label, PART_LABEL_PREFIX "%u", i);
+
+		esp_partition_iterator_t part_iterator =
+			esp_partition_find(
+				ESP_PARTITION_TYPE_DATA,
+				ESP_PARTITION_SUBTYPE_DATA_LITTLEFS,
+				part_label
+			);
+
+		ESP_GOTO_ON_FALSE(
+			part_iterator != NULL,
+
+			ESP_ERR_NOT_FOUND,
+			label_iterator_free,
+			TAG,
+			"Error on `esp_partition_find()`"
+		);
+
+		__fs_partitions[i] = esp_partition_get(part_iterator);
+
+		label_iterator_free:
+		esp_partition_iterator_release(part_iterator);
+
+		if(ret != ESP_OK)
+			return ret;
+	}
+
+	return ret;
+}
 
 esp_err_t __nvs_load_current_fs_partition_index(){
 	esp_err_t ret = ESP_OK;
@@ -150,29 +194,19 @@ esp_err_t __nvs_store_current_fs_partition_index(){
 	return ret;
 }
 
-void __get_current_partition_label(char *fs_current_partition_label){
-	sprintf(
-		fs_current_partition_label,
-		PART_LABEL_PREFIX "%u",
-		__current_partition_index
-	);
-}
-
 esp_err_t __littlefs_partition_mount(){
-
-	char part_label[FS_PART_LABEL_MAXLEN];
-	__get_current_partition_label(part_label);
 
 	esp_vfs_littlefs_conf_t vfs_littlefs_conf = {
 		.base_path = FS_LITTLEFS_BASE_PATH,
-		.partition_label = part_label,
+		.partition_label = NULL,
+		.partition = __fs_partitions[__current_partition_index],
 		.format_if_mount_failed = false,
 		.read_only = false,
 		.dont_mount = false,
 		.grow_on_mount = true
 	};
 
-	ESP_LOGI(TAG, "Mounting partition \"%s\"", part_label);
+	ESP_LOGI(TAG, "Mounting partition index=%u", __current_partition_index);
 	ESP_RETURN_ON_ERROR(
 		esp_vfs_littlefs_register(&vfs_littlefs_conf),
 
@@ -182,8 +216,8 @@ esp_err_t __littlefs_partition_mount(){
 
 	size_t total_bytes = 0, used_bytes = 0;
 	ESP_RETURN_ON_ERROR(
-		esp_littlefs_info(
-			vfs_littlefs_conf.partition_label,
+		esp_littlefs_partition_info(
+			vfs_littlefs_conf.partition,
 			&total_bytes,
 			&used_bytes
 		),
@@ -204,12 +238,11 @@ esp_err_t __littlefs_partition_mount(){
 
 esp_err_t __littlefs_partition_umount(){
 
-	char part_label[FS_PART_LABEL_MAXLEN];
-	__get_current_partition_label(part_label);
-
-	ESP_LOGI(TAG, "Umounting partition \"%s\"", part_label);
+	ESP_LOGI(TAG, "Umounting partition index=%u", __current_partition_index);
 	ESP_RETURN_ON_ERROR(
-		esp_vfs_littlefs_unregister(part_label),
+		esp_vfs_littlefs_unregister_partition(
+			__fs_partitions[__current_partition_index]
+		),
 
 		TAG,
 		"Error on `esp_vfs_littlefs_unregister()`"
@@ -230,6 +263,13 @@ esp_err_t fs_setup(){
 
 		TAG,
 		"Error on `__nvs_load_current_fs_partition_index()`"
+	);
+
+	ESP_RETURN_ON_ERROR(
+		__get_littlefs_partitions(),
+
+		TAG,
+		"Error on `__get_littlefs_partitions()`"
 	);
 
 	ESP_RETURN_ON_ERROR(
@@ -283,14 +323,14 @@ esp_err_t fs_partition_swap(){
 	return ESP_OK;
 }
 
-esp_err_t fs_get_current_partition_index(uint8_t *fs_current_partition_index){
+esp_err_t fs_get_partition_index(bool mounted_partition, uint8_t *partition_index){
 
 	ESP_RETURN_ON_FALSE(
-		fs_current_partition_index != NULL,
+		partition_index != NULL,
 
 		ESP_ERR_INVALID_ARG,
 		TAG,
-		"Error: `fs_current_partition_index` is NULL"
+		"Error: `partition_index` is NULL"
 	);
 
 	ESP_RETURN_ON_FALSE(
@@ -301,18 +341,31 @@ esp_err_t fs_get_current_partition_index(uint8_t *fs_current_partition_index){
 		"Error: filesystem partition not mounted"
 	);
 
-	*fs_current_partition_index = __current_partition_index;
+	*partition_index = (
+		mounted_partition ?
+		__current_partition_index :
+		!__current_partition_index
+	);
+
 	return ESP_OK;
 }
 
-esp_err_t fs_get_current_partition_label(char *fs_current_partition_label){
+esp_err_t fs_get_partition(bool mounted_partition, esp_partition_t const **partition){
 
 	ESP_RETURN_ON_FALSE(
-		fs_current_partition_label != NULL,
+		partition != NULL,
 
 		ESP_ERR_INVALID_ARG,
 		TAG,
-		"Error: `fs_current_partition_label` is NULL"
+		"Error: `partition` is NULL"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		*partition != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `*partition` is NULL"
 	);
 
 	ESP_RETURN_ON_FALSE(
@@ -323,59 +376,11 @@ esp_err_t fs_get_current_partition_label(char *fs_current_partition_label){
 		"Error: filesystem partition not mounted"
 	);
 
-	__get_current_partition_label(fs_current_partition_label);
+	*partition = (
+		mounted_partition ?
+		__fs_partitions[__current_partition_index] :
+		__fs_partitions[!__current_partition_index]
+	);
+
 	return ESP_OK;
-}
-
-esp_err_t fs_get_current_partition(esp_partition_t **fs_current_partition){
-	esp_err_t ret = ESP_OK;
-
-	ESP_RETURN_ON_FALSE(
-		fs_current_partition != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `fs_current_partition` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		*fs_current_partition != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `*fs_current_partition` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		fs_available(),
-
-		ESP_ERR_INVALID_STATE,
-		TAG,
-		"Error: filesystem partition not mounted"
-	);
-
-	char part_label[FS_PART_LABEL_MAXLEN];
-	__get_current_partition_label(part_label);
-
-	esp_partition_iterator_t part_iterator =
-		esp_partition_find(
-			ESP_PARTITION_TYPE_DATA,
-			ESP_PARTITION_SUBTYPE_DATA_LITTLEFS,
-			part_label
-		);
-
-	ESP_GOTO_ON_FALSE(
-		part_iterator != NULL,
-
-		ESP_ERR_NOT_FOUND,
-		label_iterator_free,
-		TAG,
-		"Error on `esp_partition_find()`"
-	);
-
-	*fs_current_partition = esp_partition_get(part_iterator);
-
-	label_iterator_free:
-	esp_partition_iterator_release(part_iterator);
-	return ret;
 }
