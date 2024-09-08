@@ -293,7 +293,7 @@ esp_err_t fs_partition_swap(){
 
 		ESP_ERR_INVALID_STATE,
 		TAG,
-		"Error: filesystem partition not mounted"
+		"Error: filesystem service not initialized"
 	);
 
 	ESP_RETURN_ON_ERROR(
@@ -338,7 +338,7 @@ esp_err_t fs_get_partition_index(bool mounted_partition, uint8_t *partition_inde
 
 		ESP_ERR_INVALID_STATE,
 		TAG,
-		"Error: filesystem partition not mounted"
+		"Error: filesystem service not initialized"
 	);
 
 	*partition_index = (
@@ -373,7 +373,7 @@ esp_err_t fs_get_partition(bool mounted_partition, esp_partition_t const **parti
 
 		ESP_ERR_INVALID_STATE,
 		TAG,
-		"Error: filesystem partition not mounted"
+		"Error: filesystem service not initialized"
 	);
 
 	*partition = (
