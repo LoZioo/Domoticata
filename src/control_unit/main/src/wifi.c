@@ -105,7 +105,7 @@ esp_err_t __wifi_mode_sta(){
 		ESP_LOGI(TAG, "(STA mode) saved SSID is \"%s\"", wifi_sta_config.sta.ssid);
 
 	else
-		ESP_LOGW(TAG, "(STA mode) no saved SSID in NVS");
+		ESP_LOGW(TAG, "(STA mode) no saved credentials in NVS");
 
 	// Station mode.
 	ESP_RETURN_ON_ERROR(
