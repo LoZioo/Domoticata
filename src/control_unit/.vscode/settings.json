@@ -91,6 +91,7 @@
 		"esp_smartconfig.h": "c",
 		"smartconfig_ack.h": "c",
 		"esp_flash_partitions.h": "c",
-		"esp_littlefs.h": "c"
+		"esp_littlefs.h": "c",
+		"esp_partition.h": "c"
 	}
 }
