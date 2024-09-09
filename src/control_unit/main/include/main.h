@@ -58,4 +58,9 @@
  */
 extern void delay_remainings(int32_t ms, int64_t initial_timestamp_ms);
 
+/**
+ * @brief Log the given binary hash.
+ */
+extern void log_hash(const char *TAG, const char* label, uint8_t *hash, uint16_t hash_len);
+
 #endif  /* INC_MAIN_H_ */

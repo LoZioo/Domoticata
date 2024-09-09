@@ -71,6 +71,8 @@ const char *TAG = "main";
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
 
+void log_fs();
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -117,54 +119,24 @@ void app_main(){
 
 	/* USER CODE BEGIN 1 */
 
+	// ESP_LOGI(TAG, "Triggering FS update in 5s...");
+	// delay(5000);
+	// ESP_ERROR_CHECK(ota_update_fw());
+	// ESP_LOGW(TAG, "Triggering system reset...");
+	// esp_restart();
+
+	log_fs();
+	ESP_ERROR_CHECK(fs_partition_swap());
+	log_fs();
+
 	ESP_LOGI(TAG, "Triggering FS update in 5s...");
 	delay(5000);
-
 	ESP_ERROR_CHECK(ota_update_fs());
 
-	uint8_t part_index;
-	esp_partition_t const *part;
-
-	FILE *file;
-	char file_content[40];
-
-	// ----------------------------------------------------------
-	ESP_ERROR_CHECK(fs_get_partition_index(true, &part_index));
-	ESP_ERROR_CHECK(fs_get_partition(true, &part));
-
-	ESP_LOGI(TAG, "part_index=%u", part_index);
-	ESP_LOGI(TAG, "label=%s", part->label);
-	// ----------------------------------------------------------
-
-	// ----------------------------------------------------------
-	file = fopen(fs_full_path("/hello_world.txt"), "r");
-	ESP_ERROR_CHECK(file == NULL ? ESP_ERR_NOT_FOUND : ESP_OK);
-
-	fgets(file_content, sizeof(file_content), file);
-	fclose(file);
-
-	ESP_LOGI(TAG, "Read from file: %s", file_content);
-	// ----------------------------------------------------------
-
 	ESP_ERROR_CHECK(fs_partition_swap());
-
-	// ----------------------------------------------------------
-	ESP_ERROR_CHECK(fs_get_partition_index(true, &part_index));
-	ESP_ERROR_CHECK(fs_get_partition(true, &part));
-
-	ESP_LOGI(TAG, "part_index=%u", part_index);
-	ESP_LOGI(TAG, "label=%s", part->label);
-	// ----------------------------------------------------------
-
-	// ----------------------------------------------------------
-	file = fopen(fs_full_path("/hello_world.txt"), "r");
-	ESP_ERROR_CHECK(file == NULL ? ESP_ERR_NOT_FOUND : ESP_OK);
-
-	fgets(file_content, sizeof(file_content), file);
-	fclose(file);
-
-	ESP_LOGI(TAG, "Read from file: %s", file_content);
-	// ----------------------------------------------------------
+	log_fs();
+	ESP_ERROR_CHECK(fs_partition_swap());
+	log_fs();
 
 	ESP_LOGI(TAG, "Completed");
 	return;
@@ -183,6 +155,33 @@ void delay_remainings(int32_t ms, int64_t initial_timestamp_ms){
 	ms -= millis() - initial_timestamp_ms;
 	if(ms > 0)
 		delay(ms);
+}
+
+void log_hash(const char *TAG, const char* label, uint8_t *hash, uint16_t hash_len){
+
+	char str[hash_len * 2 + 1];
+	str[sizeof(str) - 1] = 0;
+
+	for(uint16_t i=0; i<hash_len; i++)
+		sprintf(&str[i * 2], "%02x", hash[i]);
+
+	ESP_LOGI(TAG, "%s: %s", label, str);
+}
+
+void log_fs(){
+
+	FILE *file;
+	char file_content[1024];
+
+	// ----------------------------------------------------------
+	file = fopen(fs_full_path("/hello_world.txt"), "r");
+	ESP_ERROR_CHECK(file == NULL ? ESP_ERR_NOT_FOUND : ESP_OK);
+
+	fgets(file_content, sizeof(file_content), file);
+	fclose(file);
+
+	ESP_LOGI(TAG, "Read from file: %s", file_content);
+	// ----------------------------------------------------------
 }
 
 /* USER CODE END 2 */

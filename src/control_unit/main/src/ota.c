@@ -215,14 +215,6 @@ esp_err_t ota_update_fs(){
 		"Error on `wifi_power_save_mode(power_save_mode_enabled=false)`"
 	);
 
-	// ESP_GOTO_ON_ERROR(
-	// 	__fw_log_partitions_sha256(),
-
-	// 	label_restore_wifi_ps_mode,
-	// 	TAG,
-	// 	"Error on `__fw_log_partitions_sha256()`"
-	// );
-
 	esp_http_client_config_t http_client_config = {
 		.url = UPDATE_FS_URL,
 		.timeout_ms = UPDATE_TIMEOUT_MS,
