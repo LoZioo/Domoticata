@@ -56,9 +56,8 @@ static const char *TAG = LOG_TAG;
 * Private Functions Prototypes
  ************************************************************************************************************/
 
-static esp_err_t __fw_log_partitions_sha256();
-static void __fw_log_running_partition_info();
-static esp_err_t __fw_log_firmware_versions(uint8_t *ota_buffer);
+static void __log_partition_info(const char *part_name, const esp_partition_t *partition);
+static esp_err_t __log_fw_versions(uint8_t *ota_buffer);
 
 static esp_err_t __esp_http_client_ret_to_esp_err_t(int64_t esp_http_client_ret);
 
@@ -66,92 +65,28 @@ static esp_err_t __esp_http_client_ret_to_esp_err_t(int64_t esp_http_client_ret)
 * Private Functions Definitions
  ************************************************************************************************************/
 
-esp_err_t __fw_log_partitions_sha256(){
-
-	struct {
-		char label[32];
-		esp_partition_t partition;
-	} partitions[] = {
-
-		// Running partition.
-		{
-			.label = "SHA-256 for current firmware",
-			.partition = *esp_ota_get_running_partition()
-		},
-
-		// Partition table.
-		{
-			.label = "SHA-256 for the partition table",
-			.partition = {
-				.address = ESP_PARTITION_TABLE_OFFSET,
-				.size = ESP_PARTITION_TABLE_MAX_LEN,
-				.type = ESP_PARTITION_TYPE_DATA
-			}
-		},
-
-		// Bootloader.
-		{
-			.label = "SHA-256 for bootloader",
-			.partition = {
-				.address = ESP_BOOTLOADER_OFFSET,
-				.size = ESP_PARTITION_TABLE_OFFSET,
-				.type = ESP_PARTITION_TYPE_APP
-			}
-		},
-	};
-
-	uint8_t sha256[32];
-	for(uint8_t i=0; i<3; i++){
-		ESP_RETURN_ON_ERROR(
-			esp_partition_get_sha256(&partitions[i].partition, sha256),
-
-			TAG,
-			"Error on `esp_partition_get_sha256()`"
-		);
-
-		log_hash(
-			TAG,
-			partitions[i].label,
-			sha256, sizeof(sha256)
-		);
-	}
-
-	return ESP_OK;
-}
-
-void __fw_log_running_partition_info(){
-
-	const esp_partition_t *configured_boot_partition = esp_ota_get_boot_partition();
-	const esp_partition_t *running_partition = esp_ota_get_running_partition();
-
-	if(configured_boot_partition != running_partition){
-		ESP_LOGW(
-			TAG, "Configured OTA boot partition at offset 0x%08"PRIx32", but running from offset 0x%08"PRIx32,
-			configured_boot_partition->address, running_partition->address
-		);
-
-		ESP_LOGW(TAG, "(This can happen if either the OTA boot data or preferred boot image become corrupted somehow.)");
-	}
-
+void __log_partition_info(const char *part_name, const esp_partition_t *part){
 	ESP_LOGI(
-		TAG, "Running partition type %d subtype %d (offset 0x%08"PRIx32")",
-		running_partition->type, running_partition->subtype, running_partition->address
+		TAG,
+		"Running partition info ("
+			"label=\"%s\", "
+			"type=%u "
+			"subtype=%u, "
+			"offset=0x%08"PRIx32", "
+			"size=%lu"
+		")",
+
+		part->label,
+		part->type,
+		part->subtype,
+		part->address,
+		part->size
 	);
 }
 
-esp_err_t __fw_log_firmware_versions(uint8_t *ota_buffer){
+esp_err_t __log_fw_versions(uint8_t *ota_buffer){
 
 	esp_app_desc_t app_info;
-	memcpy(
-		&app_info,
-		&ota_buffer[
-			sizeof(esp_image_header_t) +
-			sizeof(esp_image_segment_header_t)
-		],
-		sizeof(esp_app_desc_t)
-	);
-
-	ESP_LOGI(TAG, "New firmware version: %s", app_info.version);
 	ESP_RETURN_ON_ERROR(
 		esp_ota_get_partition_description(
 			esp_ota_get_running_partition(),
@@ -163,6 +98,17 @@ esp_err_t __fw_log_firmware_versions(uint8_t *ota_buffer){
 	);
 
 	ESP_LOGI(TAG, "Running firmware version: %s", app_info.version);
+
+	memcpy(
+		&app_info,
+		&ota_buffer[
+			sizeof(esp_image_header_t) +
+			sizeof(esp_image_segment_header_t)
+		],
+		sizeof(esp_app_desc_t)
+	);
+
+	ESP_LOGI(TAG, "New firmware version: %s", app_info.version);
 	return ESP_OK;
 }
 
@@ -382,21 +328,30 @@ esp_err_t ota_update_fw(){
 		"Error on `wifi_power_save_mode(power_save_mode_enabled=false)`"
 	);
 
-	ESP_GOTO_ON_ERROR(
-		__fw_log_partitions_sha256(),
-
-		label_restore_wifi_ps_mode,
-		TAG,
-		"Error on `__fw_log_partitions_sha256()`"
-	);
-
-	__fw_log_running_partition_info();
-
-	const esp_partition_t *target_partition =
-		esp_ota_get_next_update_partition(NULL);
+	const esp_partition_t *part_boot = esp_ota_get_boot_partition();
+	const esp_partition_t *part_running = esp_ota_get_running_partition();
+	const esp_partition_t *part_target = esp_ota_get_next_update_partition(NULL);
 
 	ESP_GOTO_ON_FALSE(
-		target_partition != NULL,
+		part_boot != NULL,
+
+		ESP_ERR_NOT_FOUND,
+		label_restore_wifi_ps_mode,
+		TAG,
+		"Error on `esp_ota_get_boot_partition()`"
+	);
+
+	ESP_GOTO_ON_FALSE(
+		part_running != NULL,
+
+		ESP_ERR_NOT_FOUND,
+		label_restore_wifi_ps_mode,
+		TAG,
+		"Error on `esp_ota_get_running_partition()`"
+	);
+
+	ESP_GOTO_ON_FALSE(
+		part_target != NULL,
 
 		ESP_ERR_NOT_FOUND,
 		label_restore_wifi_ps_mode,
@@ -404,10 +359,17 @@ esp_err_t ota_update_fw(){
 		"Error on `esp_ota_get_next_update_partition()`"
 	);
 
-	ESP_LOGI(
-		TAG, "Writing to partition subtype %d at offset 0x%"PRIx32,
-		target_partition->subtype, target_partition->address
-	);
+	if(part_boot != part_running){
+		ESP_LOGW(
+			TAG, "Configured OTA boot partition at offset 0x%08"PRIx32", but running from offset 0x%08"PRIx32,
+			part_boot->address, part_running->address
+		);
+
+		ESP_LOGW(TAG, "(This can happen if either the OTA boot data or preferred boot image become corrupted somehow.)");
+	}
+
+	__log_partition_info("Running", part_running);
+	__log_partition_info("Target", part_target);
 
 	esp_http_client_config_t http_client_config = {
 		.url = UPDATE_FW_URL,
@@ -493,11 +455,11 @@ esp_err_t ota_update_fw(){
 			);
 
 			ESP_GOTO_ON_ERROR(
-				__fw_log_firmware_versions(ota_buffer),
+				__log_fw_versions(ota_buffer),
 
 				label_free_http_client,
 				TAG,
-				"Error on `__fw_log_firmware_versions()`"
+				"Error on `__log_fw_versions()`"
 			);
 
 			// App header ok.
@@ -506,7 +468,7 @@ esp_err_t ota_update_fw(){
 
 			ESP_GOTO_ON_ERROR(
 				esp_ota_begin(
-					target_partition,
+					part_target,
 					OTA_WITH_SEQUENTIAL_WRITES,
 					&ota_handle
 				),
@@ -555,7 +517,7 @@ esp_err_t ota_update_fw(){
 	);
 
 	ESP_GOTO_ON_ERROR(
-		esp_ota_set_boot_partition(target_partition),
+		esp_ota_set_boot_partition(part_target),
 
 		label_free_ota,
 		TAG,

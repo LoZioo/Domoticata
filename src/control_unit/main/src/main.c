@@ -119,24 +119,25 @@ void app_main(){
 
 	/* USER CODE BEGIN 1 */
 
-	// ESP_LOGI(TAG, "Triggering FS update in 5s...");
-	// delay(5000);
-	// ESP_ERROR_CHECK(ota_update_fw());
-	// ESP_LOGW(TAG, "Triggering system reset...");
+	ESP_LOGI(TAG, "Triggering FW update in 5s...");
+	delay(5000);
+	ESP_ERROR_CHECK(ota_update_fw());
+	ESP_LOGW(TAG, "Triggering system reset...");
+	return;
 	// esp_restart();
 
-	log_fs();
-	ESP_ERROR_CHECK(fs_partition_swap());
-	log_fs();
+	// log_fs();
+	// ESP_ERROR_CHECK(fs_partition_swap());
+	// log_fs();
 
-	ESP_LOGI(TAG, "Triggering FS update in 5s...");
-	delay(5000);
-	ESP_ERROR_CHECK(ota_update_fs());
+	// ESP_LOGI(TAG, "Triggering FS update in 5s...");
+	// delay(5000);
+	// ESP_ERROR_CHECK(ota_update_fs());
 
-	ESP_ERROR_CHECK(fs_partition_swap());
-	log_fs();
-	ESP_ERROR_CHECK(fs_partition_swap());
-	log_fs();
+	// ESP_ERROR_CHECK(fs_partition_swap());
+	// log_fs();
+	// ESP_ERROR_CHECK(fs_partition_swap());
+	// log_fs();
 
 	ESP_LOGI(TAG, "Completed");
 	return;
