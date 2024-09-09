@@ -649,7 +649,7 @@ void __rs485_task(void *parameters){
 	/* Variables */
 
 	// `ESP_GOTO_ON_ERROR()` return code.
-	esp_err_t ret;
+	esp_err_t ret __attribute__((unused));
 
 	// `__wall_terminals_poll()` parameters.
 	uint8_t device_id;

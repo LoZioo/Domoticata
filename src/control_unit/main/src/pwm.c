@@ -194,7 +194,7 @@ void __pwm_task(void *parameters){
 	/* Variables */
 
 	// `ESP_GOTO_ON_ERROR()` return code.
-	esp_err_t ret;
+	esp_err_t ret __attribute__((unused));
 
 	// PWM incoming data.
 	pwm_data_t pwm_data;

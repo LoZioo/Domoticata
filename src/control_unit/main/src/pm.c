@@ -280,7 +280,7 @@ void __pm_task(void *parameters){
 	/* Variables */
 
 	// `ESP_GOTO_ON_ERROR()` return code.
-	esp_err_t ret;
+	esp_err_t ret __attribute__((unused));
 
 	// UniLibC return code.
 	ul_err_t ul_ret;
