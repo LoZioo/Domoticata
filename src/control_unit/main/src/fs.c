@@ -43,7 +43,7 @@ static const char *TAG = LOG_TAG;
 static uint8_t __current_partition_index = PART_INDEX_DEFAULT;
 
 // Filesystem partitions.
-static esp_partition_t const *__fs_partitions[PART_COUNT];
+static const esp_partition_t *__fs_partitions[PART_COUNT];
 
 // Used by `__littlefs_partition_mount/umount()`.
 static bool __fs_mounted_on_vfs = false;
@@ -326,7 +326,7 @@ esp_err_t fs_partition_swap(){
 esp_err_t fs_partition_unmounted_write(uint8_t* data, size_t size){
 
 	static size_t offset;
-	esp_partition_t const *part =
+	const esp_partition_t *part =
 		__fs_partitions[!__current_partition_index];
 
 	// First call.
