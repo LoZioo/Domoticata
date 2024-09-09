@@ -71,8 +71,6 @@ const char *TAG = "main";
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
 
-void log_fs();
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -119,26 +117,6 @@ void app_main(){
 
 	/* USER CODE BEGIN 1 */
 
-	ESP_LOGI(TAG, "Triggering FW update in 5s...");
-	delay(5000);
-	ESP_ERROR_CHECK(ota_update_fw());
-	ESP_LOGW(TAG, "Triggering system reset...");
-	return;
-	// esp_restart();
-
-	// log_fs();
-	// ESP_ERROR_CHECK(fs_partition_swap());
-	// log_fs();
-
-	// ESP_LOGI(TAG, "Triggering FS update in 5s...");
-	// delay(5000);
-	// ESP_ERROR_CHECK(ota_update_fs());
-
-	// ESP_ERROR_CHECK(fs_partition_swap());
-	// log_fs();
-	// ESP_ERROR_CHECK(fs_partition_swap());
-	// log_fs();
-
 	ESP_LOGI(TAG, "Completed");
 	return;
 
@@ -167,22 +145,6 @@ void log_hash(const char *TAG, const char* label, uint8_t *hash, uint16_t hash_l
 		sprintf(&str[i * 2], "%02x", hash[i]);
 
 	ESP_LOGI(TAG, "%s: %s", label, str);
-}
-
-void log_fs(){
-
-	FILE *file;
-	char file_content[1024];
-
-	// ----------------------------------------------------------
-	file = fopen(fs_full_path("/hello_world.txt"), "r");
-	ESP_ERROR_CHECK(file == NULL ? ESP_ERR_NOT_FOUND : ESP_OK);
-
-	fgets(file_content, sizeof(file_content), file);
-	fclose(file);
-
-	ESP_LOGI(TAG, "Read from file: %s", file_content);
-	// ----------------------------------------------------------
 }
 
 /* USER CODE END 2 */
