@@ -91,6 +91,12 @@ extern esp_err_t fs_partition_swap();
  * @param data If `NULL`, initialize the write process (this must be done on the first call).
  * @note Call `fs_partition_swap()` to mount the partition.
  */
-extern esp_err_t fs_partition_write_unmounted(uint8_t* data, size_t size);
+extern esp_err_t fs_partition_unmounted_write(uint8_t* data, size_t size);
+
+/**
+ * @brief Get the SHA-256 hash for the currently unmounted LittleFS partition.
+ * @param hash Pointer to a 32-bytes buffer.
+ */
+extern esp_err_t fs_partition_unmounted_get_sha256(uint8_t* hash);
 
 #endif  /* INC_FS_H_ */

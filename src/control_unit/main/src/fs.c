@@ -323,15 +323,7 @@ esp_err_t fs_partition_swap(){
 	return ESP_OK;
 }
 
-esp_err_t fs_partition_write_unmounted(uint8_t* data, size_t size){
-
-	ESP_RETURN_ON_FALSE(
-		fs_available(),
-
-		ESP_ERR_INVALID_STATE,
-		TAG,
-		"Error: filesystem service not initialized"
-	);
+esp_err_t fs_partition_unmounted_write(uint8_t* data, size_t size){
 
 	static size_t offset;
 	esp_partition_t const *part =
@@ -363,6 +355,7 @@ esp_err_t fs_partition_write_unmounted(uint8_t* data, size_t size){
 		"Error: `size` is 0"
 	);
 
+	ESP_LOGW(TAG, "%d - %d", offset, offset + size-1);
 	ESP_RETURN_ON_ERROR(
 		esp_partition_write(
 			part,
@@ -376,5 +369,30 @@ esp_err_t fs_partition_write_unmounted(uint8_t* data, size_t size){
 	);
 
 	offset += size;
+	return ESP_OK;
+}
+
+esp_err_t fs_partition_unmounted_get_sha256(uint8_t* hash){
+
+	ESP_RETURN_ON_FALSE(
+		hash != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `hash` is NULL"
+	);
+
+	ESP_RETURN_ON_ERROR(
+		esp_partition_get_sha256(
+			__fs_partitions[
+				!__current_partition_index
+			],
+			hash
+		),
+
+		TAG,
+		"Error on `esp_partition_get_sha256()`"
+	);
+
 	return ESP_OK;
 }
