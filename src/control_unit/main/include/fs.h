@@ -87,15 +87,10 @@ extern bool fs_available();
 extern esp_err_t fs_partition_swap();
 
 /**
- * @brief Get the current active or inactive filesystem partition index.
- * @param mounted_partition If `true`, the currently mounted filesystem partition index is returned; otherwise the unmounted partition index is returned.
+ * @brief Write data to the currently unmounted LittleFS partition.
+ * @param data If `NULL`, initialize the write process (this must be done on the first call).
+ * @note Call `fs_partition_swap()` to mount the partition.
  */
-extern esp_err_t fs_get_partition_index(bool mounted_partition, uint8_t *partition_index);
-
-/**
- * @brief Get the current active or inactive filesystem partition pointer.
- * @param mounted_partition If `true`, the currently mounted filesystem partition pointer is returned; otherwise the unmounted partition pointer is returned.
- */
-extern esp_err_t fs_get_partition(bool mounted_partition, esp_partition_t const **partition);
+extern esp_err_t fs_partition_write_unmounted(uint8_t* data, size_t size);
 
 #endif  /* INC_FS_H_ */

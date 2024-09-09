@@ -323,15 +323,7 @@ esp_err_t fs_partition_swap(){
 	return ESP_OK;
 }
 
-esp_err_t fs_get_partition_index(bool mounted_partition, uint8_t *partition_index){
-
-	ESP_RETURN_ON_FALSE(
-		partition_index != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `partition_index` is NULL"
-	);
+esp_err_t fs_partition_write_unmounted(uint8_t* data, size_t size){
 
 	ESP_RETURN_ON_FALSE(
 		fs_available(),
@@ -341,45 +333,46 @@ esp_err_t fs_get_partition_index(bool mounted_partition, uint8_t *partition_inde
 		"Error: filesystem service not initialized"
 	);
 
-	*partition_index = (
-		mounted_partition ?
-		__current_partition_index :
-		!__current_partition_index
-	);
+	static size_t offset;
+	esp_partition_t const *part =
+		__fs_partitions[!__current_partition_index];
 
-	return ESP_OK;
-}
+	// First call.
+	if(data == NULL){
+		offset = 0;
 
-esp_err_t fs_get_partition(bool mounted_partition, esp_partition_t const **partition){
+		ESP_RETURN_ON_ERROR(
+			esp_partition_erase_range(
+				part,
+				offset,
+				part->erase_size
+			),
+
+			TAG,
+			"Error on `esp_partition_erase_range()`"
+		);
+
+		return ESP_OK;
+	}
 
 	ESP_RETURN_ON_FALSE(
-		partition != NULL,
+		size > 0,
 
 		ESP_ERR_INVALID_ARG,
 		TAG,
-		"Error: `partition` is NULL"
+		"Error: `size` is 0"
 	);
 
-	ESP_RETURN_ON_FALSE(
-		*partition != NULL,
+	ESP_RETURN_ON_ERROR(
+		esp_partition_write(
+			part,
+			offset,
+			data,
+			size
+		),
 
-		ESP_ERR_INVALID_ARG,
 		TAG,
-		"Error: `*partition` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		fs_available(),
-
-		ESP_ERR_INVALID_STATE,
-		TAG,
-		"Error: filesystem service not initialized"
-	);
-
-	*partition = (
-		mounted_partition ?
-		__fs_partitions[__current_partition_index] :
-		__fs_partitions[!__current_partition_index]
+		"Error on `esp_partition_write()`"
 	);
 
 	return ESP_OK;
