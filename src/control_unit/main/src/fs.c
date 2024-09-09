@@ -375,5 +375,6 @@ esp_err_t fs_partition_write_unmounted(uint8_t* data, size_t size){
 		"Error on `esp_partition_write()`"
 	);
 
+	offset += size;
 	return ESP_OK;
 }
