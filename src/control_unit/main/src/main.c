@@ -40,6 +40,7 @@
 #include <wifi.h>
 #include <ota.h>
 #include <fs.h>
+#include <webserver.h>
 // #include <pm.h>
 
 // !!! SISTEMARE IL REBOOT IN CASO DI CRASH NEL MENUCONFIG SOTTO IL MENU Trace memory
