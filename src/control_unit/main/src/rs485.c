@@ -676,6 +676,9 @@ void __rs485_task(void *parameters){
 	for(;;){
 		ret = ESP_OK;
 
+		// Yield task to the scheduler.
+		delay(1);
+
 		// Poll the wall terminals.
 		ESP_GOTO_ON_ERROR(
 			__wall_terminals_poll(&device_id, &trimmer_val, &button_states),
@@ -688,7 +691,7 @@ void __rs485_task(void *parameters){
 
 		// Nothing to communicate.
 		if(device_id == 0xFF)
-			goto task_continue;
+			continue;
 
 		// Device ID check.
 		ESP_GOTO_ON_FALSE(
@@ -723,15 +726,9 @@ void __rs485_task(void *parameters){
 				device_id, trimmer_val
 			);
 
-		// Delay before continuing.
-		goto task_continue;
-
+		continue;
 		task_error:
-		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
 		ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_RS485_UART_PORT));
-
-		task_continue:
-		delay(1);
 	}
 }
 

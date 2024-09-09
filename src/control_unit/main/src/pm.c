@@ -306,7 +306,7 @@ void __pm_task(void *parameters){
 		ESP_GOTO_ON_ERROR(
 			adc_continuous_flush_pool(__adc_handle),
 
-			task_error,
+			task_continue,
 			TAG,
 			"Error on `adc_continuous_flush_pool()`"
 		);
@@ -315,7 +315,7 @@ void __pm_task(void *parameters){
 		ESP_GOTO_ON_ERROR(
 			adc_continuous_start(__adc_handle),
 
-			task_error,
+			task_continue,
 			TAG,
 			"Error on `adc_continuous_start()`"
 		);
@@ -333,7 +333,7 @@ void __pm_task(void *parameters){
 				ADC_CONTINUOUS_READ_TIMEOUT_MS
 			),
 
-			task_error,
+			task_continue,
 			TAG,
 			"Error on `adc_continuous_read()`"
 		);
@@ -342,7 +342,7 @@ void __pm_task(void *parameters){
 		ESP_GOTO_ON_ERROR(
 			adc_continuous_stop(__adc_handle),
 
-			task_error,
+			task_continue,
 			TAG,
 			"Error on `adc_continuous_stop()`"
 		);
@@ -374,7 +374,7 @@ void __pm_task(void *parameters){
 			ul_ret == UL_OK,
 
 			ESP_ERR_INVALID_STATE,
-			task_error,
+			task_continue,
 			TAG,
 			"Error %d on `ul_pm_evaluate()`",
 			ul_ret
@@ -407,9 +407,7 @@ void __pm_task(void *parameters){
 		delay(1000);
 		#endif
 
-		continue;
-		task_error:
-		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
+		task_continue:
 	}
 }
 

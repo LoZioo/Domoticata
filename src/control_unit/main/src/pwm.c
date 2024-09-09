@@ -207,7 +207,7 @@ void __pwm_task(void *parameters){
 
 		// Waiting for `pwm_write()` requests.
 		if(xQueueReceive(__pwm_queue, &pwm_data, portMAX_DELAY) == pdFALSE)
-			goto task_continue;
+			continue;
 
 		#ifdef LOG_STUB
 		ESP_LOGW(TAG, "LOG_STUB");
@@ -215,8 +215,8 @@ void __pwm_task(void *parameters){
 		ESP_LOGI(TAG, "Target duty: %u", pwm_data.target_duty);
 		ESP_LOGI(TAG, "Fade time %ums", pwm_data.fade_time_ms);
 
-		// Avoid "label 'task_error' defined but not used" compiler error.
-		if(0) goto task_error;
+		// Avoid "label 'task_continue' defined but not used" compiler error.
+		if(0) goto task_continue;
 		#else
 
 		// Set PWM parameters.
@@ -228,7 +228,7 @@ void __pwm_task(void *parameters){
 				pwm_data.fade_time_ms
 			),
 
-			task_error,
+			task_continue,
 			TAG,
 			"Error on `ledc_set_fade_with_time(speed_mode=%u, channel=%u, target_duty=%u, max_fade_time_ms=%u)`",
 			__pwm_get_port(pwm_data.zone), __pwm_get_channel(pwm_data.zone), pwm_data.target_duty, pwm_data.fade_time_ms
@@ -242,7 +242,7 @@ void __pwm_task(void *parameters){
 				LEDC_FADE_NO_WAIT
 			),
 
-			task_error,
+			task_continue,
 			TAG,
 			"Error on `ledc_fade_start(speed_mode=%u, channel=%u)`",
 			__pwm_get_port(pwm_data.zone), __pwm_get_channel(pwm_data.zone)
@@ -250,14 +250,7 @@ void __pwm_task(void *parameters){
 
 		#endif
 
-		// Delay before continuing.
-		goto task_continue;
-
-		task_error:
-		ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
-
 		task_continue:
-		delay(1);
 	}
 }
 
