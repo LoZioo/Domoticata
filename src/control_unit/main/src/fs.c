@@ -333,11 +333,14 @@ esp_err_t fs_partition_unmounted_write(uint8_t* data, size_t size){
 	if(data == NULL){
 		offset = 0;
 
+		uint32_t part_size_to_clear_rounded_down =
+			part->size - (part->size % part->erase_size);
+
 		ESP_RETURN_ON_ERROR(
 			esp_partition_erase_range(
 				part,
 				offset,
-				part->erase_size
+				part_size_to_clear_rounded_down
 			),
 
 			TAG,
@@ -355,7 +358,6 @@ esp_err_t fs_partition_unmounted_write(uint8_t* data, size_t size){
 		"Error: `size` is 0"
 	);
 
-	ESP_LOGW(TAG, "%d - %d", offset, offset + size-1);
 	ESP_RETURN_ON_ERROR(
 		esp_partition_write(
 			part,
