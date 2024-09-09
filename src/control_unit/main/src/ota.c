@@ -56,8 +56,6 @@ static const char *TAG = LOG_TAG;
 * Private Functions Prototypes
  ************************************************************************************************************/
 
-static void __log_sha256(const char* label, uint8_t *hash, uint16_t hash_len);
-
 static esp_err_t __fw_log_partitions_sha256();
 static void __fw_log_running_partition_info();
 static esp_err_t __fw_log_firmware_versions(uint8_t *ota_buffer);
@@ -67,17 +65,6 @@ static esp_err_t __esp_http_client_ret_to_esp_err_t(int64_t esp_http_client_ret)
 /************************************************************************************************************
 * Private Functions Definitions
  ************************************************************************************************************/
-
-void __log_sha256(const char* label, uint8_t *hash, uint16_t hash_len){
-
-	char str[hash_len * 2 + 1];
-	str[sizeof(str) - 1] = 0;
-
-	for(uint16_t i=0; i<hash_len; i++)
-		sprintf(&str[i * 2], "%02x", hash[i]);
-
-	ESP_LOGI(TAG, "%s: %s", label, str);
-}
 
 esp_err_t __fw_log_partitions_sha256(){
 
@@ -113,7 +100,7 @@ esp_err_t __fw_log_partitions_sha256(){
 		},
 	};
 
-	uint8_t sha256[32] = {0};
+	uint8_t sha256[32];
 	for(uint8_t i=0; i<3; i++){
 		ESP_RETURN_ON_ERROR(
 			esp_partition_get_sha256(&partitions[i].partition, sha256),
@@ -122,7 +109,11 @@ esp_err_t __fw_log_partitions_sha256(){
 			"Error on `esp_partition_get_sha256()`"
 		);
 
-		__log_sha256(partitions[i].label, sha256, sizeof(sha256));
+		log_hash(
+			TAG,
+			partitions[i].label,
+			sha256, sizeof(sha256)
+		);
 	}
 
 	return ESP_OK;
@@ -232,23 +223,6 @@ esp_err_t ota_update_fs(){
 	// 	"Error on `__fw_log_partitions_sha256()`"
 	// );
 
-	// __fw_log_running_partition_info();
-
-	esp_partition_t const *target_partition;
-
-	ESP_GOTO_ON_ERROR(
-		fs_get_partition(false, &target_partition),
-
-		label_restore_wifi_ps_mode,
-		TAG,
-		"Error on `fs_get_partition()`"
-	);
-
-	ESP_LOGI(
-		TAG, "Writing to partition subtype %d at offset 0x%"PRIx32,
-		target_partition->subtype, target_partition->address
-	);
-
 	esp_http_client_config_t http_client_config = {
 		.url = UPDATE_FS_URL,
 		.timeout_ms = UPDATE_TIMEOUT_MS,
@@ -285,24 +259,20 @@ esp_err_t ota_update_fs(){
 		"Error on `esp_http_client_fetch_headers()`"
 	);
 
-	esp_ota_handle_t ota_handle;
 	uint8_t ota_buffer[CONFIG_OTA_BUFFER_LEN_BYTES];
 	uint32_t data_total_len = 0;
-	int data_len;
+	int read_len;
 
-	// !!! esp_ota_begin NON FUNZIONA PER LE PARTIZIONI NON-OTA, QUINDI PREDISPORRE API IN fs.h
-	ESP_LOGI(TAG, "Downloading and writing OTA filesystem to flash...");
+	ESP_LOGI(TAG, "Erasing filesystem partition...");
 	ESP_GOTO_ON_ERROR(
-		esp_ota_begin(
-			target_partition,
-			OTA_WITH_SEQUENTIAL_WRITES,
-			&ota_handle
-		),
+		fs_partition_unmounted_write(NULL, 0),
 
 		label_free_http_client,
 		TAG,
-		"Error on `esp_ota_begin()`"
+		"Error on `fs_partition_unmounted_write(data=NULL)`"
 	);
+
+	ESP_LOGI(TAG, "Downloading and writing OTA filesystem to flash...");
 
 	// Begin sequential data reading loop.
 	for(;;){
@@ -310,38 +280,37 @@ esp_err_t ota_update_fs(){
 		// Needed to detect TCP/IP errors.
 		errno = 0;
 
-		data_len = esp_http_client_read(
+		read_len = esp_http_client_read(
 			http_client_handle,
 			(char*) ota_buffer,
 			sizeof(ota_buffer)
 		);
 
 		// TCP/IP error or simply connection close.
-		if(data_len == 0)
+		if(read_len == 0)
 			break;
 
 		// Check `esp_http_client_read()`.
 		ESP_GOTO_ON_ERROR(
-			__esp_http_client_ret_to_esp_err_t(data_len),
+			__esp_http_client_ret_to_esp_err_t(read_len),
 
-			label_free_ota,
+			label_free_http_client,
 			TAG,
 			"Error on `esp_http_client_read()`"
 		);
 
 		ESP_GOTO_ON_ERROR(
-			esp_ota_write(
-				ota_handle,
+			fs_partition_unmounted_write(
 				ota_buffer,
-				sizeof(ota_buffer)
+				read_len
 			),
 
-			label_free_ota,
+			label_free_http_client,
 			TAG,
-			"Error on `esp_ota_write()`"
+			"Error on `fs_partition_unmounted_write()`"
 		);
 
-		data_total_len += data_len;
+		data_total_len += read_len;
 	}
 
 	ESP_LOGI(TAG, "Total written bytes: %lu", data_total_len);
@@ -349,7 +318,7 @@ esp_err_t ota_update_fs(){
 		errno == 0,
 
 		ESP_ERR_INVALID_STATE,
-		label_free_ota,
+		label_free_http_client,
 		TAG,
 		"Error: TCP/IP error; errno=%d",
 		errno
@@ -361,23 +330,35 @@ esp_err_t ota_update_fs(){
 		),
 
 		ESP_ERR_OTA_VALIDATE_FAILED,
-		label_free_ota,
+		label_free_http_client,
 		TAG,
 		"Error on `esp_http_client_is_complete_data_received()`"
+	);
+
+	uint8_t sha256[32];
+	ESP_GOTO_ON_ERROR(
+		fs_partition_unmounted_get_sha256(sha256),
+
+		label_free_http_client,
+		TAG,
+		"Error on `fs_partition_unmounted_get_sha256()`"
+	);
+
+	log_hash(
+		TAG,
+		"SHA-256 for filesystem partition",
+		sha256, sizeof(sha256)
 	);
 
 	ESP_GOTO_ON_ERROR(
 		fs_partition_swap(),
 
-		label_free_ota,
+		label_free_http_client,
 		TAG,
 		"Error on `fs_partition_swap()`"
 	);
 
 	ESP_LOGI(TAG, "Filesystem update done");
-
-	label_free_ota:
-	ESP_ERROR_CHECK_WITHOUT_ABORT(esp_ota_end(ota_handle));
 
 	label_free_http_client:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_cleanup(http_client_handle));
@@ -475,7 +456,7 @@ esp_err_t ota_update_fw(){
 	esp_ota_handle_t ota_handle;
 	uint8_t ota_buffer[CONFIG_OTA_BUFFER_LEN_BYTES];
 	uint32_t data_total_len = 0;
-	int data_len;
+	int read_len;
 	bool app_header_was_checked = false;
 
 	// Begin sequential data reading loop.
@@ -484,19 +465,19 @@ esp_err_t ota_update_fw(){
 		// Needed to detect TCP/IP errors.
 		errno = 0;
 
-		data_len = esp_http_client_read(
+		read_len = esp_http_client_read(
 			http_client_handle,
 			(char*) ota_buffer,
 			sizeof(ota_buffer)
 		);
 
 		// TCP/IP error or simply connection close.
-		if(data_len == 0)
+		if(read_len == 0)
 			break;
 
 		// Check `esp_http_client_read()`.
 		ESP_GOTO_ON_ERROR(
-			__esp_http_client_ret_to_esp_err_t(data_len),
+			__esp_http_client_ret_to_esp_err_t(read_len),
 
 			label_free_ota,
 			TAG,
@@ -507,7 +488,7 @@ esp_err_t ota_update_fw(){
 		if(!app_header_was_checked){
 
 			ESP_GOTO_ON_FALSE(
-				data_len > (	// That's the total app header size.
+				read_len > (	// That's the total app header size.
 					sizeof(esp_image_header_t) +
 					sizeof(esp_image_segment_header_t) +
 					sizeof(esp_app_desc_t)
@@ -548,7 +529,7 @@ esp_err_t ota_update_fw(){
 			esp_ota_write(
 				ota_handle,
 				ota_buffer,
-				sizeof(ota_buffer)
+				read_len
 			),
 
 			label_free_ota,
@@ -556,7 +537,7 @@ esp_err_t ota_update_fw(){
 			"Error on `esp_ota_write()`"
 		);
 
-		data_total_len += data_len;
+		data_total_len += read_len;
 	}
 
 	ESP_LOGI(TAG, "Total written bytes: %lu", data_total_len);
@@ -582,14 +563,6 @@ esp_err_t ota_update_fw(){
 	);
 
 	ESP_GOTO_ON_ERROR(
-		esp_ota_end(ota_handle),
-
-		label_free_ota,
-		TAG,
-		"Error on `esp_ota_end()`"
-	);
-
-	ESP_GOTO_ON_ERROR(
 		esp_ota_set_boot_partition(target_partition),
 
 		label_free_ota,
@@ -598,9 +571,6 @@ esp_err_t ota_update_fw(){
 	);
 
 	ESP_LOGI(TAG, "Firmware update done");
-	ESP_LOGW(TAG, "Triggering system reset...");
-	esp_restart();
-	return ret;
 
 	label_free_ota:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(esp_ota_end(ota_handle));
