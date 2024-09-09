@@ -34,6 +34,15 @@ if __name__ == "__main__":
 	):
 		exit(1)
 
+	# Byte size conversion.
+	if target_partition_size[-1:] in ('k', 'M'):
+		target_partition_size_old = target_partition_size
+		target_partition_size_value = int(target_partition_size[:-1])
+		target_partition_size_multiplier = 1024 if target_partition_size[-1:] == 'k' else 1024 * 1024
+
+		target_partition_size = str(target_partition_size_value * target_partition_size_multiplier)
+		print("Partition size conversion: %s -> %s bytes" % (target_partition_size_old, target_partition_size))
+
 	with open(SETTINGS_JSON, 'r') as file:
 		settings = json.load(file)
 
@@ -47,7 +56,7 @@ if __name__ == "__main__":
 			"-b", baud_rate,
 			"read_flash",
 			target_partition_offset,
-			str(480 * 1024),
+			target_partition_size,
 			PARTITION_BIN
 		])
 	)
