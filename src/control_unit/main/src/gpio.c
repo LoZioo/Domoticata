@@ -67,8 +67,26 @@ esp_err_t gpio_setup(){
 
 	ESP_RETURN_ON_ERROR(
 		gpio_config(&io_config),
+
 		TAG,
 		"Error on `gpio_config()`"
+	);
+
+	return ESP_OK;
+}
+
+esp_err_t gpio_write(gpio_num_t gpio_num, uint8_t level){
+
+	level = (level > 0);
+	ESP_RETURN_ON_ERROR(
+		gpio_set_level(
+			gpio_num,
+			level
+		),
+
+		TAG,
+		"Error on `gpio_set_level(gpio_num=%u, level=%u)`",
+		gpio_num, level
 	);
 
 	return ESP_OK;

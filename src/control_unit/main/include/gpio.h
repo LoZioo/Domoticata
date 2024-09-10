@@ -54,4 +54,9 @@
  */
 extern esp_err_t gpio_setup();
 
+/**
+ * @brief Write the specified `level` to the specified `gpio_num`.
+ */
+extern esp_err_t gpio_write(gpio_num_t gpio_num, uint8_t level);
+
 #endif  /* INC_GPIO_H_ */
