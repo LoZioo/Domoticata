@@ -80,7 +80,6 @@ extern esp_err_t pwm_setup();
 
 /**
  * @brief Send `pwm_data` to `pwm_task` via `pwm_queue`.
- * @param TAG The `esp_log.h` tag.
  * @param zone 0: Fan controller, 1-12: LEDs.
  * @param target_duty 10-bit target duty (from 0 to (2^`CONFIG_LEDC_PWM_BIT_RES`) - 1 ).
  */
