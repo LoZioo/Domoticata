@@ -94,6 +94,7 @@
 		"esp_littlefs.h": "c",
 		"esp_partition.h": "c",
 		"esp_ota_ops.h": "c",
-		"webserver.h": "c"
+		"webserver.h": "c",
+		"zone.h": "c"
 	}
 }
