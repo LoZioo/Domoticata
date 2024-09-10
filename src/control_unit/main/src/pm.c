@@ -248,7 +248,7 @@ esp_err_t __pm_task_setup(){
 
 		ESP_ERR_NO_MEM,
 		TAG,
-		"Error: unable to allocate \"__pm_res_mutex\""
+		"Error: unable to allocate `__pm_res_mutex`"
 	);
 
 	BaseType_t ret_val = xTaskCreatePinnedToCore(
