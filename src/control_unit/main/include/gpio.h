@@ -32,6 +32,7 @@
 
 // Project libraries.
 #include <main.h>
+#include <zone.h>
 
 /************************************************************************************************************
 * Public Defines
@@ -55,8 +56,8 @@
 extern esp_err_t gpio_setup();
 
 /**
- * @brief Write the specified `level` to the specified `gpio_num`.
+ * @brief Write 0 or 1 to the mapped zone.
  */
-extern esp_err_t gpio_write(gpio_num_t gpio_num, uint8_t level);
+extern esp_err_t gpio_write_zone(zone_t zone, uint8_t level);
 
 #endif  /* INC_GPIO_H_ */

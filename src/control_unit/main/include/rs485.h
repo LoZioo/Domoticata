@@ -39,8 +39,9 @@
 #include <ul_crc.h>
 
 // Project libraries.
-#include <rs485_keymap.h>
 #include <main.h>
+#include <zone.h>
+#include <gpio.h>
 #include <pwm.h>
 
 /************************************************************************************************************

@@ -110,6 +110,9 @@ void app_main(){
 	// ESP_LOGI(TAG, "pm_setup()");
 	// ESP_ERROR_CHECK(pm_setup());
 
+	ESP_LOGI(TAG, "webserver_setup()");
+	ESP_ERROR_CHECK(webserver_setup());
+
 	/* USER CODE END SysInit */
 
 	/* USER CODE BEGIN Init */

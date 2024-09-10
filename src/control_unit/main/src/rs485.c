@@ -26,21 +26,21 @@
 // Number of wall terminals on the RS-485 bus (from 1 to 127).
 #define WALL_TERMINALS_COUNT	13
 
+// Max number of buttons per wall terminal.
+#define BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL	3
+
 // Response timeout on the poll phase.
 #define WALL_TERMINAL_POLL_TIMEOUT_MS	30
 
 // Response timeout on the data exchange phase.
 #define WALL_TERMINAL_CONN_TIMEOUT_MS	100
 
-// Max number of buttons per wall terminal.
-#define BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL	UL_BS_BUTTON_3
-
 // Default PWM value at startup for every logical PWM channel.
 #define PWM_DEFAULT_VALUE	__led_gamma_correction(512)
 
 /**
- * PWM fade time passed to every `pwm_write()`.
- * Note: tune this value if by rotating the trimmer you notice a "step" increase/decrease in brightness effect.
+ * PWM fade time passed to every `pwm_write_zone()`.
+ * Note: tune this value if by rotating a trimmer you notice a "step" increase/decrease in brightness effect.
  */
 #define PWM_FADE_TIME_MS	500
 
@@ -86,8 +86,14 @@ static TaskHandle_t __rs485_task_handle;
 * Private Functions Prototypes
  ************************************************************************************************************/
 
-static esp_err_t __uart_driver_setup();
-static esp_err_t __rs485_task_setup();
+/**
+ * @return The corresponding zone given `device_id`, `button_id` and `button_state`.
+ */
+static zone_t __id_button_and_state_to_zone(uint8_t device_id, ul_bs_button_id_t button_id, ul_bs_button_state_t button_state);
+static int8_t __zone_to_zone_index(zone_t zone);
+
+static esp_err_t __handle_button_press(bool *channel_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t button_states);
+static esp_err_t __handle_trimmer_change(bool *channel_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t trimmer_val);
 
 /**
  * @brief Poll the RS-485 bus to check if some button was pressed on some wall terminal.
@@ -98,13 +104,9 @@ static esp_err_t __rs485_task_setup();
  * @note Must be called periodically to ensure a clean wall terminals polling loop.
  */
 static esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint16_t *button_states);
-static esp_err_t __handle_trimmer_change(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t trimmer_val);
-static esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t button_states);
 
-/**
- * @return The corresponding `rs485_keymap_t` containing the mapped zones, given `device_id`, `button_id` and `button_state`; if one zone is equal to 0, it means that it is unmapped.
- */
-static rs485_keymap_t __id_button_and_state_to_zones(uint8_t device_id, ul_bs_button_id_t button_id, ul_bs_button_state_t button_state);
+static esp_err_t __uart_driver_setup();
+static esp_err_t __rs485_task_setup();
 
 static void __rs485_task(void *parameters);
 
@@ -112,89 +114,298 @@ static void __rs485_task(void *parameters);
 * Private Functions Definitions
  ************************************************************************************************************/
 
-esp_err_t __uart_driver_setup(){
+zone_t __id_button_and_state_to_zone(uint8_t device_id, ul_bs_button_id_t button_id, ul_bs_button_state_t button_state){
 
-	uart_config_t uart_config = {
-		.baud_rate = CONFIG_RS485_UART_BAUD_RATE,
-		.data_bits = UART_DATA_8_BITS,
-		.parity = UART_PARITY_DISABLE,
-		.stop_bits = UART_STOP_BITS_1,
-		.flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-		.rx_flow_ctrl_thresh = 122,
-		.source_clk = UART_SCLK_DEFAULT,
-	};
+	// Index error.
+	if(
+		device_id >= WALL_TERMINALS_COUNT ||
 
-	ESP_RETURN_ON_ERROR(
-		uart_driver_install(
-			CONFIG_RS485_UART_PORT,
-			UART_RX_BUFFER_LEN_BYTES,
-			0,
-			0,
-			NULL,
-			0
-		),
+		!ul_utils_between(
+			button_id,
+			UL_BS_BUTTON_1,
+			BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL
+		) ||
 
-		TAG,
-		"Error on `uart_driver_install()`"
-	);
+		!ul_utils_between(
+			button_state,
+			UL_BS_BUTTON_STATE_PRESSED,
+			UL_BS_BUTTON_STATE_HELD
+		)
+	)
+		return ZONE_UNMAPPED;
 
-	ESP_RETURN_ON_ERROR(
-		uart_param_config(
-			CONFIG_RS485_UART_PORT,
-			&uart_config
-		),
+	// Mapping cube matrix (-1 because the idle state is not used on the last dimension).
+	zone_t id_button_and_state_to_zones
+		[WALL_TERMINALS_COUNT]
+		[BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL]
+		[UL_BS_BUTTON_STATE_MAX - 1] = ZONE_BUTTONS;
 
-		TAG,
-		"Error on `uart_param_config()`"
-	);
-
-	ESP_RETURN_ON_ERROR(
-		uart_set_pin(
-			CONFIG_RS485_UART_PORT,
-			CONFIG_GPIO_UART_TX,
-			CONFIG_GPIO_UART_RX,
-			CONFIG_GPIO_UART_DE_RE,
-			UART_PIN_NO_CHANGE
-		),
-
-		TAG,
-		"Error on `uart_set_pin()`"
-	);
-
-	ESP_RETURN_ON_ERROR(
-		uart_set_mode(
-			CONFIG_RS485_UART_PORT,
-			UART_MODE_RS485_HALF_DUPLEX
-		),
-
-		TAG,
-		"Error on `uart_set_mode()`"
-	);
-
-	return ESP_OK;
+	return id_button_and_state_to_zones[device_id][button_id-1][button_state-1];
 }
 
-esp_err_t __rs485_task_setup(){
+int8_t __zone_to_zone_index(zone_t zone){
 
-	BaseType_t ret_val = xTaskCreatePinnedToCore(
-		__rs485_task,
-		LOG_TAG"_task",
-		CONFIG_RS485_TASK_STACK_SIZE_BYTES,
-		NULL,
-		CONFIG_RS485_TASK_PRIORITY,
-		&__rs485_task_handle,
-		CONFIG_RS485_TASK_CORE_AFFINITY
+	// !!! CORREGGERE E FARE RICERCA SIA SU ZONE DIGITAL CHE PWM
+
+	zone_t digital_zones[] = ZONE_DIGITAL_ZONES;
+	uint8_t i = 0;
+
+	while(i < ZONE_DIGITAL_LEN){
+		if(digital_zones[i] == zone)
+			break;
+
+		i++;
+	}
+
+	return (
+		digital_zones[i] == zone ?
+		i : -1
+	);
+}
+
+esp_err_t __handle_button_press(bool *channel_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t button_states){
+
+	ESP_RETURN_ON_FALSE(
+		channel_enabled != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `channel_enabled` is NULL"
 	);
 
 	ESP_RETURN_ON_FALSE(
-		ret_val == pdPASS,
+		pwm_duty != NULL,
 
-		ESP_ERR_INVALID_STATE,
+		ESP_ERR_INVALID_ARG,
 		TAG,
-		"Error %d: unable to spawn \""LOG_TAG"_task\"",
-		ret_val
+		"Error: `pwm_duty` is NULL"
 	);
 
+	ESP_RETURN_ON_FALSE(
+		device_id < WALL_TERMINALS_COUNT,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `device_id` must be less than %u",
+		WALL_TERMINALS_COUNT
+	);
+
+	ESP_RETURN_ON_FALSE(
+		button_states != 0,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `button_states` is 0"
+	);
+
+	ul_bs_set_button_states(button_states);
+
+	#ifdef LOG_STUB
+	ESP_LOGW(TAG, "LOG_STUB");
+	ESP_LOGI(TAG, "Device ID: %02u", device_id);
+	for(
+		uint8_t button = UL_BS_BUTTON_1;
+		button <= BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL;
+		button++
+	)
+		ESP_LOGI(
+			TAG,
+			"Button %u: %u",
+			button,
+			ul_bs_get_button_state(button)
+		);
+
+	#else
+
+	ul_bs_button_state_t button_state;
+	zone_t zone;
+	int8_t zone_index;
+	uint16_t pwm_final_duty;
+	esp_err_t ret;
+
+	// For each button, check if it was pressed.
+	for(
+		uint8_t button_id = UL_BS_BUTTON_1;
+		button_id <= BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL;
+		button_id++
+	){
+		button_state = ul_bs_get_button_state(button_id);
+
+		// Idle state not used.
+		if(button_state == UL_BS_BUTTON_STATE_IDLE)
+			continue;
+
+		// Get zone from current configurations.
+		zone = __id_button_and_state_to_zone(device_id, button_id, button_state);
+
+		// If the zone is not mapped.
+		if(zone == ZONE_UNMAPPED)
+			continue;
+
+		// Get mapped zone index.
+		zone_index = __zone_to_zone_index(zone);
+
+		ESP_RETURN_ON_FALSE(
+			zone_index >= 0,
+
+			ESP_ERR_NOT_FOUND,
+			TAG,
+			"Error on `__zone_to_zone_index(zone=%u)`",
+			zone
+		);
+
+		// Toggle channel.
+		channel_enabled[zone_index] =
+			!channel_enabled[zone_index];
+
+		pwm_final_duty = (
+			channel_enabled[zone_index] ?
+			pwm_duty[zone_index] :
+			0
+		);
+
+		// Try to write both the GPIO and the PWM channel of the zone.
+		ret = pwm_write_zone(
+			zone,
+			pwm_final_duty,
+			PWM_FADE_TIME_MS
+		);
+
+		// Ignore this error code.
+		if(ret == ESP_ERR_NOT_SUPPORTED)
+			ret = ESP_OK;
+
+		ESP_RETURN_ON_ERROR(
+			ret,
+
+			TAG,
+			"Error on `pwm_write_zone(zone=%u, target_duty=%u)`",
+			zone, pwm_final_duty
+		);
+
+		ret = gpio_write_zone(
+			zone,
+			channel_enabled[zone_index]
+		);
+
+		if(ret == ESP_ERR_NOT_SUPPORTED)
+			ret = ESP_OK;
+
+		ESP_RETURN_ON_ERROR(
+			ret,
+
+			TAG,
+			"Error on `gpio_write_zone(zone=%u, level=%u)`",
+			zone, channel_enabled[zone_index]
+		);
+
+		// Log the event.
+		__log_event_button(
+			TAG,
+			zone,
+			channel_enabled[zone_index],
+			pwm_duty[zone_index],
+			device_id,
+			button_id,
+			button_state
+		);
+	}
+
+	#endif
+	return ESP_OK;
+}
+
+esp_err_t __handle_trimmer_change(bool *channel_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t trimmer_val){
+
+	ESP_RETURN_ON_FALSE(
+		channel_enabled != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `channel_enabled` is NULL"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		pwm_duty != NULL,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `pwm_duty` is NULL"
+	);
+
+	ESP_RETURN_ON_FALSE(
+		device_id < WALL_TERMINALS_COUNT,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `device_id` must be less than %u",
+		WALL_TERMINALS_COUNT
+	);
+
+	ESP_RETURN_ON_FALSE(
+		trimmer_val <= PWM_DUTY_MAX,
+
+		ESP_ERR_INVALID_ARG,
+		TAG,
+		"Error: `trimmer_val` must be between 0 and %u",
+		PWM_DUTY_MAX
+	);
+
+	#ifdef LOG_STUB
+	ESP_LOGW(TAG, "LOG_STUB");
+	ESP_LOGI(TAG, "Device ID: %02u", device_id);
+	ESP_LOGI(TAG, "Trimmer: %u", trimmer_val);
+	#else
+
+	// !!! VEDERE SE DEFERENZIARE CON `device_id` HA SENSO IN QUANTO DOVREBBE ESSERE CONSIDERATO `zone_id`
+	// !!! NEL CASO, CORREGGERE DOCUMENTAZIONE IN ZONE.H
+
+	// Do not enable the channel by rotating the trimmer.
+	if(!channel_enabled[device_id])
+		return ESP_OK;
+
+	// Get zone.
+	zone_t zone = ZONE_TRIMMERS[device_id];
+
+	// Trimmer not mapped.
+	if(zone == ZONE_UNMAPPED)
+		return ESP_OK;
+
+	// !!! VEDERE SE SPOSTARE SOTTO
+	// Gamma correction.
+	trimmer_val = __led_gamma_correction(trimmer_val);
+
+	// Update the corresponding PWM state.
+	channel_enabled[device_id] =
+		(trimmer_val > 0);
+
+	pwm_duty[device_id] =
+		(trimmer_val > 0 ? trimmer_val : PWM_DEFAULT_VALUE);
+
+	// Update PWM.
+	ESP_RETURN_ON_ERROR(
+		pwm_write_zone(
+			zone,
+			trimmer_val,
+			PWM_FADE_TIME_MS
+		),
+
+		TAG,
+		"Error on `pwm_write_zone(zone=%u, target_duty=%u)`",
+		zone, trimmer_val
+	);
+
+	// Log the event.
+	__log_event_trimmer(
+		TAG,
+		zone,
+		channel_enabled[device_id],
+		pwm_duty[device_id],
+		device_id,
+		trimmer_val
+	);
+
+	#endif
 	return ESP_OK;
 }
 
@@ -373,273 +584,90 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 	return ESP_OK;
 }
 
-esp_err_t __handle_trimmer_change(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t trimmer_val){
+esp_err_t __uart_driver_setup(){
 
-	ESP_RETURN_ON_FALSE(
-		pwm_enabled != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `pwm_enabled` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		pwm_duty != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `pwm_duty` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		device_id < WALL_TERMINALS_COUNT,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `device_id` must be less than %u",
-		WALL_TERMINALS_COUNT
-	);
-
-	ESP_RETURN_ON_FALSE(
-		trimmer_val <= PWM_DUTY_MAX,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `trimmer_val` must be between 0 and %u",
-		PWM_DUTY_MAX
-	);
-
-	#ifdef LOG_STUB
-	ESP_LOGW(TAG, "LOG_STUB");
-	ESP_LOGI(TAG, "Device ID: %02u", device_id);
-	ESP_LOGI(TAG, "Trimmer: %u", trimmer_val);
-	#else
-
-	// Mapping array.
-	rs485_keymap_t id_to_zone[] = RS485_KEYMAP_TRIMMER;
-
-	// Trimmer not mapped.
-	if(id_to_zone[device_id].raw == 0)
-		return ESP_OK;
-
-	// Gamma correction.
-	trimmer_val = __led_gamma_correction(trimmer_val);
-
-	uint8_t zones_arr[] = {
-		id_to_zone[device_id].zones.zone_1,
-		id_to_zone[device_id].zones.zone_2
+	uart_config_t uart_config = {
+		.baud_rate = CONFIG_RS485_UART_BAUD_RATE,
+		.data_bits = UART_DATA_8_BITS,
+		.parity = UART_PARITY_DISABLE,
+		.stop_bits = UART_STOP_BITS_1,
+		.flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+		.rx_flow_ctrl_thresh = 122,
+		.source_clk = UART_SCLK_DEFAULT,
 	};
 
-	for(uint8_t i=0; i<sizeof(zones_arr); i++){
+	ESP_RETURN_ON_ERROR(
+		uart_driver_install(
+			CONFIG_RS485_UART_PORT,
+			UART_RX_BUFFER_LEN_BYTES,
+			0,
+			0,
+			NULL,
+			0
+		),
 
-		// Do not enable the channel by rotating the trimmer.
-		if(!pwm_enabled[zones_arr[i]])
-			continue;
+		TAG,
+		"Error on `uart_driver_install()`"
+	);
 
-		// Update the corresponding PWM state.
-		pwm_enabled[zones_arr[i]] =
-			(trimmer_val > 0);
+	ESP_RETURN_ON_ERROR(
+		uart_param_config(
+			CONFIG_RS485_UART_PORT,
+			&uart_config
+		),
 
-		pwm_duty[zones_arr[i]] =
-			(trimmer_val > 0 ? trimmer_val : PWM_DEFAULT_VALUE);
+		TAG,
+		"Error on `uart_param_config()`"
+	);
 
-		// Update PWM.
-		ESP_RETURN_ON_ERROR(
-			pwm_write(
-				zones_arr[i],
-				trimmer_val,
-				PWM_FADE_TIME_MS
-			),
+	ESP_RETURN_ON_ERROR(
+		uart_set_pin(
+			CONFIG_RS485_UART_PORT,
+			CONFIG_GPIO_UART_TX,
+			CONFIG_GPIO_UART_RX,
+			CONFIG_GPIO_UART_DE_RE,
+			UART_PIN_NO_CHANGE
+		),
 
-			TAG,
-			"Error on `pwm_write(zone=%u, target_duty=%u)`",
-			zones_arr[i], trimmer_val
-		);
+		TAG,
+		"Error on `uart_set_pin()`"
+	);
 
-		// Log the event.
-		__log_event_trimmer(
-			TAG,
-			zones_arr[i],
-			pwm_enabled[zones_arr[i]],
-			pwm_duty[zones_arr[i]],
-			device_id,
-			trimmer_val
-		);
-	}
+	ESP_RETURN_ON_ERROR(
+		uart_set_mode(
+			CONFIG_RS485_UART_PORT,
+			UART_MODE_RS485_HALF_DUPLEX
+		),
 
-	#endif
+		TAG,
+		"Error on `uart_set_mode()`"
+	);
+
 	return ESP_OK;
 }
 
-esp_err_t __handle_button_press(bool *pwm_enabled, uint16_t *pwm_duty, uint8_t device_id, uint16_t button_states){
+esp_err_t __rs485_task_setup(){
 
-	ESP_RETURN_ON_FALSE(
-		pwm_enabled != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `pwm_enabled` is NULL"
+	BaseType_t ret_val = xTaskCreatePinnedToCore(
+		__rs485_task,
+		LOG_TAG"_task",
+		CONFIG_RS485_TASK_STACK_SIZE_BYTES,
+		NULL,
+		CONFIG_RS485_TASK_PRIORITY,
+		&__rs485_task_handle,
+		CONFIG_RS485_TASK_CORE_AFFINITY
 	);
 
 	ESP_RETURN_ON_FALSE(
-		pwm_duty != NULL,
+		ret_val == pdPASS,
 
-		ESP_ERR_INVALID_ARG,
+		ESP_ERR_INVALID_STATE,
 		TAG,
-		"Error: `pwm_duty` is NULL"
+		"Error %d: unable to spawn \""LOG_TAG"_task\"",
+		ret_val
 	);
 
-	ESP_RETURN_ON_FALSE(
-		device_id < WALL_TERMINALS_COUNT,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `device_id` must be less than %u",
-		WALL_TERMINALS_COUNT
-	);
-
-	ESP_RETURN_ON_FALSE(
-		button_states != 0,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `button_states` is 0"
-	);
-
-	ul_bs_set_button_states(button_states);
-
-	#ifdef LOG_STUB
-	ESP_LOGW(TAG, "LOG_STUB");
-	ESP_LOGI(TAG, "Device ID: %02u", device_id);
-	for(
-		uint8_t button = UL_BS_BUTTON_1;
-		button <= BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL;
-		button++
-	)
-		ESP_LOGI(
-			TAG,
-			"Button %u: %u",
-			button,
-			ul_bs_get_button_state(button)
-		);
-
-	#else
-
-	// Auxiliary variables.
-	rs485_keymap_t zones;
-	ul_bs_button_state_t button_state;
-
-	// For each button, check if it was pressed.
-	for(
-		uint8_t button_id = UL_BS_BUTTON_1;
-		button_id <= BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL;
-		button_id++
-	){
-		button_state = ul_bs_get_button_state(button_id);
-
-		// Idle state is not used.
-		if(button_state == UL_BS_BUTTON_STATE_IDLE)
-			continue;
-
-		zones = __id_button_and_state_to_zones(device_id, button_id, button_state);
-
-		// If the current configuration is not mapped.
-		if(zones.raw == 0)
-			continue;
-
-		uint8_t zones_arr[] = {
-			zones.zones.zone_1,
-			zones.zones.zone_2
-		};
-
-		bool one_zone_enabled = false;
-		for(uint8_t i=0; i<sizeof(zones_arr); i++)
-			if(
-				zones_arr[i] > 0 &&
-				!pwm_enabled[zones_arr[i]]
-			){
-
-				// If at least one zone is enabled, enable every selected zone.
-				one_zone_enabled = true;
-				break;
-			}
-
-		uint16_t pwm_final_duty;
-		for(uint8_t i=0; i<sizeof(zones_arr); i++)
-			if(zones_arr[i] > 0){
-
-				// Turn ON/OFF PWM.
-				pwm_enabled[zones_arr[i]] = (
-					one_zone_enabled ?
-					true :
-					!pwm_enabled[zones_arr[i]]
-				);
-
-				pwm_final_duty = (
-					pwm_enabled[zones_arr[i]] ?
-					pwm_duty[zones_arr[i]] :
-					0
-				);
-
-				// Update PWM.
-				ESP_RETURN_ON_ERROR(
-					pwm_write(
-						zones_arr[i],
-						pwm_final_duty,
-						PWM_FADE_TIME_MS
-					),
-
-					TAG,
-					"Error on `pwm_write(zone=%u, target_duty=%u)`",
-					zones_arr[i], pwm_final_duty
-				);
-
-				// Log the event.
-				__log_event_button(
-					TAG,
-					zones_arr[i],
-					pwm_enabled[zones_arr[i]],
-					pwm_duty[zones_arr[i]],
-					device_id,
-					button_id,
-					button_state
-				);
-			}
-	}
-
-	#endif
 	return ESP_OK;
-}
-
-rs485_keymap_t __id_button_and_state_to_zones(uint8_t device_id, ul_bs_button_id_t button_id, ul_bs_button_state_t button_state){
-
-	// Index error.
-	if(
-		device_id >= WALL_TERMINALS_COUNT ||
-
-		!ul_utils_between(
-			button_id,
-			UL_BS_BUTTON_1,
-			BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL
-		) ||
-
-		!ul_utils_between(
-			button_state,
-			UL_BS_BUTTON_STATE_PRESSED,
-			UL_BS_BUTTON_STATE_HELD
-		)
-	)
-		return (rs485_keymap_t){
-			.raw = 0
-		};
-
-	// Mapping cube matrix (idle state is not used on the last index).
-	rs485_keymap_t id_button_and_state_to_zones
-		[WALL_TERMINALS_COUNT]
-		[BUTTONS_MAX_NUMBER_PER_WALL_TERMINAL]
-		[UL_BS_BUTTON_STATE_MAX - 1] = RS485_KEYMAP_BUTTON;
-
-	return id_button_and_state_to_zones[device_id][button_id-1][button_state-1];
 }
 
 void __rs485_task(void *parameters){
@@ -656,17 +684,13 @@ void __rs485_task(void *parameters){
 	uint16_t trimmer_val, button_states;
 
 	// PWM values for each PWM index.
-	uint16_t pwm_duty[PWM_ZONES];
-	bool pwm_enabled[PWM_ZONES] = {0};
+	uint16_t pwm_duty[ZONE_PWM_LEN];
+	bool channel_enabled[ZONE_PWM_LEN] = {0};
 
 	/* Code */
 
 	// `pwm_duty[]` initialization.
-	for(
-		uint8_t i = 0;
-		i < sizeof(pwm_duty) / sizeof(uint16_t);
-		i++
-	)
+	for(uint8_t i=0; i < ZONE_PWM_LEN; i++)
 		pwm_duty[i] = PWM_DEFAULT_VALUE;
 
 	ESP_ERROR_CHECK_WITHOUT_ABORT(uart_flush(CONFIG_RS485_UART_PORT));
@@ -707,7 +731,7 @@ void __rs485_task(void *parameters){
 		// Button pressed.
 		if(button_states != 0)
 			ESP_GOTO_ON_ERROR(
-				__handle_button_press(pwm_enabled, pwm_duty, device_id, button_states),
+				__handle_button_press(channel_enabled, pwm_duty, device_id, button_states),
 
 				task_error,
 				TAG,
@@ -718,7 +742,7 @@ void __rs485_task(void *parameters){
 		// Trimmer rotated.
 		else
 			ESP_GOTO_ON_ERROR(
-				__handle_trimmer_change(pwm_enabled, pwm_duty, device_id, trimmer_val),
+				__handle_trimmer_change(channel_enabled, pwm_duty, device_id, trimmer_val),
 
 				task_error,
 				TAG,

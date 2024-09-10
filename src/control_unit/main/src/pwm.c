@@ -23,22 +23,6 @@
 // `__pwm_queue` max length in number of elements.
 #define PWM_QUEUE_BUFFER_LEN_ELEMENTS		10
 
-#define PWM_CH_TO_GPIO_INIT	{ \
-	CONFIG_GPIO_FAN, \
-	CONFIG_GPIO_LED_1, \
-	CONFIG_GPIO_LED_2, \
-	CONFIG_GPIO_LED_3, \
-	CONFIG_GPIO_LED_4, \
-	CONFIG_GPIO_LED_5, \
-	CONFIG_GPIO_LED_6, \
-	CONFIG_GPIO_LED_7, \
-	CONFIG_GPIO_LED_8, \
-	CONFIG_GPIO_LED_9, \
-	CONFIG_GPIO_LED_10, \
-	CONFIG_GPIO_LED_11, \
-	CONFIG_GPIO_LED_12 \
-}
-
 /**
  * @brief Statement to check if the library was initialized.
  */
@@ -46,27 +30,23 @@
 	__pwm_task_handle != NULL \
 )
 
-/**
- * @return `ledc_mode_t` given the zone.
- * @note 0: Fan controller, 1-12: LEDs.
- */
-#define __pwm_get_port(zone)( \
-	zone < LEDC_CHANNEL_MAX ? \
-	LEDC_HIGH_SPEED_MODE : \
-	LEDC_LOW_SPEED_MODE \
-)
-
-/**
- * @return `ledc_channel_t` given the zone.
- * @note 0: Fan controller, 1-12: LEDs.
- */
-#define __pwm_get_channel(zone)( \
-	(ledc_channel_t) (zone % LEDC_CHANNEL_MAX) \
-)
-
 /************************************************************************************************************
 * Private Types Definitions
  ************************************************************************************************************/
+
+typedef struct __attribute__((__packed__)) {
+
+	// PWM output.
+	uint8_t pwm_port: 1;
+	uint8_t pwm_channel: 3;
+
+	// Up to `PWM_DUTY_MAX`.
+	uint16_t target_duty: PWM_BIT_RES;
+
+	// Up to 16383ms.
+	uint16_t fade_time_ms: 14;
+
+} pwm_data_t;
 
 /************************************************************************************************************
 * Private Variables
@@ -81,6 +61,13 @@ static QueueHandle_t __pwm_queue;
 * Private Functions Prototypes
  ************************************************************************************************************/
 
+/**
+ * @param pwm_port Optional, can be `NULL`.
+ * @param pwm_channel Optional, can be `NULL`.
+ * @param pwm_gpio Optional, can be `NULL`.
+ */
+static bool __zone_to_pwm_out(zone_t zone, uint8_t *pwm_port, uint8_t *pwm_channel, uint8_t *pwm_gpio);
+
 static esp_err_t __ledc_driver_setup();
 static esp_err_t __pwm_task_setup();
 
@@ -90,16 +77,61 @@ static void __pwm_task(void *parameters);
 * Private Functions Definitions
  ************************************************************************************************************/
 
+bool __zone_to_pwm_out(zone_t zone, uint8_t *pwm_port, uint8_t *pwm_channel, uint8_t *pwm_gpio){
+
+	uint8_t pwm_ports[] = ZONE_PWM_PORTS;
+	uint8_t pwm_channels[] = ZONE_PWM_CHANNELS;
+	uint8_t pwm_gpios[] = ZONE_PWM_GPIO;
+
+	zone_t pwm_zones[] = ZONE_PWM_ZONES;
+	uint8_t i = 0;
+
+	while(i < ZONE_PWM_LEN){
+		if(pwm_zones[i] == zone)
+			break;
+
+		i++;
+	}
+
+	if(pwm_zones[i] == zone){
+		if(pwm_port != NULL)
+			*pwm_port = pwm_ports[i];
+
+		if(pwm_channel != NULL)
+			*pwm_channel = pwm_channels[i];
+
+		if(pwm_gpio != NULL)
+			*pwm_gpio = pwm_gpios[i];
+
+		return true;
+	}
+
+	return false;
+}
+
 esp_err_t __ledc_driver_setup(){
 
 	/* LEDC base config */
 
 	ledc_timer_config_t ledc_tim_config = {
 		.freq_hz = CONFIG_PWM_FREQUENCY_HZ,
-		.duty_resolution = (ledc_timer_bit_t) PWM_BIT_RES,
+		.duty_resolution = PWM_BIT_RES,
 		.timer_num = LEDC_TIMER_1,
 		.clk_cfg = LEDC_AUTO_CLK
 	};
+
+	// Timer setup for both ports.
+	for(uint8_t i=0; i<LEDC_SPEED_MODE_MAX; i++){
+		ledc_tim_config.speed_mode = i;
+
+		ESP_RETURN_ON_ERROR(
+			ledc_timer_config(&ledc_tim_config),
+
+			TAG,
+			"Error on `ledc_timer_config(speed_mode=%u)`",
+			i
+		);
+	}
 
 	/**
 	 * LEDC hardware:
@@ -115,37 +147,33 @@ esp_err_t __ledc_driver_setup(){
 		.flags.output_invert = false
 	};
 
-	// Timer setup for both ports.
-	for(uint8_t i=0; i<LEDC_SPEED_MODE_MAX; i++){
-		ledc_tim_config.speed_mode = i;
-
-		ESP_RETURN_ON_ERROR(
-			ledc_timer_config(&ledc_tim_config),
-			TAG,
-			"Error on `ledc_timer_config(speed_mode=%u)`",
-			i
-		);
-	}
-
-	uint8_t pwm_ch_to_gpio[] = PWM_CH_TO_GPIO_INIT;
+	uint8_t pwm_ports[] = ZONE_PWM_PORTS;
+	uint8_t pwm_channels[] = ZONE_PWM_CHANNELS;
+	uint8_t pwm_gpios[] = ZONE_PWM_GPIO;
 
 	// Channel setup for both ports.
-	for(uint8_t i=0; i<sizeof(pwm_ch_to_gpio); i++){
-		ledc_ch_config.gpio_num = pwm_ch_to_gpio[i];
-		ledc_ch_config.speed_mode = __pwm_get_port(i);
-		ledc_ch_config.channel = __pwm_get_channel(i);
+	for(uint8_t i=0; i<ZONE_PWM_LEN; i++){
+		ledc_ch_config.speed_mode = pwm_ports[i];
+		ledc_ch_config.channel = pwm_channels[i];
+		ledc_ch_config.gpio_num = pwm_gpios[i];
 
 		ESP_RETURN_ON_ERROR(
 			ledc_channel_config(&ledc_ch_config),
+
 			TAG,
-			"Error on `ledc_channel_config(gpio_num=%u, speed_mode=%u, channel=%u)`",
-			pwm_ch_to_gpio[i], __pwm_get_port(i), __pwm_get_channel(i)
+			"Error on `ledc_channel_config(pwm_gpio=%u, speed_mode=%u, channel=%u)`",
+			ledc_ch_config.gpio_num, ledc_ch_config.speed_mode, ledc_ch_config.channel
 		);
 	}
 
 	/* LEDC fade config */
 
-	ledc_fade_func_install(0);
+	ESP_RETURN_ON_ERROR(
+		ledc_fade_func_install(0),
+
+		TAG,
+		"Error on `ledc_fade_func_install()`"
+	);
 
 	return ESP_OK;
 }
@@ -162,7 +190,7 @@ esp_err_t __pwm_task_setup(){
 
 		ESP_ERR_NO_MEM,
 		TAG,
-		"Error: unable to allocate \"__pwm_queue\""
+		"Error: unable to allocate `__pwm_queue`"
 	);
 
 	BaseType_t ret_val = xTaskCreatePinnedToCore(
@@ -222,8 +250,8 @@ void __pwm_task(void *parameters){
 		// Set PWM parameters.
 		ESP_GOTO_ON_ERROR(
 			ledc_set_fade_with_time(
-				__pwm_get_port(pwm_data.zone),
-				__pwm_get_channel(pwm_data.zone),
+				pwm_data.pwm_port,
+				pwm_data.pwm_channel,
 				pwm_data.target_duty,
 				pwm_data.fade_time_ms
 			),
@@ -231,21 +259,21 @@ void __pwm_task(void *parameters){
 			task_continue,
 			TAG,
 			"Error on `ledc_set_fade_with_time(speed_mode=%u, channel=%u, target_duty=%u, max_fade_time_ms=%u)`",
-			__pwm_get_port(pwm_data.zone), __pwm_get_channel(pwm_data.zone), pwm_data.target_duty, pwm_data.fade_time_ms
+			pwm_data.pwm_port, pwm_data.pwm_channel, pwm_data.target_duty, pwm_data.fade_time_ms
 		);
 
 		// Fade start.
 		ESP_GOTO_ON_ERROR(
 			ledc_fade_start(
-				__pwm_get_port(pwm_data.zone),
-				__pwm_get_channel(pwm_data.zone),
+				pwm_data.pwm_port,
+				pwm_data.pwm_channel,
 				LEDC_FADE_NO_WAIT
 			),
 
 			task_continue,
 			TAG,
 			"Error on `ledc_fade_start(speed_mode=%u, channel=%u)`",
-			__pwm_get_port(pwm_data.zone), __pwm_get_channel(pwm_data.zone)
+			pwm_data.pwm_port, pwm_data.pwm_channel
 		);
 
 		#endif
@@ -287,20 +315,15 @@ esp_err_t pwm_write_zone(uint8_t zone, uint16_t target_duty, uint16_t fade_time_
 		"Error: library not initialized"
 	);
 
-	ESP_RETURN_ON_FALSE(
-		zone < PWM_ZONES,
+	uint8_t pwm_port, pwm_channel;
 
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `zone` must be between 0 and %u",
-		PWM_ZONES - 1
-	);
-
-	if(target_duty > PWM_DUTY_MAX)
-		target_duty = PWM_DUTY_MAX;
+	// The zone is is not a PWM zone.
+	if(!__zone_to_pwm_out(zone, &pwm_port, &pwm_channel, NULL))
+		return ESP_ERR_NOT_SUPPORTED;
 
 	pwm_data_t pwm_data = {
-		.zone = zone,
+		.pwm_port = pwm_port,
+		.pwm_channel = pwm_channel,
 		.target_duty = target_duty,
 		.fade_time_ms = fade_time_ms
 	};
