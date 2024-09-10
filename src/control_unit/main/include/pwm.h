@@ -84,6 +84,6 @@ extern esp_err_t pwm_setup();
  * @param zone 0: Fan controller, 1-12: LEDs.
  * @param target_duty 10-bit target duty (from 0 to (2^`CONFIG_LEDC_PWM_BIT_RES`) - 1 ).
  */
-extern esp_err_t pwm_write(uint8_t zone, uint16_t target_duty, uint16_t fade_time_ms);
+extern esp_err_t pwm_write_zone(uint8_t zone, uint16_t target_duty, uint16_t fade_time_ms);
 
 #endif  /* INC_PWM_H_ */

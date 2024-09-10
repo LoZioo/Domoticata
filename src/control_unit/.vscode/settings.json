@@ -93,6 +93,7 @@
 		"esp_flash_partitions.h": "c",
 		"esp_littlefs.h": "c",
 		"esp_partition.h": "c",
-		"esp_ota_ops.h": "c"
+		"esp_ota_ops.h": "c",
+		"webserver.h": "c"
 	}
 }

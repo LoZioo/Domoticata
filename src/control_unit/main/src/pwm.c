@@ -205,7 +205,7 @@ void __pwm_task(void *parameters){
 	for(;;){
 		ret = ESP_OK;
 
-		// Waiting for `pwm_write()` requests.
+		// Waiting for `pwm_write_zone()` requests.
 		if(xQueueReceive(__pwm_queue, &pwm_data, portMAX_DELAY) == pdFALSE)
 			continue;
 
@@ -277,7 +277,7 @@ esp_err_t pwm_setup(){
 	return ESP_OK;
 }
 
-esp_err_t pwm_write(uint8_t zone, uint16_t target_duty, uint16_t fade_time_ms){
+esp_err_t pwm_write_zone(uint8_t zone, uint16_t target_duty, uint16_t fade_time_ms){
 
 	ESP_RETURN_ON_FALSE(
 		__is_initialized(),
