@@ -516,15 +516,22 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 	if(read_bytes == 0)
 		return ESP_OK;
 
+	// Invalid response.
+	ESP_RETURN_ON_FALSE(
+		ul_ms_is_slave_byte(tmp),
+
+		ESP_ERR_INVALID_RESPONSE,
+		TAG,
+		"Error: slave device %02u did not answer with a slave byte (0x%02x)",
+		poll_device_id, tmp
+	);
+
 	// Decode the device ID.
 	uint8_t read_device_id = ul_ms_decode_slave_byte(tmp);
 
 	// Invalid response.
 	ESP_RETURN_ON_FALSE(
-		(
-			ul_ms_is_slave_byte(tmp) &&
-			read_device_id == poll_device_id
-		),
+		read_device_id == poll_device_id,
 
 		ESP_ERR_INVALID_RESPONSE,
 		TAG,
