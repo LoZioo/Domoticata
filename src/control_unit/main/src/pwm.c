@@ -21,7 +21,7 @@
 // #define LOG_STUB
 
 // `__pwm_queue` max length in number of elements.
-#define PWM_QUEUE_BUFFER_LEN_ELEMENTS		10
+#define PWM_QUEUE_BUFFER_LEN_ELEMENTS		20
 
 /**
  * @brief Statement to check if the library was initialized.
@@ -43,8 +43,8 @@ typedef struct __attribute__((__packed__)) {
 	// Up to `PWM_DUTY_MAX`.
 	uint16_t target_duty: PWM_BIT_RES;
 
-	// Up to 16383ms.
-	uint16_t fade_time_ms: 14;
+	// Up to 262144ms.
+	uint32_t fade_time_ms: 18;
 
 } pwm_data_t;
 

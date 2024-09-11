@@ -66,7 +66,7 @@ extern esp_err_t pwm_setup();
 /**
  * @brief Write the PWM duty target to the mapped zone.
  * @param target_duty Target duty from 0 to ((2^`PWM_BIT_RES`) - 1).
- * @param fade_time_ms Fade time up to 16383ms.
+ * @param fade_time_ms Fade time up to 262144ms.
  */
 extern esp_err_t pwm_write_zone(uint8_t zone, uint16_t target_duty, uint16_t fade_time_ms);
 
