@@ -224,22 +224,20 @@ typedef enum __attribute__((__packed__)) {
 }
 
 // f: (device_id) -> (zone)
-#define ZONE_TRIMMERS	( \
-	(uint8_t[]) { \
-		ZONE_LED_4, \
-		ZONE_LED_2, \
-		ZONE_UNMAPPED, \
-		ZONE_UNMAPPED, \
-		ZONE_LED_10, \
-		ZONE_LED_6, \
-		ZONE_UNMAPPED, \
-		ZONE_LED_5, \
-		ZONE_UNMAPPED, \
-		ZONE_LED_6, \
-		ZONE_UNMAPPED, \
-		ZONE_LED_1, \
-		ZONE_LED_6 \
-	} \
-)
+#define ZONE_TRIMMERS	{ \
+	ZONE_LED_4, \
+	ZONE_LED_2, \
+	ZONE_UNMAPPED, \
+	ZONE_UNMAPPED, \
+	ZONE_LED_10, \
+	ZONE_LED_6, \
+	ZONE_UNMAPPED, \
+	ZONE_LED_5, \
+	ZONE_UNMAPPED, \
+	ZONE_LED_6, \
+	ZONE_UNMAPPED, \
+	ZONE_LED_1, \
+	ZONE_LED_6 \
+}
 
 #endif  /* INC_ZONE_H_ */
