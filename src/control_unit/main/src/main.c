@@ -89,29 +89,29 @@ void app_main(){
 
 	ESP_LOGI(TAG, "Started");
 
-	// ESP_LOGI(TAG, "gpio_setup()");
-	// ESP_ERROR_CHECK(gpio_setup());
+	ESP_LOGI(TAG, "gpio_setup()");
+	ESP_ERROR_CHECK(gpio_setup());
 
-	// ESP_LOGI(TAG, "pwm_setup()");
-	// ESP_ERROR_CHECK(pwm_setup());
+	ESP_LOGI(TAG, "pwm_setup()");
+	ESP_ERROR_CHECK(pwm_setup());
 
 	// ESP_LOGI(TAG, "rs485_setup()");
 	// ESP_ERROR_CHECK(rs485_setup());
 
-	ESP_LOGI(TAG, "nvs_setup()");
-	ESP_ERROR_CHECK(nvs_setup());
+	// ESP_LOGI(TAG, "nvs_setup()");
+	// ESP_ERROR_CHECK(nvs_setup());
 
-	ESP_LOGI(TAG, "wifi_setup()");
-	ESP_ERROR_CHECK(wifi_setup());
+	// ESP_LOGI(TAG, "wifi_setup()");
+	// ESP_ERROR_CHECK(wifi_setup());
 
-	ESP_LOGI(TAG, "fs_setup()");
-	ESP_ERROR_CHECK(fs_setup());
+	// ESP_LOGI(TAG, "fs_setup()");
+	// ESP_ERROR_CHECK(fs_setup());
 
 	// ESP_LOGI(TAG, "pm_setup()");
 	// ESP_ERROR_CHECK(pm_setup());
 
-	ESP_LOGI(TAG, "webserver_setup()");
-	ESP_ERROR_CHECK(webserver_setup());
+	// ESP_LOGI(TAG, "webserver_setup()");
+	// ESP_ERROR_CHECK(webserver_setup());
 
 	/* USER CODE END SysInit */
 
@@ -120,6 +120,51 @@ void app_main(){
 	/* USER CODE END Init */
 
 	/* USER CODE BEGIN 1 */
+
+	bool state = false;
+	uint16_t pwm;
+
+	for(;;){
+
+		state = !state;
+		pwm = state ? 1023 : 0;
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write_zone(1, pwm, 500));
+		delay(500);
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write_zone(2, pwm, 500));
+		delay(500);
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write_zone(3, pwm, 500));
+		delay(500);
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write_zone(4, pwm, 500));
+		delay(500);
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write_zone(5, pwm, 500));
+		delay(500);
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write_zone(6, pwm, 500));
+		delay(500);
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_write_zone(7, state));
+		delay(500);
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_write_zone(8, state));
+		delay(500);
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write_zone(9, pwm, 500));
+		delay(500);
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write_zone(10, pwm, 500));
+		delay(500);
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write_zone(11, pwm, 500));
+		delay(500);
+
+		ESP_ERROR_CHECK_WITHOUT_ABORT(pwm_write_zone(12, pwm, 500));
+		delay(500);
+	}
 
 	ESP_LOGI(TAG, "Completed");
 	return;
