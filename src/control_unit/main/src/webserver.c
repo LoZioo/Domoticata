@@ -19,6 +19,9 @@
 
 #define LOG_TAG	"webserver"
 
+#define WEBSERVER_ROOT_FOLDER				FS_LITTLEFS_BASE_PATH "/www"
+#define WEBSERVER_ROOT_FOLDER_LEN		(sizeof(WEBSERVER_ROOT_FOLDER) - 1)
+
 // `__send_file()` `line_buffer` size.
 #define LINE_BUFFER_SIZE	1024
 
@@ -52,6 +55,9 @@ static void __log_http_request(httpd_req_t *req);
 static void __handle_send_file_error(httpd_req_t *req, esp_err_t ret);
 static esp_err_t __send_file(httpd_req_t *req, const char *path);
 
+static esp_err_t __list_webserver_files_rec(char *full_path, struct stat *path_stat);
+static esp_err_t __list_webserver_files();
+
 static esp_err_t __route_root(httpd_req_t *req);
 
 /************************************************************************************************************
@@ -81,8 +87,13 @@ void __handle_send_file_error(httpd_req_t *req, esp_err_t ret){
 
 esp_err_t __send_file(httpd_req_t *req, const char *path){
 
-	char full_path[FS_LITTLEFS_BASE_PATH_LEN + strlen(path) + 1];
-	sprintf(full_path, FS_LITTLEFS_BASE_PATH "%s", path);
+	char full_path[WEBSERVER_ROOT_FOLDER_LEN + strlen(path) + 1];
+	snprintf(
+		full_path,
+		sizeof(full_path),
+		WEBSERVER_ROOT_FOLDER "%s",
+		path
+	);
 
 	FILE *file = fopen(full_path, "r");
 	ESP_RETURN_ON_FALSE(
@@ -90,8 +101,8 @@ esp_err_t __send_file(httpd_req_t *req, const char *path){
 
 		ESP_ERR_NOT_FOUND,
 		TAG,
-		"Error on `fopen(filename=\"%s\")`",
-		full_path
+		"Error on `fopen(filename=\"%s\")` (errno=%d)",
+		full_path, errno
 	);
 
 	char line_buffer[LINE_BUFFER_SIZE];
@@ -120,6 +131,64 @@ esp_err_t __send_file(httpd_req_t *req, const char *path){
 
 	fclose(file);
 	return ESP_OK;
+}
+
+esp_err_t __list_webserver_files_rec(char *full_path, struct stat *path_stat){
+
+	DIR *dir = opendir(full_path);
+	ESP_RETURN_ON_FALSE(
+		dir != NULL,
+
+		ESP_ERR_NOT_FOUND,
+		TAG,
+		"Error on `opendir(name=\"%s\")` (errno=%d)",
+		full_path, errno
+	);
+
+	struct dirent *entry;
+	while((entry = readdir(dir)) != NULL){
+		if(ul_utils_either(
+			strcmp(entry->d_name, "."),
+			strcmp(entry->d_name, ".."),
+			==, 0
+		))
+			continue;
+
+		snprintf(
+			full_path,
+			PATH_MAX,
+			"%s/%s",
+			WEBSERVER_ROOT_FOLDER,
+			entry->d_name
+		);
+
+		// Check if it is a file or a directory.
+		ESP_RETURN_ON_FALSE(
+			stat(full_path, path_stat) >= 0,
+
+			ESP_FAIL,
+			TAG,
+			"Error on `stat(pathname=\"%s\")` (errno=%d)",
+			full_path, errno
+		);
+
+		if(S_ISREG(path_stat->st_mode))
+			ESP_LOGW(TAG, "%s\n", full_path);
+
+		else if(S_ISDIR(path_stat->st_mode))
+			return __list_webserver_files_rec(full_path, path_stat);
+	}
+
+	closedir(dir);
+	return ESP_OK;
+}
+
+esp_err_t __list_webserver_files(){
+
+	char full_path[PATH_MAX] = WEBSERVER_ROOT_FOLDER;
+	struct stat path_stat;
+
+	return __list_webserver_files_rec(full_path, &path_stat);
 }
 
 esp_err_t __route_root(httpd_req_t *req){
@@ -201,5 +270,6 @@ esp_err_t webserver_setup(){
 			i
 		);
 
+	ESP_ERROR_CHECK(__list_webserver_files());
 	return ESP_OK;
 }
