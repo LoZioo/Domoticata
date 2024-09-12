@@ -95,6 +95,8 @@
 		"esp_partition.h": "c",
 		"esp_ota_ops.h": "c",
 		"webserver.h": "c",
-		"zone.h": "c"
+		"zone.h": "c",
+		"ota.h": "c",
+		"pm.h": "c"
 	}
 }

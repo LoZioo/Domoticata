@@ -47,7 +47,7 @@ typedef enum __attribute__((__packed__)) {
 	ZONE_RELAY_4,
 
 	ZONE_FAN_CONTROLLER,
-	ZONE_BUZZER,
+	ZONE_ALARM,
 
 	ZONE_MAX
 } zone_t;
@@ -73,7 +73,7 @@ typedef enum __attribute__((__packed__)) {
 	ZONE_RELAY_2, \
 	ZONE_RELAY_3, \
 	ZONE_RELAY_4, \
-	ZONE_BUZZER \
+	ZONE_ALARM \
 }
 
 // Corresponding GPIO map for `ZONE_DIGITAL_ZONES`.
