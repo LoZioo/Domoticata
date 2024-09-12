@@ -165,7 +165,7 @@ ul_err_t ul_utils_buf_to_str(uint8_t *buf, uint32_t size, char *str, uint8_t bas
 	UL_RETURN_ON_FALSE(!ul_utils_in(base, 3, 2, 10, 16), UL_ERR_INVALID_ARG, "Error: `base` can be only {2, 10, 16}");
 
 	strcpy(str, "[");
-	char tmp[10];
+	char tmp[12];
 
 	for(uint32_t i=0; i<size; i++){
 		switch(base){
@@ -177,11 +177,11 @@ ul_err_t ul_utils_buf_to_str(uint8_t *buf, uint32_t size, char *str, uint8_t bas
 				break;
 
 			case 10:
-				sprintf(tmp, "%u", buf[i]);
+				snprintf(tmp, sizeof(tmp), "%u", buf[i]);
 				break;
 
 			case 16:
-				sprintf(tmp, "%02X", buf[i]);
+				snprintf(tmp, sizeof(tmp), "%02X", buf[i]);
 				break;
 
 			default:

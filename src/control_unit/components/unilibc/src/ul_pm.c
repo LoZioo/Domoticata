@@ -167,10 +167,10 @@ ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handler){
 	*returned_handler = self;
 	return ret;
 
-label_free:
+	label_free:
 	free(self);
 
-label_error:
+	label_error:
 	return ret;
 }
 
