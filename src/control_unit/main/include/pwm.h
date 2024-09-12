@@ -46,6 +46,12 @@
 // PWM max duty.
 #define PWM_DUTY_MAX	((1 << PWM_BIT_RES) - 1)
 
+/**
+ * @brief Set fan controller to the specified duty.
+ */
+#define pwm_set_fan(duty) \
+	pwm_write_zone(ZONE_FAN_CONTROLLER, duty, 500)
+
 /************************************************************************************************************
 * Public Types Definitions
 ************************************************************************************************************/

@@ -46,6 +46,8 @@
 // !!! SISTEMARE IL REBOOT IN CASO DI CRASH NEL MENUCONFIG SOTTO IL MENU Trace memory
 // !!! RIPROGRAMMARE INTERRUTTORI SCALA E BAGNO TOGLIENDO DIMMER
 
+// !!! OTTIMIZZARE CODICE ZONE.H
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
