@@ -37,6 +37,7 @@
 // Project libraries.
 #include <main.h>
 #include <wifi.h>
+#include <fs.h>
 
 /************************************************************************************************************
 * Public Defines
