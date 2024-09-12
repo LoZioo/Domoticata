@@ -51,13 +51,8 @@
 ************************************************************************************************************/
 
 // Filesystem base path.
-#define FS_LITTLEFS_BASE_PATH		"/littlefs"
-
-/**
- * @brief `FS_LITTLEFS_BASE_PATH` + `path`
- */
-#define fs_full_path(path) \
-	FS_LITTLEFS_BASE_PATH path
+#define FS_LITTLEFS_BASE_PATH				"/littlefs"
+#define FS_LITTLEFS_BASE_PATH_LEN		(sizeof(FS_LITTLEFS_BASE_PATH) - 1)
 
 /************************************************************************************************************
 * Public Types Definitions
