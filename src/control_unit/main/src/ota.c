@@ -19,14 +19,14 @@
 
 #define LOG_TAG	"ota"
 
-#define STRINGIFY(x)	#x
-#define TOSTRING(x)		STRINGIFY(x)
+#define __stringify(x)	#x
+#define __to_string(x)	__stringify(x)
 
 #define UPDATE_URL	\
 	"http://" \
 	CONFIG_OTA_HTTP_SERVER_IP_ADDR \
 	":" \
-	TOSTRING(CONFIG_OTA_HTTP_SERVER_PORT) \
+	__to_string(CONFIG_OTA_HTTP_SERVER_PORT) \
 	CONFIG_OTA_HTTP_BINARY_FILE_PATH \
 	"/"
 
