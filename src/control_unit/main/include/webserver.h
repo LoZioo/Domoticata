@@ -30,8 +30,13 @@
 
 #include <esp_http_server.h>
 
+// UniLibC libraries.
+#include <ul_errors.h>
+#include <ul_utils.h>
+
 // Project libraries.
 #include <main.h>
+#include <wifi.h>
 
 /************************************************************************************************************
 * Public Defines
