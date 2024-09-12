@@ -125,6 +125,43 @@ menu "Project configurations"
 
 	endmenu
 
+	menu "Webserver"
+		config WEBSERVER_TASK_STACK_SIZE_BYTES
+			int "Task stack max size (bytes)"
+			range 2048 8192
+			default 4096
+
+		config WEBSERVER_TASK_PRIORITY
+			int "Task priority"
+			range 0 24
+			default 0
+			help
+				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority)
+
+		choice WEBSERVER_TASK_CORE_AFFINITY
+			prompt "Task core affinity"
+			default WEBSERVER_TASK_CORE_AFFINITY_APPLICATION
+
+			config WEBSERVER_TASK_CORE_AFFINITY_PROTOCOL
+				bool "Protocol core (0)"
+
+			config WEBSERVER_TASK_CORE_AFFINITY_APPLICATION
+				bool "Application core (1)"
+
+		endchoice
+
+		config WEBSERVER_TASK_CORE_AFFINITY
+			int
+			default 0 if WEBSERVER_TASK_CORE_AFFINITY_PROTOCOL
+			default 1 if WEBSERVER_TASK_CORE_AFFINITY_APPLICATION
+
+		config WEBSERVER_LISTEN_PORT
+			int "Webserver listen port"
+			range 0 65535
+			default 80
+
+	endmenu
+
 	menu "OTA update"
 		config OTA_HTTP_SERVER_IP_ADDR
 			string "HTTP server IP address"
