@@ -64,7 +64,6 @@
 #elif CONFIG_RS485_DEVICE_ID == 6
 	#define CONFIG_HW_BTN_1
 	#define CONFIG_HW_BTN_2
-	#define CONFIG_HW_TRIMMER
 #elif CONFIG_RS485_DEVICE_ID == 7
 	#define CONFIG_HW_BTN_1
 	#define CONFIG_HW_BTN_2
@@ -72,7 +71,6 @@
 #elif CONFIG_RS485_DEVICE_ID == 8
 	#define CONFIG_HW_BTN_1
 	#define CONFIG_HW_BTN_2
-	#define CONFIG_HW_TRIMMER
 #elif CONFIG_RS485_DEVICE_ID == 9
 	#define CONFIG_HW_BTN_1
 	#define CONFIG_HW_TRIMMER
