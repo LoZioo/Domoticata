@@ -72,7 +72,7 @@ esp_err_t __get_littlefs_partitions(){
 
 	char part_label[PART_LABEL_MAXLEN];
 	for(uint8_t i=0; i<PART_COUNT; i++){
-		sprintf(part_label, PART_LABEL_PREFIX "%u", i);
+		snprintf(part_label, PART_LABEL_MAXLEN, PART_LABEL_PREFIX "%u", i);
 
 		esp_partition_iterator_t part_iterator =
 			esp_partition_find(

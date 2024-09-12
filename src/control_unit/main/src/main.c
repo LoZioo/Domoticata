@@ -149,7 +149,7 @@ void log_hash(const char *TAG, const char* label, uint8_t *hash, uint16_t hash_l
 	str[sizeof(str) - 1] = 0;
 
 	for(uint16_t i=0; i<hash_len; i++)
-		sprintf(&str[i * 2], "%02x", hash[i]);
+		snprintf(&str[i * 2], hash_len, "%02x", hash[i]);
 
 	ESP_LOGI(TAG, "%s: %s", label, str);
 }
