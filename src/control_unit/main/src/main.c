@@ -45,6 +45,7 @@
 
 // !!!
 #include <ul_linked_list.h>
+#include <ul_pid.h>
 
 // !!! SISTEMARE IL REBOOT IN CASO DI CRASH NEL MENUCONFIG SOTTO IL MENU Trace memory
 // !!! SISTEMARE PRIORITA' TASK, CORE DI ALLOCAZIONE E STACK ALLOCATO NEL MENUCONFIG

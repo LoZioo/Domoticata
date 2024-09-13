@@ -98,6 +98,7 @@
 		"zone.h": "c",
 		"ota.h": "c",
 		"pm.h": "c",
-		"charconv": "c"
+		"charconv": "c",
+		"ul_linked_list.h": "c"
 	}
 }
