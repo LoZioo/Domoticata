@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include <math.h>
 
-// UniLibC.
+// UniLibC libraries.
 #include <ul_configs.h>
 #include <ul_errors.h>
 
@@ -124,7 +124,7 @@ typedef struct {
 
 } ul_pm_init_t;
 
-// Instance handler.
+// Instance handle.
 typedef struct {
 
 	/* Instance configurations */
@@ -149,7 +149,7 @@ typedef struct {
 /**
  * @brief Create a new instance.
  */
-extern ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handle_t **returned_handler);
+extern ul_err_t ul_pm_begin(ul_pm_init_t *init, ul_pm_handle_t **returned_handle);
 
 /**
  * @brief Free the allocated resources.

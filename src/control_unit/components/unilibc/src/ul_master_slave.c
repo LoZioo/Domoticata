@@ -12,35 +12,11 @@
 ************************************************************************************************************/
 
 #include <ul_master_slave.h>
+#include <ul_private.h>
 
 /************************************************************************************************************
 * Private Defines
 ************************************************************************************************************/
-
-/**
- * @brief Size assert for the encode/decode functions and the size computation functions.
- */
-#define __size_assert() \
-	UL_RETURN_ON_FALSE( \
-		src_buf_size > 0, \
-		UL_ERR_INVALID_ARG, \
-		"Error: `src_buf_size` is 0" \
-	)
-
-/**
- * @brief Pointer asserts for the encode/decode functions.
- */
-#define __ptr_asserts() \
-	UL_RETURN_ON_FALSE( \
-		dest_buf != NULL, \
-		UL_ERR_INVALID_ARG, \
-		"Error: `dest_buf` is NULL" \
-	); \
-	UL_RETURN_ON_FALSE( \
-		src_buf != NULL, \
-		UL_ERR_INVALID_ARG, \
-		"Error: `src_buf` is NULL" \
-	)
 
 /************************************************************************************************************
 * Private Types Definitions
@@ -62,8 +38,9 @@ static ul_err_t __decode_message(uint8_t *dest_buf, uint8_t *src_buf, UL_MS_BUF_
  ************************************************************************************************************/
 
 ul_err_t __encode_message(uint8_t *dest_buf, uint8_t *src_buf, UL_MS_BUF_SIZE_T src_buf_size, bool master){
-	__size_assert();
-	__ptr_asserts();
+	assert_param_notnull(dest_buf);
+	assert_param_notnull(src_buf);
+	assert_param_size_ok(src_buf_size);
 
 	uint32_t bit_index = 0;
 	uint8_t encoded_byte, j;
@@ -90,8 +67,9 @@ ul_err_t __encode_message(uint8_t *dest_buf, uint8_t *src_buf, UL_MS_BUF_SIZE_T 
 }
 
 ul_err_t __decode_message(uint8_t *dest_buf, uint8_t *src_buf, UL_MS_BUF_SIZE_T src_buf_size, bool master){
-	__size_assert();
-	__ptr_asserts();
+	assert_param_notnull(dest_buf);
+	assert_param_notnull(src_buf);
+	assert_param_size_ok(src_buf_size);
 
 	uint32_t bit_index = 0;
 	uint8_t decoded_byte, j;
@@ -119,7 +97,7 @@ ul_err_t __decode_message(uint8_t *dest_buf, uint8_t *src_buf, UL_MS_BUF_SIZE_T 
  ************************************************************************************************************/
 
 UL_MS_BUF_SIZE_T ul_ms_compute_encoded_size(UL_MS_BUF_SIZE_T src_buf_size){
-	__size_assert();
+	assert_param_size_ok(src_buf_size);
 
 	// Bit size.
 	src_buf_size *= 8;
@@ -131,7 +109,7 @@ UL_MS_BUF_SIZE_T ul_ms_compute_encoded_size(UL_MS_BUF_SIZE_T src_buf_size){
 }
 
 UL_MS_BUF_SIZE_T ul_ms_compute_decoded_size(UL_MS_BUF_SIZE_T src_buf_size){
-	__size_assert();
+	assert_param_size_ok(src_buf_size);
 	return ((src_buf_size * 7) / 8);
 }
 

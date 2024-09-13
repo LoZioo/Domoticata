@@ -9,8 +9,8 @@
  *
 */
 
-#ifndef INC_UL_LINKED_ul_linked_list_H_
-#define INC_UL_LINKED_ul_linked_list_H_
+#ifndef INC_UL_LINKED_UL_LINKED_LIST_H_
+#define INC_UL_LINKED_UL_LINKED_LIST_H_
 
 /************************************************************************************************************
 * Included files
@@ -23,6 +23,7 @@
 #include <string.h>
 
 // UniLibC libraries.
+#include <ul_configs.h>
 #include <ul_errors.h>
 #include <ul_utils.h>
 
@@ -59,7 +60,7 @@ typedef struct {
 	 * This pointer is needed when you want to use `ul_linked_list_predicate_callback_t`.
 	 * If you set a value here, you will retrive it in the `user_context` parameter.
 	 * This is used when from another library, you want to take into account the current
-	 * library handler in the callback evaluation.
+	 * library handle in the callback evaluation.
 	 *
 	 * If not needed, you can leave it uninitialized or initialize it to `NULL`.
 	*/
@@ -67,7 +68,7 @@ typedef struct {
 
 } ul_linked_list_init_t;
 
-// List handler.
+// List handle.
 typedef struct {
 
 	/* Instance configurations */
@@ -92,7 +93,7 @@ typedef struct {
 /**
  * @brief Create a new instance.
 */
-extern ul_err_t ul_linked_list_begin(ul_linked_list_init_t *init, ul_linked_list_handle_t **returned_handler);
+extern ul_err_t ul_linked_list_begin(ul_linked_list_init_t *init, ul_linked_list_handle_t **returned_handle);
 
 /**
  * @brief Free the allocated resources.
@@ -201,4 +202,4 @@ extern ul_err_t ul_linked_list_set(ul_linked_list_handle_t *self, uint32_t index
 */
 extern ul_err_t ul_linked_list_set_user_context(ul_linked_list_handle_t *self, void *user_context);
 
-#endif  /* INC_UL_LINKED_ul_linked_list_H_ */
+#endif  /* INC_UL_LINKED_UL_LINKED_LIST_H_ */

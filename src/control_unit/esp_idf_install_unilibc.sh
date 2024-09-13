@@ -30,7 +30,8 @@ for i in "${!libs[@]}"; do
 		rm -rf "$TARGET/include/ul_${libs[$i]}.h"
 		mv "tmp/lib/ul_${libs[$i]}/ul_${libs[$i]}.h" "$TARGET/include"
 
-		if [[ "${libs[$i]}" != "configs" ]]; then
+		# Header-only libraries.
+		if [[ "${libs[$i]}" != "configs" && "${libs[$i]}" != "private" ]]; then
 			rm -rf "$TARGET/src/ul_${libs[$i]}.c"
 			mv "tmp/lib/ul_${libs[$i]}/ul_${libs[$i]}.c" "$TARGET/src"
 		fi

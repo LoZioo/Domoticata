@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include <assert.h>
 
-// UniLibC.
+// UniLibC libraries.
 #include <ul_configs.h>
 
 /************************************************************************************************************

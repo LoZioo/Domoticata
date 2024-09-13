@@ -28,7 +28,7 @@
 #include <stdint.h>
 #include <string.h>
 
-// UniLibC.
+// UniLibC libraries.
 #include <ul_configs.h>
 #include <ul_errors.h>
 #include <ul_utils.h>

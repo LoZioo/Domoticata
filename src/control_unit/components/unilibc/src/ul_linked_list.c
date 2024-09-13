@@ -12,24 +12,11 @@
 ************************************************************************************************************/
 
 #include <ul_linked_list.h>
+#include <ul_private.h>
 
 /************************************************************************************************************
 * Private Defines
 ************************************************************************************************************/
-
-#define __assert_notnull(ptr)	\
-	UL_RETURN_ON_FALSE( \
-		(ptr) != NULL, \
-		UL_ERR_INVALID_ARG, \
-		"Error: `" #ptr "` is NULL" \
-	)
-
-#define __assert_size_ok(size)	\
-	UL_RETURN_ON_FALSE( \
-		(size) > 0, \
-		UL_ERR_INVALID_ARG, \
-		"Error: `" #size "` is 0" \
-	)
 
 /**
  * @brief Reset the linked list to an empty linked list.
@@ -205,9 +192,9 @@ ul_err_t __get_node_at_index(ul_linked_list_handle_t *self, uint32_t index, ul_l
 * Public Functions Definitions
  ************************************************************************************************************/
 
-ul_err_t ul_linked_list_begin(ul_linked_list_init_t *init, ul_linked_list_handle_t **returned_handler){
-	__assert_notnull(init);
-	__assert_notnull(returned_handler);
+ul_err_t ul_linked_list_begin(ul_linked_list_init_t *init, ul_linked_list_handle_t **returned_handle){
+	assert_param_notnull(init);
+	assert_param_notnull(returned_handle);
 
 	/* Instance configurations */
 
@@ -238,7 +225,7 @@ ul_err_t ul_linked_list_begin(ul_linked_list_init_t *init, ul_linked_list_handle
 
 	__reset_instance(self);
 
-	*returned_handler = self;
+	*returned_handle = self;
 	return ret;
 
 	label_error:
@@ -247,7 +234,7 @@ ul_err_t ul_linked_list_begin(ul_linked_list_init_t *init, ul_linked_list_handle
 }
 
 ul_err_t ul_linked_list_end(ul_linked_list_handle_t *self){
-	__assert_notnull(self);
+	assert_param_notnull(self);
 
 	UL_RETURN_ON_ERROR(
 		ul_linked_list_reset(self),
@@ -259,7 +246,7 @@ ul_err_t ul_linked_list_end(ul_linked_list_handle_t *self){
 }
 
 ul_err_t ul_linked_list_reset(ul_linked_list_handle_t *self){
-	__assert_notnull(self);
+	assert_param_notnull(self);
 
 	// Deallocate every single node with its data.
 	ul_linked_list_node_t *next, *current = self->head;
@@ -277,16 +264,16 @@ ul_err_t ul_linked_list_reset(ul_linked_list_handle_t *self){
 /* Generic */
 
 ul_err_t ul_linked_list_len(ul_linked_list_handle_t *self, uint32_t *len){
-	__assert_notnull(self);
-	__assert_notnull(len);
+	assert_param_notnull(self);
+	assert_param_notnull(len);
 
 	*len = self->length;
 	return UL_OK;
 }
 
 ul_err_t ul_linked_list_add(ul_linked_list_handle_t *self, void *element){
-	__assert_notnull(self);
-	__assert_notnull(element);
+	assert_param_notnull(self);
+	assert_param_notnull(element);
 
 	ul_linked_list_node_t *node;
 	UL_RETURN_ON_ERROR(
@@ -299,9 +286,9 @@ ul_err_t ul_linked_list_add(ul_linked_list_handle_t *self, void *element){
 }
 
 ul_err_t ul_linked_list_add_arr(ul_linked_list_handle_t *self, void *arr, uint32_t len){
-	__assert_notnull(self);
-	__assert_notnull(arr);
-	__assert_size_ok(len);
+	assert_param_notnull(self);
+	assert_param_notnull(arr);
+	assert_param_size_ok(len);
 
 	ul_linked_list_node_t *node;
 	for(int i=len-1; i>=0; i--){
@@ -323,8 +310,8 @@ ul_err_t ul_linked_list_add_arr(ul_linked_list_handle_t *self, void *arr, uint32
 }
 
 ul_err_t ul_linked_list_append(ul_linked_list_handle_t *self, void *element){
-	__assert_notnull(self);
-	__assert_notnull(element);
+	assert_param_notnull(self);
+	assert_param_notnull(element);
 
 	ul_linked_list_node_t *tail;
 	UL_RETURN_ON_ERROR(
@@ -354,9 +341,9 @@ ul_err_t ul_linked_list_append(ul_linked_list_handle_t *self, void *element){
 }
 
 ul_err_t ul_linked_list_append_arr(ul_linked_list_handle_t *self, void *arr, uint32_t len){
-	__assert_notnull(self);
-	__assert_notnull(self);
-	__assert_size_ok(len);
+	assert_param_notnull(self);
+	assert_param_notnull(self);
+	assert_param_size_ok(len);
 
 	ul_linked_list_node_t *tail;
 	UL_RETURN_ON_ERROR(
@@ -394,7 +381,7 @@ ul_err_t ul_linked_list_append_arr(ul_linked_list_handle_t *self, void *arr, uin
 }
 
 ul_err_t ul_linked_list_delete(ul_linked_list_handle_t *self, uint32_t index){
-	__assert_notnull(self);
+	assert_param_notnull(self);
 
 	// Check if the index exists and if the list is not empty.
 	UL_RETURN_ON_FALSE(
@@ -442,22 +429,22 @@ ul_err_t ul_linked_list_delete(ul_linked_list_handle_t *self, uint32_t index){
 }
 
 ul_err_t ul_linked_list_search(ul_linked_list_handle_t *self, ul_linked_list_predicate_callback_t predicate_callback, uint32_t *index){
-	__assert_notnull(self);
-	__assert_notnull(predicate_callback);
-	__assert_notnull(index);
+	assert_param_notnull(self);
+	assert_param_notnull(predicate_callback);
+	assert_param_notnull(index);
 	return __search(self, NULL, predicate_callback, index);
 }
 
 ul_err_t ul_linked_list_search_element(ul_linked_list_handle_t *self, void *element, uint32_t *index){
-	__assert_notnull(self);
-	__assert_notnull(element);
-	__assert_notnull(index);
+	assert_param_notnull(self);
+	assert_param_notnull(element);
+	assert_param_notnull(index);
 	return __search(self, element, NULL, index);
 }
 
 bool ul_linked_list_includes(ul_linked_list_handle_t *self, void *element){
-	__assert_notnull(self);
-	__assert_notnull(element);
+	assert_param_notnull(self);
+	assert_param_notnull(element);
 
 	uint32_t index;
 	ul_err_t ret =
@@ -475,8 +462,8 @@ bool ul_linked_list_includes(ul_linked_list_handle_t *self, void *element){
 }
 
 bool ul_linked_list_any(ul_linked_list_handle_t *self, ul_linked_list_predicate_callback_t predicate_callback){
-	__assert_notnull(self);
-	__assert_notnull(predicate_callback);
+	assert_param_notnull(self);
+	assert_param_notnull(predicate_callback);
 
 	uint32_t index;
 	ul_err_t ret =
@@ -494,8 +481,8 @@ bool ul_linked_list_any(ul_linked_list_handle_t *self, ul_linked_list_predicate_
 }
 
 ul_err_t ul_linked_list_to_arr(ul_linked_list_handle_t *self, void *arr){
-	__assert_notnull(self);
-	__assert_notnull(arr);
+	assert_param_notnull(self);
+	assert_param_notnull(arr);
 
 	ul_linked_list_node_t *current = self->head;
 	uint32_t index = 0;
@@ -516,8 +503,8 @@ ul_err_t ul_linked_list_to_arr(ul_linked_list_handle_t *self, void *arr){
 }
 
 ul_err_t ul_linked_list_to_arr_ptr(ul_linked_list_handle_t *self, void **arr_ptr){
-	__assert_notnull(self);
-	__assert_notnull(arr_ptr);
+	assert_param_notnull(self);
+	assert_param_notnull(arr_ptr);
 
 	ul_linked_list_node_t *current = self->head;
 	uint32_t index = 0;
@@ -537,8 +524,8 @@ ul_err_t ul_linked_list_to_arr_ptr(ul_linked_list_handle_t *self, void **arr_ptr
 /* Getter */
 
 ul_err_t ul_linked_list_get(ul_linked_list_handle_t *self, uint32_t index, void *element){
-	__assert_notnull(self);
-	__assert_notnull(element);
+	assert_param_notnull(self);
+	assert_param_notnull(element);
 
 	// Check if the index exists and if the list is not empty.
 	UL_RETURN_ON_FALSE(
@@ -563,8 +550,8 @@ ul_err_t ul_linked_list_get(ul_linked_list_handle_t *self, uint32_t index, void 
 /* Setter */
 
 ul_err_t ul_linked_list_set(ul_linked_list_handle_t *self, uint32_t index, void *element){
-	__assert_notnull(self);
-	__assert_notnull(element);
+	assert_param_notnull(self);
+	assert_param_notnull(element);
 
 	// Check if the index exists and if the list is not empty.
 	UL_RETURN_ON_FALSE(
@@ -587,7 +574,7 @@ ul_err_t ul_linked_list_set(ul_linked_list_handle_t *self, uint32_t index, void 
 }
 
 ul_err_t ul_linked_list_set_user_context(ul_linked_list_handle_t *self, void *user_context){
-	__assert_notnull(self);
+	assert_param_notnull(self);
 
 	self->init.user_context = user_context;
 	return UL_OK;

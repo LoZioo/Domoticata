@@ -12,6 +12,7 @@
 ************************************************************************************************************/
 
 #include <ul_pm.h>
+#include <ul_private.h>
 
 /************************************************************************************************************
 * Private Defines
@@ -46,114 +47,122 @@
 * Public Functions Definitions
  ************************************************************************************************************/
 
-ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handle_t **returned_handler){
-
-	UL_RETURN_ON_FALSE(
-		returned_handler != NULL,
-		UL_ERR_INVALID_ARG,
-		"Error: `returned_handler` is NULL"
-	);
+ul_err_t ul_pm_begin(ul_pm_init_t *init, ul_pm_handle_t **returned_handle){
+	assert_param_notnull(init);
+	assert_param_notnull(returned_handle);
 
 	/* Instance configurations */
 
 	ul_err_t ret = UL_OK;
-
-	ul_pm_handle_t *self = (ul_pm_handle_t*) malloc(sizeof(ul_pm_handle_t));
-	UL_GOTO_ON_FALSE(
+	ul_pm_handle_t *self = malloc(sizeof(ul_pm_handle_t));
+	UL_RETURN_ON_FALSE(
 		self != NULL,
+
 		UL_ERR_NO_MEM,
-		label_error,
-		"Error on `malloc(sizeof(ul_pm_handle_t))`"
+		"Error on `malloc(size=%lu)`",
+		sizeof(ul_pm_handle_t)
 	);
 
-	self->init = init;
+	self->init = *init;
 
 	/* Parameters check */
 
 	UL_GOTO_ON_FALSE(
-		self->init.adc_vcc_v > 0,
+		init->adc_vcc_v > 0,
+
 		UL_ERR_INVALID_ARG,
-		label_free,
-		"Error: `self->init.adc_vcc_v` is less or equal to 0"
+		label_error,
+		"Error: `init->adc_vcc_v` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
-		self->init.adc_value_at_adc_vcc > 0,
+		init->adc_value_at_adc_vcc > 0,
+
 		UL_ERR_INVALID_ARG,
-		label_free,
-		"Error: `self->init.adc_value_at_adc_vcc` is 0"
+		label_error,
+		"Error: `init->adc_value_at_adc_vcc` is 0"
 	);
 
 	UL_GOTO_ON_FALSE(
-		self->init.v_transformer_gain > 0,
+		init->v_transformer_gain > 0,
+
 		UL_ERR_INVALID_ARG,
-		label_free,
-		"Error: `self->init.v_transformer_gain` is less or equal to 0"
+		label_error,
+		"Error: `init->v_transformer_gain` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
-		self->init.v_divider_r1_ohm > 0,
+		init->v_divider_r1_ohm > 0,
+
 		UL_ERR_INVALID_ARG,
-		label_free,
-		"Error: `self->init.v_divider_r1_ohm` is less or equal to 0"
+		label_error,
+		"Error: `init->v_divider_r1_ohm` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
-		self->init.v_divider_r2_ohm > 0,
+		init->v_divider_r2_ohm > 0,
+
 		UL_ERR_INVALID_ARG,
-		label_free,
-		"Error: `self->init.v_divider_r2_ohm` is less or equal to 0"
+		label_error,
+		"Error: `init->v_divider_r2_ohm` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
-		self->init.i_clamp_gain > 0,
+		init->i_clamp_gain > 0,
+
 		UL_ERR_INVALID_ARG,
-		label_free,
-		"Error: `init.i_clamp_gain` is less or equal to 0"
+		label_error,
+		"Error: `init->i_clamp_gain` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
-		self->init.i_clamp_resistor_ohm > 0,
+		init->i_clamp_resistor_ohm > 0,
+
 		UL_ERR_INVALID_ARG,
-		label_free,
-		"Error: `init.i_clamp_resistor_ohm` is less or equal to 0"
+		label_error,
+		"Error: `init->i_clamp_resistor_ohm` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
-		self->init.v_rms_threshold > 0,
+		init->v_rms_threshold > 0,
+
 		UL_ERR_INVALID_ARG,
-		label_free,
-		"Error: `init.v_rms_threshold` is less or equal to 0"
+		label_error,
+		"Error: `init->v_rms_threshold` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
-		self->init.i_rms_threshold > 0,
+		init->i_rms_threshold > 0,
+
 		UL_ERR_INVALID_ARG,
-		label_free,
-		"Error: `init.i_rms_threshold` is less or equal to 0"
+		label_error,
+		"Error: `init->i_rms_threshold` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
-		self->init.v_correction_factor > 0,
+		init->v_correction_factor > 0,
+
 		UL_ERR_INVALID_ARG,
-		label_free,
-		"Error: `init.v_correction_factor` is less or equal to 0"
+		label_error,
+		"Error: `init->v_correction_factor` is less or equal to 0"
 	);
 
 	UL_GOTO_ON_FALSE(
-		self->init.i_correction_factor > 0,
+		init->i_correction_factor > 0,
+
 		UL_ERR_INVALID_ARG,
-		label_free,
-		"Error: `init.i_correction_factor` is less or equal to 0"
+		label_error,
+		"Error: `init->i_correction_factor` is less or equal to 0"
 	);
 
 	#ifndef UL_CONFIG_PM_DOUBLE_BUFFER
 
 	UL_GOTO_ON_FALSE(
-		self->init.sample_callback != NULL,
+		init->sample_callback != NULL,
+
 		UL_ERR_INVALID_ARG,
-		label_free,
-		"Error: `init.sample_callback` is NULL"
+		label_error,
+		"Error: `init->sample_callback` is NULL"
 	);
 
 	#endif
@@ -164,13 +173,11 @@ ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handle_t **returned_handler){
 	self->k_v = self->init.v_correction_factor * resolution * (self->init.v_divider_r1_ohm + self->init.v_divider_r2_ohm) / (self->init.v_transformer_gain * self->init.v_divider_r2_ohm);
 	self->k_i = self->init.i_correction_factor * resolution / (self->init.i_clamp_gain * self->init.i_clamp_resistor_ohm);
 
-	*returned_handler = self;
+	*returned_handle = self;
 	return ret;
 
-	label_free:
-	free(self);
-
 	label_error:
+	free(self);
 	return ret;
 }
 
@@ -192,15 +199,15 @@ ul_err_t ul_pm_evaluate(
 	ul_pm_results_t *res
 ){
 
-	UL_RETURN_ON_FALSE(self != NULL, UL_ERR_INVALID_ARG, "Error: `self` is NULL");
+	assert_param_notnull(self);
 
 	#ifdef UL_CONFIG_PM_DOUBLE_BUFFER
-	UL_RETURN_ON_FALSE(v_samples != NULL, UL_ERR_INVALID_ARG, "Error: `v_samples` is NULL");
-	UL_RETURN_ON_FALSE(i_samples != NULL, UL_ERR_INVALID_ARG, "Error: `i_samples` is NULL");
+	assert_param_notnull(v_samples);
+	assert_param_notnull(i_samples);
 	#endif
 
-	UL_RETURN_ON_FALSE(samples_len > 0, UL_ERR_INVALID_ARG, "Error: `samples_len` is 0");
-	UL_RETURN_ON_FALSE(res != NULL, UL_ERR_INVALID_ARG, "Error: `res` is NULL");
+	assert_param_size_ok(samples_len);
+	assert_param_notnull(res);
 
 	// Knuth running mean.
 	float v_samples_avg = 0, i_samples_avg = 0, tmp;
