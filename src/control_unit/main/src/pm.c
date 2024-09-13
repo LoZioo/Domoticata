@@ -57,7 +57,7 @@ static const char *TAG = LOG_TAG;
 
 static TaskHandle_t __pm_task_handle = NULL;
 static adc_continuous_handle_t __adc_handle;
-static ul_pm_handler_t *__pm;
+static ul_pm_handle_t *__pm;
 
 // Voltage and current channels.
 static struct __attribute__((__packed__)) {
