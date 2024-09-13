@@ -11,11 +11,20 @@
 * Included files
 ************************************************************************************************************/
 
-#include <lib.h>
+#include <ul_pid.h>
+#include <ul_private.h>
 
 /************************************************************************************************************
 * Private Defines
 ************************************************************************************************************/
+
+/**
+ * @brief Reset the PID.
+*/
+#define __reset_instance(self) \
+	self->integral = self->prev_err = 0; \
+	self->in_saturation = false; \
+	self->enabled = false
 
 /************************************************************************************************************
 * Private Types Definitions
@@ -25,24 +34,13 @@
 * Private Variables
  ************************************************************************************************************/
 
-// A private variable.
-static uint8_t *__ptr_to_something = NULL;
-
 /************************************************************************************************************
 * Private Functions Prototypes
  ************************************************************************************************************/
 
-/**
- * @brief A private function.
-*/
-static void __private_func(ul_pid_handle_t *self);
-
 /************************************************************************************************************
 * Private Functions Definitions
  ************************************************************************************************************/
-
-void __private_func(ul_pid_handle_t *self){
-}
 
 /************************************************************************************************************
 * Public Functions Definitions
@@ -69,16 +67,16 @@ ul_err_t ul_pid_begin(ul_pid_init_t *init, ul_pid_handle_t **returned_handle){
 	/* Parameters check */
 
 	UL_GOTO_ON_FALSE(
-		init->non_zero_value > 0,
+		init->dt > 0,
 
 		UL_ERR_INVALID_ARG,
 		label_error,
-		"Error: `init->non_zero_value` is 0"
+		"Error: `init->dt` is less or equal to 0"
 	);
 
 	/* Init configurations */
 
-	self->a_value = 1;
+	__reset_instance(self);
 
 	*returned_handle = self;
 	return ret;
@@ -90,4 +88,28 @@ ul_err_t ul_pid_begin(ul_pid_init_t *init, ul_pid_handle_t **returned_handle){
 
 void ul_pid_end(ul_pid_handle_t *self){
 	free(self);
+}
+
+ul_err_t ul_pid_reset(ul_pid_handle_t *self){
+	assert_param_notnull(self);
+	__reset_instance(self);
+	return UL_OK;
+}
+
+ul_err_t ul_pid_enable(ul_pid_handle_t *self){
+	assert_param_notnull(self);
+	self->enabled = true;
+	return UL_OK;
+}
+
+ul_err_t ul_pid_disable(ul_pid_handle_t *self){
+	assert_param_notnull(self);
+	self->enabled = false;
+	return UL_OK;
+}
+
+// !!! DA QUI'
+
+ul_err_t ul_pid_evaluate(ul_pid_handle_t *self, float err, float *res){
+	return UL_OK;
 }

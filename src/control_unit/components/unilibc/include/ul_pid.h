@@ -23,7 +23,6 @@
 #include <string.h>
 
 // UniLibC libraries.
-#include <ul_private.h>
 #include <ul_configs.h>
 #include <ul_errors.h>
 
@@ -31,26 +30,29 @@
 * Public Defines
 ************************************************************************************************************/
 
+// !!! COPIARE MACRO
+
 /************************************************************************************************************
 * Public Types Definitions
 ************************************************************************************************************/
 
-/**
- * @brief A callback.
- * @param parameter A parameter.
-*/
-typedef void (*ul_pid_callback_t)(uint8_t parameter);
-
 // Instance configurations.
 typedef struct {
 
-	/* GPIO */
+	/**
+	 * Sampling period (`PID_evaluate()` calling period).
+	 * @note Measured in seconds!
+	*/
+	float dt;
 
-	/* Variables and pointers */
+	// PID coefficients.
+	float kp, ki, kd;
 
-	uint8_t non_zero_value;
+	// Saturation threshold.
+	float sat;
 
-	/* Callbacks */
+	// Abilitation of the anti windup optimization.
+	bool anti_windup;
 
 } ul_pid_init_t;
 
@@ -63,7 +65,17 @@ typedef struct {
 
 	/* Instance state */
 
-	uint8_t a_value;
+	// Integral accumulator.
+	float integral;
+
+	// Needed for calculating the derivative contribution.
+	float prev_err;
+
+	// Saturation flag.
+	bool in_saturation;
+
+	// Enable flag: if it's false, `PID_evaluate()` does nothing.
+	bool enabled;
 
 } ul_pid_handle_t;
 
@@ -84,5 +96,29 @@ extern ul_err_t ul_pid_begin(ul_pid_init_t *init, ul_pid_handle_t **returned_han
  * @brief Free the allocated resources.
 */
 extern void ul_pid_end(ul_pid_handle_t *self);
+
+/**
+ * @brief Reset the PID.
+*/
+extern ul_err_t ul_pid_reset(ul_pid_handle_t *self);
+
+/**
+ * @brief Enable PID evaluation.
+ * @note Unfreeze the PID.
+*/
+extern ul_err_t ul_pid_enable(ul_pid_handle_t *self);
+
+/**
+ * @brief Disable PID evaluation.
+ * @note Freeze the PID.
+*/
+extern ul_err_t ul_pid_disable(ul_pid_handle_t *self);
+
+/**
+ * @brief Must be called 1/dt times per second.
+ * @param err The current error.
+ * @param res Pointer to where to store the evaluation result.
+*/
+extern ul_err_t ul_pid_evaluate(ul_pid_handle_t *self, float err, float *res);
 
 #endif  /* INC_UL_PID_H_ */
