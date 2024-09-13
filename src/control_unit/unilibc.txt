@@ -1,6 +1,8 @@
+private
 configs
 errors
 utils
+linked_list
 button_states
 master_slave
 crc

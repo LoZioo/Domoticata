@@ -46,7 +46,7 @@
 * Public Functions Definitions
  ************************************************************************************************************/
 
-ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handler){
+ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handle_t **returned_handler){
 
 	UL_RETURN_ON_FALSE(
 		returned_handler != NULL,
@@ -58,12 +58,12 @@ ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handler){
 
 	ul_err_t ret = UL_OK;
 
-	ul_pm_handler_t *self = (ul_pm_handler_t*) malloc(sizeof(ul_pm_handler_t));
+	ul_pm_handle_t *self = (ul_pm_handle_t*) malloc(sizeof(ul_pm_handle_t));
 	UL_GOTO_ON_FALSE(
 		self != NULL,
 		UL_ERR_NO_MEM,
 		label_error,
-		"Error on `malloc(sizeof(ul_pm_handler_t))`"
+		"Error on `malloc(sizeof(ul_pm_handle_t))`"
 	);
 
 	self->init = init;
@@ -174,12 +174,12 @@ ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handler){
 	return ret;
 }
 
-void ul_pm_end(ul_pm_handler_t *self){
+void ul_pm_end(ul_pm_handle_t *self){
 	free(self);
 }
 
 ul_err_t ul_pm_evaluate(
-	ul_pm_handler_t *self,
+	ul_pm_handle_t *self,
 
 	#ifdef UL_CONFIG_PM_DOUBLE_BUFFER
 		uint16_t *v_samples,

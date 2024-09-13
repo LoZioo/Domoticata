@@ -122,7 +122,7 @@ bool ul_utils_in(int x, uint8_t argc, ...){
 /* Strings */
 
 ul_err_t ul_utils_ftoa(float x, char *str, uint8_t afterpoint){
-	UL_RETURN_ON_FALSE(str != NULL, UL_ERR_INVALID_ARG, "Error: `str` is NULL");
+	assert_param_notnull(str);
 
 	int ipart = (int) x;
 	float fpart = x - (float) ipart;
@@ -141,8 +141,14 @@ ul_err_t ul_utils_ftoa(float x, char *str, uint8_t afterpoint){
 }
 
 ul_err_t ul_utils_int_to_bin_str(uint32_t n, char *str, uint8_t byte_len){
-	UL_RETURN_ON_FALSE(str != NULL, UL_ERR_INVALID_ARG, "Error: `str` is NULL");
-	UL_RETURN_ON_FALSE(!ul_utils_between(byte_len, 1, 4), UL_ERR_INVALID_ARG, "Error: `byte_len` is not between 1 and 4");
+	assert_param_notnull(str);
+
+	UL_RETURN_ON_FALSE(
+		!ul_utils_between(byte_len, 1, 4),
+
+		UL_ERR_INVALID_ARG,
+		"Error: `byte_len` is not between 1 and 4"
+	);
 
 	// Assuming str is large enough to hold the binary representation.
 	str[(byte_len * 9) - 1] = '\0';				// Set the last character of the string as the null terminator.
@@ -160,9 +166,15 @@ ul_err_t ul_utils_int_to_bin_str(uint32_t n, char *str, uint8_t byte_len){
 }
 
 ul_err_t ul_utils_buf_to_str(uint8_t *buf, uint32_t size, char *str, uint8_t base){
-	UL_RETURN_ON_FALSE(buf != NULL, UL_ERR_INVALID_ARG, "Error: `buf` is NULL");
-	UL_RETURN_ON_FALSE(str != NULL, UL_ERR_INVALID_ARG, "Error: `str` is NULL");
-	UL_RETURN_ON_FALSE(!ul_utils_in(base, 3, 2, 10, 16), UL_ERR_INVALID_ARG, "Error: `base` can be only {2, 10, 16}");
+	assert_param_notnull(buf);
+	assert_param_notnull(str);
+
+	UL_RETURN_ON_FALSE(
+		!ul_utils_in(base, 3, 2, 10, 16),
+
+		UL_ERR_INVALID_ARG,
+		"Error: `base` can be only {2, 10, 16}"
+	);
 
 	strcpy(str, "[");
 	char tmp[12];
@@ -234,7 +246,7 @@ bool ul_utils_slice_buf(uint8_t *buf, uint32_t size, uint8_t *slice, uint32_t *s
 }
 
 ul_err_t ul_utils_build_buf_from_uint8_va_list(uint8_t *argv, uint32_t argc, va_list args){
-	UL_RETURN_ON_FALSE(argv != NULL, UL_ERR_INVALID_ARG, "Error: `argv` is NULL");
+	assert_param_notnull(argv);
 
 	for(uint32_t i=0; i<argc; i++)
 		argv[i] = (uint8_t) va_arg(args, int);	// Every integer variable argument is automatically promoted to the `int` type.
@@ -243,6 +255,8 @@ ul_err_t ul_utils_build_buf_from_uint8_va_list(uint8_t *argv, uint32_t argc, va_
 }
 
 ul_err_t ul_utils_build_buf_from_uint8_vargs(uint8_t *argv, uint32_t argc, ...){
+	assert_param_notnull(argv);
+
 	va_list args;
 	va_start(args, argc);
 

@@ -89,7 +89,7 @@ static void __ul_errors_check_failed_print(ul_err_t rc, const char *file, int li
 void __ul_errors_check_failed_print(ul_err_t rc, const char *file, int line, const char *function, const char *expression){
 	__assert_notnull(printf_def);
 
-	printf_def("\nUL_ERRORS_CHECK failed: ul_err_t #%u at %p\n", rc, __builtin_ret_addr(0));
+	printf_def("\nUL_ERROR_CHECK failed: ul_err_t #%u at %p\n", rc, __builtin_ret_addr(0));
 	printf_def("file: \"%s\" line %d\nfunc: %s\nexpression: %s\n", file, line, function, expression);
 }
 

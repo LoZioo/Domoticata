@@ -24,7 +24,9 @@
 #include <string.h>
 #include <math.h>
 
-// UniLibC.
+// UniLibC libraries.
+#include <ul_private.h>
+#include <ul_configs.h>
 #include <ul_errors.h>
 
 /************************************************************************************************************
@@ -228,7 +230,6 @@ extern bool ul_utils_in(int x, uint8_t argc, ...);
  * @param x The floating point to be converted.
  * @param str The destination string; ensure it's big enough.
  * @param afterpoint The number of decimal places.
- * @return `ul_err_t`
 */
 extern ul_err_t ul_utils_ftoa(float x, char *str, uint8_t afterpoint);
 
@@ -237,7 +238,6 @@ extern ul_err_t ul_utils_ftoa(float x, char *str, uint8_t afterpoint);
  * @param n The `uint32_t` to be converted.
  * @param str The string where to store the binary representation; ensure it's big enough.
  * @param byte_len The number of bytes to represent (from 1 to 4).
- * @return `ul_err_t`
  */
 extern ul_err_t ul_utils_int_to_bin_str(uint32_t n, char *str, uint8_t byte_len);
 
@@ -247,7 +247,6 @@ extern ul_err_t ul_utils_int_to_bin_str(uint32_t n, char *str, uint8_t byte_len)
  * @param size `sizeof(buf)`
  * @param str The destination string; ensure it's big enough.
  * @param base The base of the number; supported values are 2, 10 and 16.
- * @return `ul_err_t`
 */
 extern ul_err_t ul_utils_buf_to_str(uint8_t *buf, uint32_t size, char *str, uint8_t base);
 
@@ -292,7 +291,6 @@ extern bool ul_utils_slice_buf(uint8_t *buf, uint32_t size, uint8_t *slice, uint
  * @param argv The destination buffer; ensure it's big enough.
  * @param argc The number of variable arguments.
  * @param args The `va_list` after `va_start()` and before `va_end()`.
- * @return `ul_err_t`
 */
 extern ul_err_t ul_utils_build_buf_from_uint8_va_list(uint8_t *argv, uint32_t argc, va_list args);
 
@@ -300,7 +298,6 @@ extern ul_err_t ul_utils_build_buf_from_uint8_va_list(uint8_t *argv, uint32_t ar
  * @brief Encode a variable series of arguments into a buffer.
  * @param argv The destination buffer; ensure it's big enough.
  * @param argc The number of variable arguments.
- * @return `ul_err_t`
 */
 extern ul_err_t ul_utils_build_buf_from_uint8_vargs(uint8_t *argv, uint32_t argc, ...);
 

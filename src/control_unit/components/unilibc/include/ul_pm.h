@@ -136,7 +136,7 @@ typedef struct {
 	// Formulas constants.
 	float k_v, k_i;
 
-} ul_pm_handler_t;
+} ul_pm_handle_t;
 
 /************************************************************************************************************
 * Public Variables Prototypes
@@ -149,12 +149,12 @@ typedef struct {
 /**
  * @brief Create a new instance.
  */
-extern ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handler_t **returned_handler);
+extern ul_err_t ul_pm_begin(ul_pm_init_t init, ul_pm_handle_t **returned_handler);
 
 /**
  * @brief Free the allocated resources.
 */
-extern void ul_pm_end(ul_pm_handler_t *self);
+extern void ul_pm_end(ul_pm_handle_t *self);
 
 #ifdef UL_CONFIG_PM_DOUBLE_BUFFER
 
@@ -165,7 +165,7 @@ extern void ul_pm_end(ul_pm_handler_t *self);
  * @param samples_len Number of samples acquired.
  * @param res Where to store the evaluated result.
  */
-extern ul_err_t ul_pm_evaluate(ul_pm_handler_t *self, uint16_t *v_samples, uint16_t *i_samples, uint32_t samples_len, ul_pm_results_t *res);
+extern ul_err_t ul_pm_evaluate(ul_pm_handle_t *self, uint16_t *v_samples, uint16_t *i_samples, uint32_t samples_len, ul_pm_results_t *res);
 
 #else
 
@@ -175,7 +175,7 @@ extern ul_err_t ul_pm_evaluate(ul_pm_handler_t *self, uint16_t *v_samples, uint1
  * @param sample_callback_context A generic user context to be passed to the `ul_pm_sample_callback_t`; leave it to `NULL` if unused.
  * @param res Where to store the evaluated result.
  */
-extern ul_err_t ul_pm_evaluate(ul_pm_handler_t *self, void *sample_callback_context, uint32_t samples_len, ul_pm_results_t *res);
+extern ul_err_t ul_pm_evaluate(ul_pm_handle_t *self, void *sample_callback_context, uint32_t samples_len, ul_pm_results_t *res);
 
 #endif
 

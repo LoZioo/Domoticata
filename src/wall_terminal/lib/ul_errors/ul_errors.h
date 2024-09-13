@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include <assert.h>
 
-// UniLibC.
+// UniLibC libraries.
 #include <ul_configs.h>
 
 /************************************************************************************************************
@@ -41,7 +41,7 @@
  *
  * @note Terminate the program by calling `abort()`.
  */
-#define UL_ERRORS_CHECK(x){ \
+#define UL_ERROR_CHECK(x){ \
 	ul_err_t rc = (x); \
 	if(rc != UL_OK) \
 		__ul_errors_check_failed(rc, __FILE__, __LINE__, __ASSERT_FUNC, #x); \
@@ -51,7 +51,7 @@
  * @brief Check and print the error code, error location, and the failed statement to serial output.
  * @note Does not terminate the program.
  */
-#define UL_ERRORS_CHECK_WITHOUT_ABORT(x){ \
+#define UL_ERROR_CHECK_WITHOUT_ABORT(x){ \
 	ul_err_t rc = (x); \
 	if(rc != UL_OK) \
 		__ul_errors_check_failed_without_abort(rc, __FILE__, __LINE__, __ASSERT_FUNC, #x); \
@@ -162,7 +162,7 @@
  * @brief Check the error code and terminate the program in case the code is not `UL_OK`.
  * @note Terminate the program by calling `abort()`.
  */
-#define UL_ERRORS_CHECK(x){ \
+#define UL_ERROR_CHECK(x){ \
 	ul_err_t rc = (x); \
 	if(rc != UL_OK) \
 		abort(); \
@@ -171,7 +171,7 @@
 /**
  * @brief A stub.
  */
-#define UL_ERRORS_CHECK_WITHOUT_ABORT(x)		x
+#define UL_ERROR_CHECK_WITHOUT_ABORT(x)		x
 
 /**
  * @brief Check the error code. If the code is not `UL_OK`, it returns.
