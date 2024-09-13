@@ -97,6 +97,7 @@
 		"webserver.h": "c",
 		"zone.h": "c",
 		"ota.h": "c",
-		"pm.h": "c"
+		"pm.h": "c",
+		"charconv": "c"
 	}
 }
