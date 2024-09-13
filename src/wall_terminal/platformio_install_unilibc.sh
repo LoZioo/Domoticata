@@ -17,7 +17,6 @@ fi
 mapfile -t libs < <(sed 's/\r$//' "$FILENAME")
 
 git clone $REPO_URL tmp
-
 mkdir -p "$TARGET"
 
 for i in "${!libs[@]}"; do
