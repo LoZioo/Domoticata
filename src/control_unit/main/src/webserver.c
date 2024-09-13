@@ -145,7 +145,15 @@ esp_err_t __list_webserver_files_rec(char *full_path, struct stat *path_stat){
 		full_path, errno
 	);
 
+	strncat(
+		full_path,
+		"/",
+		PATH_MAX - 2
+	);
+
 	struct dirent *entry;
+	uint16_t original_len = strlen(full_path);
+
 	while((entry = readdir(dir)) != NULL){
 		if(ul_utils_either(
 			strcmp(entry->d_name, "."),
@@ -154,12 +162,11 @@ esp_err_t __list_webserver_files_rec(char *full_path, struct stat *path_stat){
 		))
 			continue;
 
-		snprintf(
+		full_path[original_len] = '\0';
+		strncat(
 			full_path,
-			PATH_MAX,
-			"%s/%s",
-			WEBSERVER_ROOT_FOLDER,
-			entry->d_name
+			entry->d_name,
+			PATH_MAX - strlen(entry->d_name) - 1
 		);
 
 		// Check if it is a file or a directory.
@@ -173,10 +180,19 @@ esp_err_t __list_webserver_files_rec(char *full_path, struct stat *path_stat){
 		);
 
 		if(S_ISREG(path_stat->st_mode))
-			ESP_LOGW(TAG, "%s\n", full_path);
+			ESP_LOGW(TAG, "File: %s", full_path);
 
 		else if(S_ISDIR(path_stat->st_mode))
-			return __list_webserver_files_rec(full_path, path_stat);
+			ESP_RETURN_ON_ERROR(
+				__list_webserver_files_rec(
+					full_path,
+					path_stat
+				),
+
+				TAG,
+				"Error on `__list_webserver_files_rec(full_path=\"%s\")`",
+				full_path
+			);
 	}
 
 	closedir(dir);
@@ -219,57 +235,58 @@ esp_err_t __route_root(httpd_req_t *req){
 
 esp_err_t webserver_setup(){
 
-	ESP_RETURN_ON_FALSE(
-		wifi_network_available(),
+	// ESP_RETURN_ON_FALSE(
+	// 	wifi_network_available(),
 
-		ESP_ERR_INVALID_STATE,
-		TAG,
-		"Error: network service not available"
-	);
+	// 	ESP_ERR_INVALID_STATE,
+	// 	TAG,
+	// 	"Error: network service not available"
+	// );
 
-	ESP_RETURN_ON_FALSE(
-		fs_available(),
+	// ESP_RETURN_ON_FALSE(
+	// 	fs_available(),
 
-		ESP_ERR_INVALID_STATE,
-		TAG,
-		"Error: filesystem service not initialized"
-	);
+	// 	ESP_ERR_INVALID_STATE,
+	// 	TAG,
+	// 	"Error: filesystem service not initialized"
+	// );
 
-	// Webserver daemon configurations.
-	httpd_config_t webserver_config = HTTPD_DEFAULT_CONFIG();
-	httpd_handle_t webserver = NULL;
+	// // Webserver daemon configurations.
+	// httpd_config_t webserver_config = HTTPD_DEFAULT_CONFIG();
+	// httpd_handle_t webserver = NULL;
 
-	webserver_config.stack_size = CONFIG_WEBSERVER_TASK_STACK_SIZE_BYTES;
-	webserver_config.task_priority = CONFIG_WEBSERVER_TASK_PRIORITY;
-	webserver_config.core_id = CONFIG_WEBSERVER_TASK_CORE_AFFINITY;
-	webserver_config.server_port = CONFIG_WEBSERVER_LISTEN_PORT;
+	// webserver_config.stack_size = CONFIG_WEBSERVER_TASK_STACK_SIZE_BYTES;
+	// webserver_config.task_priority = CONFIG_WEBSERVER_TASK_PRIORITY;
+	// webserver_config.core_id = CONFIG_WEBSERVER_TASK_CORE_AFFINITY;
+	// webserver_config.server_port = CONFIG_WEBSERVER_LISTEN_PORT;
 
-	ESP_RETURN_ON_ERROR(
-		httpd_start(
-			&webserver,
-			&webserver_config
-		),
+	// ESP_RETURN_ON_ERROR(
+	// 	httpd_start(
+	// 		&webserver,
+	// 		&webserver_config
+	// 	),
 
-		TAG,
-		"Error on `httpd_start()`"
-	);
+	// 	TAG,
+	// 	"Error on `httpd_start()`"
+	// );
 
-	// Webserver routes registration.
-	httpd_uri_t routes[] = ROUTES;
-	uint32_t routes_len = sizeof(routes) / sizeof(httpd_uri_t);
+	// // Webserver routes registration.
+	// httpd_uri_t routes[] = ROUTES;
+	// uint32_t routes_len = sizeof(routes) / sizeof(httpd_uri_t);
 
-	for(uint32_t i=0; i<routes_len; i++)
-		ESP_RETURN_ON_ERROR(
-			httpd_register_uri_handler(
-				webserver,
-				&routes[i]
-			),
+	// for(uint32_t i=0; i<routes_len; i++)
+	// 	ESP_RETURN_ON_ERROR(
+	// 		httpd_register_uri_handler(
+	// 			webserver,
+	// 			&routes[i]
+	// 		),
 
-			TAG,
-			"Error on `httpd_register_uri_handler(i=%lu)`",
-			i
-		);
+	// 		TAG,
+	// 		"Error on `httpd_register_uri_handler(i=%lu)`",
+	// 		i
+	// 	);
 
 	ESP_ERROR_CHECK(__list_webserver_files());
+
 	return ESP_OK;
 }

@@ -104,8 +104,8 @@ void app_main(){
 	ESP_LOGI(TAG, "nvs_setup()");
 	ESP_ERROR_CHECK(nvs_setup());
 
-	ESP_LOGI(TAG, "wifi_setup()");
-	ESP_ERROR_CHECK(wifi_setup());
+	// ESP_LOGI(TAG, "wifi_setup()");
+	// ESP_ERROR_CHECK(wifi_setup());
 
 	ESP_LOGI(TAG, "fs_setup()");
 	ESP_ERROR_CHECK(fs_setup());
