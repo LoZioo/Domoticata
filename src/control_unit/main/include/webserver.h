@@ -38,6 +38,7 @@
 // UniLibC libraries.
 #include <ul_errors.h>
 #include <ul_utils.h>
+#include <ul_linked_list.h>
 
 // Project libraries.
 #include <main.h>
