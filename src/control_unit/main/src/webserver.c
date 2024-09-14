@@ -481,3 +481,7 @@ esp_err_t webserver_setup(){
 
 	return ESP_OK;
 }
+
+esp_err_t webserver_daemon_reload(){
+	// !!! ASSERT GENERALE
+}

@@ -66,4 +66,9 @@
  */
 extern esp_err_t webserver_setup();
 
+/**
+ * @brief Reload the webserver daemon, reloading all the web routes.
+ */
+extern esp_err_t webserver_daemon_reload();
+
 #endif  /* INC_WEBSERVER_H_ */
