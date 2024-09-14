@@ -225,15 +225,16 @@ esp_err_t __pm_code_setup(){
 		.sample_callback = __pm_get_sample
 	};
 
-	ul_err_t ul_ret = ul_pm_begin(&pm_init, &__pm_handle);
+	ESP_RETURN_ON_ERROR(
+		ul_errors_to_esp_err(
+			ul_pm_begin(
+				&pm_init,
+				&__pm_handle
+			)
+		),
 
-	ESP_RETURN_ON_FALSE(
-		ul_ret == UL_OK,
-
-		ESP_ERR_INVALID_STATE,
 		TAG,
-		"Error %d on `ul_pm_begin()`",
-		ul_ret
+		"Error on `ul_pm_begin()`"
 	);
 
 	return ESP_OK;
@@ -281,9 +282,6 @@ void __pm_task(void *parameters){
 
 	// `ESP_GOTO_ON_ERROR()` return code.
 	esp_err_t ret __attribute__((unused));
-
-	// UniLibC return code.
-	ul_err_t ul_ret;
 
 	// Sample buffer.
 	static adc_digi_output_data_t samples[ADC_BUF_SIZE_BYTES];
@@ -362,22 +360,20 @@ void __pm_task(void *parameters){
 		if(xSemaphoreTake(__pm_res_mutex, pdMS_TO_TICKS(MUTEX_TAKE_TIMEOUT_MS)) == pdFALSE)
 			continue;
 
-		// Conversion.
-		ul_ret = ul_pm_evaluate(
-			__pm_handle,
-			&sample_callback_context,
-			CONFIG_PM_ADC_SAMPLES,
-			&__pm_res
-		);
-
 		ESP_GOTO_ON_FALSE(
-			ul_ret == UL_OK,
+			ul_errors_to_esp_err(
+				ul_pm_evaluate(
+					__pm_handle,
+					&sample_callback_context,
+					CONFIG_PM_ADC_SAMPLES,
+					&__pm_res
+				)
+			),
 
 			ESP_ERR_INVALID_STATE,
 			task_continue,
 			TAG,
-			"Error %d on `ul_pm_evaluate()`",
-			ul_ret
+			"Error on `ul_pm_evaluate()`"
 		);
 
 		// Sample to results conversion ready; releasing mutex...

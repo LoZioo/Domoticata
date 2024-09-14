@@ -588,20 +588,18 @@ esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint1
 	);
 
 	// Decode the received bytes.
-	ul_err_t ret_val = ul_ms_decode_slave_message(
-		ul_utils_cast_to_mem(decoded_data),
-		encoded_data,
-		sizeof(encoded_data)
-	);
+	ESP_RETURN_ON_ERROR(
+		ul_errors_to_esp_err(
+			ul_ms_decode_slave_message(
+				ul_utils_cast_to_mem(decoded_data),
+				encoded_data,
+				sizeof(encoded_data)
+			)
+		),
 
-	// `ul_ms_decode_slave_message()` failed.
-	ESP_RETURN_ON_FALSE(
-		ret_val == UL_OK,
-
-		ESP_FAIL,
 		TAG,
-		"Error #%u on `ul_ms_decode_slave_message()` for slave device %02u",
-		ret_val, poll_device_id
+		"Error on `ul_ms_decode_slave_message()` for slave device %02u",
+		poll_device_id
 	);
 
 	// CRC8 computation.

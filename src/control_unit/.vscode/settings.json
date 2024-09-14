@@ -99,6 +99,9 @@
 		"ota.h": "c",
 		"pm.h": "c",
 		"charconv": "c",
-		"ul_linked_list.h": "c"
+		"ul_linked_list.h": "c",
+		"random": "c",
+		"ul_private.h": "c",
+		"ul_esp_shims.h": "c"
 	}
 }
