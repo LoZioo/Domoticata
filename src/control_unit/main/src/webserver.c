@@ -23,8 +23,7 @@
 #define WEBSERVER_ROOT_FOLDER				FS_LITTLEFS_BASE_PATH "/www"
 #define WEBSERVER_ROOT_FOLDER_LEN		(sizeof(WEBSERVER_ROOT_FOLDER) - 1)
 
-// `__route_send_file()` `line_buffer` size.
-#define LINE_BUFFER_SIZE	1024
+#define ROUTE_SEND_FILE_BUFFER_SIZE	1024
 
 #define __route(__uri, __method, __handler)	{ \
 	.uri			= (__uri), \
@@ -55,6 +54,8 @@ static httpd_handle_t __webserver_handle = NULL;
  ************************************************************************************************************/
 
 static esp_err_t __register_routes();
+
+static int __get_path_last_char_index_from_uri(const char *uri);
 static void __log_http_request(httpd_req_t *req);
 
 /**
@@ -96,6 +97,22 @@ esp_err_t __register_routes(){
 	return ESP_OK;
 }
 
+int __get_path_last_char_index_from_uri(const char *uri){
+	const char *ptr = uri;
+
+	while(*ptr != '\0'){
+		if(ul_utils_either(
+			'?', '#',
+			==, *ptr
+		))
+			return ptr - uri;
+
+		ptr++;
+	}
+
+	return -1;
+}
+
 void __log_http_request(httpd_req_t *req){
 	ESP_LOGI(
 		TAG,
@@ -109,7 +126,25 @@ esp_err_t __route_send_file(httpd_req_t *req){
 	esp_err_t ret = ESP_OK;
 	__log_http_request(req);
 
-	char full_path[WEBSERVER_ROOT_FOLDER_LEN + strlen(req->uri) + 1];
+	// !!! NON FUNZIONA LA RILEVAZIONE DEL #
+	// !!! NEL __log_http_request RIMUOVERE STAMPA DELLE COSE DOPO # E ?
+	// !!! SISTEMARE IL TIPO DI FILE DA INVIARE
+	// !!! VEDERE COME PRENDERE I PARAMETRI DALL'URL
+
+	// For truncating the URI.
+	int path_last_char_index =
+		__get_path_last_char_index_from_uri(req->uri);
+
+	ESP_LOGW(TAG, "<<%d>>", path_last_char_index);
+
+	char full_path[
+		WEBSERVER_ROOT_FOLDER_LEN + 1 + (
+			path_last_char_index > 0 ?
+			path_last_char_index :
+			strlen(req->uri)
+		)
+	];
+
 	snprintf(
 		full_path,
 		sizeof(full_path),
@@ -128,18 +163,18 @@ esp_err_t __route_send_file(httpd_req_t *req){
 		full_path, errno
 	);
 
-	char line_buffer[LINE_BUFFER_SIZE];
-	while(fgets(line_buffer, sizeof(line_buffer), file) != NULL)
+	char buffer[ROUTE_SEND_FILE_BUFFER_SIZE];
+	while(fgets(buffer, sizeof(buffer), file) != NULL)
 		ESP_GOTO_ON_ERROR(
 			httpd_resp_sendstr_chunk(
 				req,
-				line_buffer
+				buffer
 			),
 
 			label_error_500,
 			TAG,
 			"Error on `httpd_resp_sendstr_chunk(str=\"%s\")`",
-			line_buffer
+			buffer
 		);
 
 	ESP_GOTO_ON_ERROR(
@@ -151,7 +186,7 @@ esp_err_t __route_send_file(httpd_req_t *req){
 		label_error_500,
 		TAG,
 		"Error on `httpd_resp_sendstr_chunk(str=\"%s\")`",
-		line_buffer
+		buffer
 	);
 
 	label_fclose:
