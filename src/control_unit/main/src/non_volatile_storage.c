@@ -12,6 +12,7 @@
 ************************************************************************************************************/
 
 #include <non_volatile_storage.h>
+#include <private.h>
 
 /************************************************************************************************************
 * Private Defines
@@ -80,22 +81,8 @@ bool nvs_available(){
 }
 
 esp_err_t nvs_new_handle(nvs_handle_t *nvs_handle, const char *nvs_namespace){
-
-	ESP_RETURN_ON_FALSE(
-		nvs_handle != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `nvs_handle` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		nvs_namespace != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `nvs_namespace` is NULL"
-	);
+	assert_param_notnull(nvs_handle);
+	assert_param_notnull(nvs_namespace);
 
 	ESP_RETURN_ON_FALSE(
 		__nvs_available,

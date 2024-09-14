@@ -12,6 +12,7 @@
 ************************************************************************************************************/
 
 #include <rs485.h>
+#include <private.h>
 
 /************************************************************************************************************
 * Private Defines
@@ -180,22 +181,6 @@ int8_t __zone_to_pwm_zone_index(zone_t zone){
 esp_err_t __handle_button_press(bool *zone_enabled, uint16_t *zone_duty, uint8_t device_id, uint16_t button_states){
 
 	ESP_RETURN_ON_FALSE(
-		zone_enabled != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `zone_enabled` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		zone_duty != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `zone_duty` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
 		device_id < WALL_TERMINALS_COUNT,
 
 		ESP_ERR_INVALID_ARG,
@@ -343,22 +328,6 @@ esp_err_t __handle_button_press(bool *zone_enabled, uint16_t *zone_duty, uint8_t
 esp_err_t __handle_trimmer_change(bool *zone_enabled, uint16_t *zone_duty, uint8_t device_id, uint16_t trimmer_val){
 
 	ESP_RETURN_ON_FALSE(
-		zone_enabled != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `zone_enabled` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		zone_duty != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `zone_duty` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
 		device_id < WALL_TERMINALS_COUNT,
 
 		ESP_ERR_INVALID_ARG,
@@ -445,30 +414,6 @@ esp_err_t __handle_trimmer_change(bool *zone_enabled, uint16_t *zone_duty, uint8
 }
 
 esp_err_t __wall_terminals_poll(uint8_t *device_id, uint16_t *trimmer_val, uint16_t *button_states){
-
-	ESP_RETURN_ON_FALSE(
-		device_id != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `device_id` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		trimmer_val != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `adc_val` is NULL"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		button_states != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `button_states` is NULL"
-	);
 
 	// Default returned values.
 	*device_id = 0xFF;

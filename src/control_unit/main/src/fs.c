@@ -12,6 +12,7 @@
 ************************************************************************************************************/
 
 #include <fs.h>
+#include <private.h>
 
 /************************************************************************************************************
 * Private Defines
@@ -350,14 +351,7 @@ esp_err_t fs_partition_unmounted_write(uint8_t* data, size_t size){
 		return ESP_OK;
 	}
 
-	ESP_RETURN_ON_FALSE(
-		size > 0,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `size` is 0"
-	);
-
+	assert_param_size_ok(size);
 	ESP_RETURN_ON_ERROR(
 		esp_partition_write(
 			part,
@@ -375,14 +369,7 @@ esp_err_t fs_partition_unmounted_write(uint8_t* data, size_t size){
 }
 
 esp_err_t fs_partition_unmounted_get_sha256(uint8_t* hash){
-
-	ESP_RETURN_ON_FALSE(
-		hash != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `hash` is NULL"
-	);
+	assert_param_notnull(hash);
 
 	ESP_RETURN_ON_ERROR(
 		esp_partition_get_sha256(

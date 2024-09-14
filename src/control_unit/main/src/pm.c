@@ -12,6 +12,7 @@
 ************************************************************************************************************/
 
 #include <pm.h>
+#include <private.h>
 
 /************************************************************************************************************
 * Private Defines
@@ -457,6 +458,7 @@ esp_err_t pm_setup(){
 }
 
 esp_err_t pm_get_results(ul_pm_results_t *ul_pm_results){
+	assert_param_notnull(ul_pm_results);
 
 	ESP_RETURN_ON_FALSE(
 		__is_initialized(),
@@ -464,14 +466,6 @@ esp_err_t pm_get_results(ul_pm_results_t *ul_pm_results){
 		ESP_ERR_INVALID_STATE,
 		TAG,
 		"Error: library not initialized"
-	);
-
-	ESP_RETURN_ON_FALSE(
-		ul_pm_results != NULL,
-
-		ESP_ERR_INVALID_ARG,
-		TAG,
-		"Error: `ul_pm_results` is NULL"
 	);
 
 	ESP_RETURN_ON_FALSE(
