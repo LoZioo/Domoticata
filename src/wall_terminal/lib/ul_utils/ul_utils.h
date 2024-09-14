@@ -25,7 +25,6 @@
 #include <math.h>
 
 // UniLibC libraries.
-#include <ul_private.h>
 #include <ul_configs.h>
 #include <ul_errors.h>
 
