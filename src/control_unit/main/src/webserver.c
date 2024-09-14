@@ -23,7 +23,10 @@
 #define WEBSERVER_ROOT_FOLDER				FS_LITTLEFS_BASE_PATH "/www"
 #define WEBSERVER_ROOT_FOLDER_LEN		(sizeof(WEBSERVER_ROOT_FOLDER) - 1)
 
-#define ROUTE_SEND_FILE_BUFFER_SIZE	1024
+#define SEND_FILE_BUFFER_SIZE		1024
+
+#define __is_file_ext(filename, len, ext) \
+	(strcasecmp(&filename[len - sizeof(ext) + 1], ext) == 0)
 
 #define __route(__uri, __method, __handler)	{ \
 	.uri			= (__uri), \
@@ -35,7 +38,7 @@
 // Webserver routes.
 #define ROUTES	{ \
 	__route("/",	HTTP_GET,	__route_root), \
-	__route("/*",	HTTP_GET,	__route_send_file), \
+	__route("/*",	HTTP_GET,	__send_file), \
 }
 
 /************************************************************************************************************
@@ -55,14 +58,16 @@ static httpd_handle_t __webserver_handle = NULL;
 
 static esp_err_t __register_routes();
 
-static int __get_path_last_char_index_from_uri(const char *uri);
 static void __log_http_request(httpd_req_t *req);
+static int __get_first_occurrence_index(const char *str, uint32_t len, char searched, bool from_end);
+static esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filename);
 
 /**
  * @brief Send the specified file from VFS.
  * @note The path is `req->uri`.
  */
-static esp_err_t __route_send_file(httpd_req_t *req);
+static esp_err_t __send_file(httpd_req_t *req);
+
 static esp_err_t __route_root(httpd_req_t *req);
 
 /************************************************************************************************************
@@ -97,22 +102,6 @@ esp_err_t __register_routes(){
 	return ESP_OK;
 }
 
-int __get_path_last_char_index_from_uri(const char *uri){
-	const char *ptr = uri;
-
-	while(*ptr != '\0'){
-		if(ul_utils_either(
-			'?', '#',
-			==, *ptr
-		))
-			return ptr - uri;
-
-		ptr++;
-	}
-
-	return -1;
-}
-
 void __log_http_request(httpd_req_t *req){
 	ESP_LOGI(
 		TAG,
@@ -122,26 +111,79 @@ void __log_http_request(httpd_req_t *req){
 	);
 }
 
-esp_err_t __route_send_file(httpd_req_t *req){
+int __get_first_occurrence_index(const char *str, uint32_t len, char searched, bool from_end){
+
+	if(from_end){
+		for(int i=len-1; i>=0; i--)
+			if(str[i] == searched)
+				return i;
+	}
+
+	else {
+		for(int i=0; i<len; i++)
+			if(str[i] == searched)
+				return i;
+	}
+
+	return -1;
+}
+
+esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filename){
+	uint32_t len = strlen(filename);
+
+	if(__is_file_ext(filename, len, ".pdf"))
+		return httpd_resp_set_type(req, "application/pdf");
+
+	else if(
+		__is_file_ext(filename, len, ".html") ||
+		__is_file_ext(filename, len, ".htm")
+	)
+		return httpd_resp_set_type(req, "text/html");
+
+	else if(__is_file_ext(filename, len, ".css"))
+		return httpd_resp_set_type(req, "text/css");
+
+	else if(__is_file_ext(filename, len, ".js"))
+		return httpd_resp_set_type(req, "text/javascript");
+
+	else if(__is_file_ext(filename, len, ".xml"))
+		return httpd_resp_set_type(req, "application/xml");
+
+	else if(__is_file_ext(filename, len, ".json"))
+		return httpd_resp_set_type(req, "application/json");
+
+	else if(__is_file_ext(filename, len, ".gif"))
+		return httpd_resp_set_type(req, "image/gif");
+
+	else if(__is_file_ext(filename, len, ".jpeg"))
+		return httpd_resp_set_type(req, "image/jpeg");
+
+	else if(__is_file_ext(filename, len, ".png"))
+		return httpd_resp_set_type(req, "image/png");
+
+	else if(__is_file_ext(filename, len, ".ico"))
+		return httpd_resp_set_type(req, "image/x-icon");
+
+	return httpd_resp_set_type(req, "text/plain");
+}
+
+esp_err_t __send_file(httpd_req_t *req){
 	esp_err_t ret = ESP_OK;
 	__log_http_request(req);
 
-	// !!! NON FUNZIONA LA RILEVAZIONE DEL #
-	// !!! NEL __log_http_request RIMUOVERE STAMPA DELLE COSE DOPO # E ?
-	// !!! SISTEMARE IL TIPO DI FILE DA INVIARE
-	// !!! VEDERE COME PRENDERE I PARAMETRI DALL'URL
+	uint32_t len = strlen(req->uri);
 
 	// For truncating the URI.
 	int path_last_char_index =
-		__get_path_last_char_index_from_uri(req->uri);
-
-	ESP_LOGW(TAG, "<<%d>>", path_last_char_index);
+		__get_first_occurrence_index(
+			req->uri, len, '?', false
+		);
 
 	char full_path[
 		WEBSERVER_ROOT_FOLDER_LEN + 1 + (
 			path_last_char_index > 0 ?
 			path_last_char_index :
-			strlen(req->uri)
+			len
 		)
 	];
 
@@ -163,12 +205,22 @@ esp_err_t __route_send_file(httpd_req_t *req){
 		full_path, errno
 	);
 
-	char buffer[ROUTE_SEND_FILE_BUFFER_SIZE];
+	ESP_GOTO_ON_ERROR(
+		__set_content_type_from_file_type(
+			req, full_path
+		),
+
+		label_error_500,
+		TAG,
+		"Error on `__set_content_type_from_file_type(filename=\"%s\")",
+		full_path
+	);
+
+	char buffer[SEND_FILE_BUFFER_SIZE];
 	while(fgets(buffer, sizeof(buffer), file) != NULL)
 		ESP_GOTO_ON_ERROR(
 			httpd_resp_sendstr_chunk(
-				req,
-				buffer
+				req, buffer
 			),
 
 			label_error_500,
@@ -179,8 +231,7 @@ esp_err_t __route_send_file(httpd_req_t *req){
 
 	ESP_GOTO_ON_ERROR(
 		httpd_resp_sendstr_chunk(
-			req,
-			NULL
+			req, NULL
 		),
 
 		label_error_500,
@@ -239,6 +290,8 @@ esp_err_t __route_root(httpd_req_t *req){
 /************************************************************************************************************
 * Public Functions Definitions
  ************************************************************************************************************/
+
+// !!! VEDERE COME PRENDERE I PARAMETRI DALL'URL
 
 esp_err_t webserver_setup(){
 
