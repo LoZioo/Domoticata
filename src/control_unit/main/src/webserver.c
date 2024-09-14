@@ -12,6 +12,7 @@
 ************************************************************************************************************/
 
 #include <webserver.h>
+#include <private.h>
 
 /************************************************************************************************************
 * Private Defines
@@ -482,6 +483,22 @@ esp_err_t webserver_setup(){
 	return ESP_OK;
 }
 
-esp_err_t webserver_daemon_reload(){
-	// !!! ASSERT GENERALE
+esp_err_t webserver_reload(){
+
+	if(__webserver_handle != NULL)
+		ESP_RETURN_ON_ERROR(
+			httpd_stop(__webserver_handle),
+
+			TAG,
+			"Error on `httpd_stop()`"
+		);
+
+	ESP_RETURN_ON_ERROR(
+		webserver_setup(),
+
+		TAG,
+		"Error on `webserver_setup()`"
+	);
+
+	return ESP_OK;
 }
