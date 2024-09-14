@@ -38,7 +38,6 @@
 // UniLibC libraries.
 #include <ul_errors.h>
 #include <ul_utils.h>
-#include <ul_linked_list.h>
 
 // Project libraries.
 #include <main.h>
@@ -65,10 +64,5 @@
  * @brief Initialize the library.
  */
 extern esp_err_t webserver_setup();
-
-/**
- * @brief Reload the webserver daemon, reloading also the web routes.
- */
-extern esp_err_t webserver_reload();
 
 #endif  /* INC_WEBSERVER_H_ */
