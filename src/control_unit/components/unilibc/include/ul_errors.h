@@ -24,6 +24,13 @@
 // UniLibC libraries.
 #include <ul_configs.h>
 
+#ifndef UL_CONFIG_ERRORS_DISABLE_ESP_IDF_SHIMS
+
+// Platform libraries.
+#include <esp_err.h>
+
+#endif
+
 /************************************************************************************************************
 * Public Defines
 ************************************************************************************************************/
@@ -171,7 +178,8 @@
 /**
  * @brief A stub.
  */
-#define UL_ERROR_CHECK_WITHOUT_ABORT(x)		x
+#define UL_ERROR_CHECK_WITHOUT_ABORT(x)	\
+	do { (void)(x); } while(0)
 
 /**
  * @brief Check the error code. If the code is not `UL_OK`, it returns.
@@ -185,7 +193,8 @@
 /**
  * @brief A version of `UL_RETURN_ON_ERROR()` macro that can be called from ISR.
  */
-#define UL_RETURN_ON_ERROR_ISR(x, format, ...)	UL_RETURN_ON_ERROR(x, format, ...)
+#define UL_RETURN_ON_ERROR_ISR(x, format, ...)	\
+	UL_RETURN_ON_ERROR(x, format, ...)
 
 /**
  * @brief Check the error code. If the code is not `UL_OK`,
@@ -202,7 +211,8 @@
 /**
  * @brief A version of `UL_GOTO_ON_ERROR()` macro that can be called from ISR.
  */
-#define UL_GOTO_ON_ERROR_ISR(x, goto_tag, format, ...)	UL_GOTO_ON_ERROR(x, goto_tag, format, ...)
+#define UL_GOTO_ON_ERROR_ISR(x, goto_tag, format, ...)	\
+	UL_GOTO_ON_ERROR(x, goto_tag, format, ...)
 
 /**
  * @brief Check the condition. If the condition is not `true`,
@@ -216,7 +226,8 @@
 /**
  * @brief A version of `UL_RETURN_ON_FALSE()` macro that can be called from ISR.
  */
-#define UL_RETURN_ON_FALSE_ISR(c, err_code, format, ...)	UL_RETURN_ON_FALSE(c, err_code, format, ...)
+#define UL_RETURN_ON_FALSE_ISR(c, err_code, format, ...)	\
+	UL_RETURN_ON_FALSE(c, err_code, format, ...)
 
 /**
  * @brief Check the condition. If the condition is not `true`,
@@ -232,7 +243,8 @@
 /**
  * @brief A version of `UL_GOTO_ON_FALSE()` macro that can be called from ISR.
  */
-#define UL_GOTO_ON_FALSE_ISR(c, err_code, goto_tag, format, ...)	UL_GOTO_ON_FALSE(c, err_code, goto_tag, format, ...)
+#define UL_GOTO_ON_FALSE_ISR(c, err_code, goto_tag, format, ...)	\
+	UL_GOTO_ON_FALSE(c, err_code, goto_tag, format, ...)
 
 #endif /* UL_CONFIG_ERRORS_PRINT_DEBUG */
 
@@ -304,4 +316,15 @@ extern bool ul_errors_begin(ul_errors_printf_callback_t default_printf_callback,
 extern bool ul_errors_begin(ul_errors_printf_callback_t default_printf_callback, ul_errors_printf_callback_t isr_printf_callback);
 
 #endif /* UL_CONFIG_ERRORS_PRINT_DEBUG */
+
+#ifndef UL_CONFIG_ERRORS_DISABLE_ESP_IDF_SHIMS
+
+/**
+ * @brief Converts from `ul_err_t` to `esp_err_t`.
+ * @note If the conversion is not supported, `ESP_FAIL` will be returned.
+ */
+extern esp_err_t ul_errors_to_esp_err(ul_err_t ret);
+
+#endif /* UL_CONFIG_ERRORS_DISABLE_ESP_IDF_SHIMS */
+
 #endif /* INC_UL_ERRORS_H_ */

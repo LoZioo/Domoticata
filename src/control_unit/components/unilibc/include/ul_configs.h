@@ -16,7 +16,8 @@
 * ul_errors.h
 ************************************************************************************************************/
 
-#define UL_CONFIG_ERRORS_PRINT_DEBUG								// Comment to disable the text debug output.
+// #define UL_CONFIG_ERRORS_PRINT_DEBUG								// Comment to disable the text debug output.
+// #define UL_CONFIG_ERRORS_DISABLE_ESP_IDF_SHIMS			// Comment to enable the UniLibC to ESP-IDF errors shims.
 
 /************************************************************************************************************
 * ul_pm.h

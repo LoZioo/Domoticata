@@ -127,3 +127,28 @@ bool ul_errors_begin(ul_errors_printf_callback_t default_printf_callback, ul_err
 	#endif /* UL_CONFIG_ERRORS_PRINT_DEBUG */
 	return true;
 }
+
+#ifndef UL_CONFIG_ERRORS_DISABLE_ESP_IDF_SHIMS
+
+esp_err_t ul_errors_to_esp_err(ul_err_t ret){
+	switch(ret){
+		case UL_OK:											return ESP_OK;
+		case UL_FAIL:										return ESP_FAIL;
+		case UL_ERR_NO_MEM:							return ESP_ERR_NO_MEM;
+		case UL_ERR_INVALID_ARG:				return ESP_ERR_INVALID_ARG;
+		case UL_ERR_INVALID_STATE:			return ESP_ERR_INVALID_STATE;
+		case UL_ERR_INVALID_SIZE:				return ESP_ERR_INVALID_SIZE;
+		case UL_ERR_NOT_FOUND:					return ESP_ERR_NOT_FOUND;
+		case UL_ERR_NOT_SUPPORTED:			return ESP_ERR_NOT_SUPPORTED;
+		case UL_ERR_TIMEOUT:						return ESP_ERR_TIMEOUT;
+		case UL_ERR_INVALID_RESPONSE:		return ESP_ERR_INVALID_RESPONSE;
+		case UL_ERR_INVALID_CRC:				return ESP_ERR_INVALID_CRC;
+		case UL_ERR_INVALID_VERSION:		return ESP_ERR_INVALID_VERSION;
+		case UL_ERR_INVALID_MAC:				return ESP_ERR_INVALID_MAC;
+		case UL_ERR_NOT_FINISHED:				return ESP_ERR_NOT_FINISHED;
+		case UL_ERR_NOT_ALLOWED:				return ESP_ERR_NOT_ALLOWED;
+		default:												return ESP_FAIL;
+	}
+}
+
+#endif /* UL_CONFIG_ERRORS_DISABLE_ESP_IDF_SHIMS */

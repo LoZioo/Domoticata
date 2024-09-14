@@ -18,9 +18,9 @@
 ************************************************************************************************************/
 
 // Standard libraries.
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 // UniLibC libraries.
 #include <ul_configs.h>
