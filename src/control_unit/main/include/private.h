@@ -31,8 +31,8 @@
 #define assert_param_size_ok(size)	\
 	ESP_RETURN_ON_FALSE( \
 		(size) > 0, \
-		TAG, \
 		ESP_ERR_INVALID_ARG, \
+		TAG, \
 		"Error: `" #size "` is 0" \
 	)
 
