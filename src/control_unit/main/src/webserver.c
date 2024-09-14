@@ -207,7 +207,7 @@ esp_err_t __send_file(httpd_req_t *req){
 
 	ESP_GOTO_ON_ERROR(
 		__set_content_type_from_file_type(
-			req, full_path
+			req, &full_path[WEBSERVER_ROOT_FOLDER_LEN]
 		),
 
 		label_error_500,
