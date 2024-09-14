@@ -57,7 +57,7 @@ static const char *TAG = LOG_TAG;
 
 static TaskHandle_t __pm_task_handle = NULL;
 static adc_continuous_handle_t __adc_handle;
-static ul_pm_handle_t *__pm;
+static ul_pm_handle_t *__pm_handle;
 
 // Voltage and current channels.
 static struct __attribute__((__packed__)) {
@@ -225,7 +225,7 @@ esp_err_t __pm_code_setup(){
 		.sample_callback = __pm_get_sample
 	};
 
-	ul_err_t ul_ret = ul_pm_begin(pm_init, &__pm);
+	ul_err_t ul_ret = ul_pm_begin(&pm_init, &__pm_handle);
 
 	ESP_RETURN_ON_FALSE(
 		ul_ret == UL_OK,
@@ -364,7 +364,7 @@ void __pm_task(void *parameters){
 
 		// Conversion.
 		ul_ret = ul_pm_evaluate(
-			__pm,
+			__pm_handle,
 			&sample_callback_context,
 			CONFIG_PM_ADC_SAMPLES,
 			&__pm_res
