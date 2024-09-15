@@ -42,12 +42,19 @@
 #define ROUTES	{ \
 	__route("/",	HTTP_GET,	__route_root), \
 	__route("/update/*",	HTTP_GET,	__route_ota_update), \
-	__route("/*",	HTTP_GET,	__send_file), \
+	__route("/*",	HTTP_GET,	__route_send_file), \
 }
 
 /************************************************************************************************************
 * Private Types Definitions
  ************************************************************************************************************/
+
+typedef struct {
+	char *uri;
+	char *query;
+	uint32_t uri_len;
+	uint32_t query_len;
+} decoded_uri_t;
 
 /************************************************************************************************************
 * Private Variables
@@ -62,18 +69,15 @@ static httpd_handle_t __webserver_handle = NULL;
 
 static esp_err_t __register_routes();
 
-static int __get_first_char_occurrence_index(const char *str, uint32_t len, char searched, bool from_end);
-static void __get_uri_len_without_params(httpd_req_t *req, uint32_t *uri_len, uint32_t *uri_len_without_params);
 static void __log_http_request(httpd_req_t *req);
+static decoded_uri_t __decode_uri(httpd_req_t *req);
 
 static esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filename);
 
 /**
- * @brief Send the specified file from VFS.
- * @note The path is `req->uri`.
+ * @brief Send the requested file from VFS.
  */
-static esp_err_t __send_file(httpd_req_t *req);
-
+static esp_err_t __route_send_file(httpd_req_t *req);
 static esp_err_t __route_root(httpd_req_t *req);
 static esp_err_t __route_ota_update(httpd_req_t *req);
 
@@ -109,35 +113,6 @@ esp_err_t __register_routes(){
 	return ESP_OK;
 }
 
-int __get_first_char_occurrence_index(const char *str, uint32_t len, char searched, bool from_end){
-
-	if(from_end){
-		for(int i=len-1; i>=0; i--)
-			if(str[i] == searched)
-				return i;
-	}
-
-	else {
-		for(int i=0; i<len; i++)
-			if(str[i] == searched)
-				return i;
-	}
-
-	return -1;
-}
-
-void __get_uri_len_without_params(httpd_req_t *req, uint32_t *uri_len, uint32_t *uri_len_without_params){
-
-	*uri_len = strlen(req->uri);
-	ul_utils_cast_to_type(uri_len_without_params, int) =
-		__get_first_char_occurrence_index(
-			req->uri, *uri_len, '?', false
-		);
-
-	if(ul_utils_cast_to_type(uri_len_without_params, int) == -1)
-		*uri_len_without_params = *uri_len;
-}
-
 void __log_http_request(httpd_req_t *req){
 	ESP_LOGI(
 		TAG,
@@ -145,6 +120,20 @@ void __log_http_request(httpd_req_t *req){
 		req->method == -1 ? "Unsupported HTTP method" : http_method_str(req->method),
 		req->uri
 	);
+}
+
+decoded_uri_t __decode_uri(httpd_req_t *req){
+	decoded_uri_t uri;
+
+	uri.uri = (char*) req->uri;
+	uri.query_len = httpd_req_get_url_query_len(req);
+	uri.uri_len = strlen(uri.uri) - uri.query_len;
+	uri.query = &(uri.uri[uri.uri_len]);
+
+	if(uri.uri[uri.uri_len - 1] == '?')
+		uri.uri[--uri.uri_len] = '\0';
+
+	return uri;
 }
 
 esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filename){
@@ -186,47 +175,47 @@ esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filena
 	return httpd_resp_set_type(req, "text/plain");
 }
 
-esp_err_t __send_file(httpd_req_t *req){
+esp_err_t __route_send_file(httpd_req_t *req){
 	esp_err_t ret = ESP_OK;
 	__log_http_request(req);
 
-	uint32_t uri_len, uri_len_without_params;
-	__get_uri_len_without_params(
-		req, &uri_len, &uri_len_without_params
-	);
+	decoded_uri_t uri = __decode_uri(req);
+	FILE *file;
 
-	char full_path[
-		WEBSERVER_ROOT_FOLDER_LEN +
-		uri_len_without_params + 1
-	];
+	{
+		char full_path[
+			WEBSERVER_ROOT_FOLDER_LEN +
+			uri.uri_len + 1
+		];
 
-	snprintf(
-		full_path,
-		sizeof(full_path),
-		WEBSERVER_ROOT_FOLDER "%s",
-		req->uri
-	);
+		snprintf(
+			full_path,
+			sizeof(full_path),
+			WEBSERVER_ROOT_FOLDER "%s",
+			uri.uri
+		);
 
-	FILE *file = fopen(full_path, "r");
-	ESP_GOTO_ON_FALSE(
-		file != NULL,
+		file = fopen(full_path, "r");
+		ESP_GOTO_ON_FALSE(
+			file != NULL,
 
-		ESP_ERR_NOT_FOUND,
-		label_error_404,
-		TAG,
-		"Error on `fopen(filename=\"%s\")` (errno=%d)",
-		full_path, errno
-	);
+			ESP_ERR_NOT_FOUND,
+			label_error_404,
+			TAG,
+			"Error on `fopen(filename=\"%s\")` (errno=%d)",
+			full_path, errno
+		);
+	}
 
 	ESP_GOTO_ON_ERROR(
 		__set_content_type_from_file_type(
-			req, &full_path[WEBSERVER_ROOT_FOLDER_LEN]
+			req, uri.uri
 		),
 
 		label_error_500,
 		TAG,
 		"Error on `__set_content_type_from_file_type(filename=\"%s\")",
-		full_path
+		uri.uri
 	);
 
 	char buffer[SEND_FILE_BUFFER_SIZE];
@@ -304,14 +293,10 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 	esp_err_t ret = ESP_OK;
 	__log_http_request(req);
 
-	uint32_t uri_len, uri_len_without_params;
-	__get_uri_len_without_params(
-		req, &uri_len, &uri_len_without_params
-	);
+	decoded_uri_t uri = __decode_uri(req);
 
-	if(__str_ends_with2(
-		req->uri,
-		uri_len_without_params,
+	if(__str_ends_with(
+		uri.uri,
 		"/fs"
 	))
 		ESP_GOTO_ON_ERROR(
@@ -322,9 +307,8 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 			"Error on `httpd_resp_sendstr()"
 		);
 
-	else if(__str_ends_with2(
-		req->uri,
-		uri_len_without_params,
+	else if(__str_ends_with(
+		uri.uri,
 		"/fw"
 	))
 		ESP_GOTO_ON_ERROR(
