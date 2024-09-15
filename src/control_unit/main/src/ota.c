@@ -23,21 +23,24 @@
 #define __stringify(x)	#x
 #define __to_string(x)	__stringify(x)
 
-#define UPDATE_URL	\
-	"http://" \
-	CONFIG_OTA_HTTP_SERVER_IP_ADDR \
+#define IPV4_ADDR_LEN		15
+
+#define UPDATE_URL_BEFORE_IP	\
+	"http://"
+
+#define UPDATE_URL_AFTER_IP	\
 	":" \
 	__to_string(CONFIG_OTA_HTTP_SERVER_PORT) \
 	CONFIG_OTA_HTTP_BINARY_FILE_PATH \
 	"/"
 
-#define UPDATE_FS_URL	\
-	UPDATE_URL \
+#define UPDATE_URL_AFTER_IP_FS	\
+	UPDATE_URL_AFTER_IP \
 	CONFIG_OTA_FS_BINARY_FILE_NAME \
 	".bin"
 
-#define UPDATE_FW_URL	\
-	UPDATE_URL \
+#define UPDATE_URL_AFTER_IP_FW	\
+	UPDATE_URL_AFTER_IP \
 	CONFIG_OTA_FW_BINARY_FILE_NAME \
 	".bin"
 
@@ -133,11 +136,23 @@ esp_err_t __esp_http_client_ret_to_esp_err_t(int64_t esp_http_client_ret){
 * Public Functions Definitions
  ************************************************************************************************************/
 
-esp_err_t ota_update_fs(){
+esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 	esp_err_t ret = ESP_OK;
 
+	char url[
+		sizeof(UPDATE_URL_BEFORE_IP) - 1 +
+		IPV4_ADDR_LEN +
+		sizeof(UPDATE_URL_AFTER_IP_FS)
+	];
+
+	snprintf(
+		url, sizeof(url),
+		UPDATE_URL_BEFORE_IP IPSTR UPDATE_URL_AFTER_IP_FS,
+		IP2STR(&ota_server_ip)
+	);
+
 	ESP_LOGI(TAG, "Beginning filesystem update");
-	ESP_LOGI(TAG, "Target URL is \"" UPDATE_FS_URL "\"");
+	ESP_LOGI(TAG, "Target URL is \"%s\"", url);
 
 	ESP_RETURN_ON_FALSE(
 		wifi_network_available(),
@@ -163,7 +178,7 @@ esp_err_t ota_update_fs(){
 	);
 
 	esp_http_client_config_t http_client_config = {
-		.url = UPDATE_FS_URL,
+		.url = url,
 		.timeout_ms = UPDATE_TIMEOUT_MS,
 		.keep_alive_enable = true,
 	};
@@ -308,11 +323,23 @@ esp_err_t ota_update_fs(){
 	return ret;
 }
 
-esp_err_t ota_update_fw(){
+esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 	esp_err_t ret = ESP_OK;
 
+	char url[
+		sizeof(UPDATE_URL_BEFORE_IP) - 1 +
+		IPV4_ADDR_LEN +
+		sizeof(UPDATE_URL_AFTER_IP_FW)
+	];
+
+	snprintf(
+		url, sizeof(url),
+		UPDATE_URL_BEFORE_IP IPSTR UPDATE_URL_AFTER_IP_FW,
+		IP2STR(&ota_server_ip)
+	);
+
 	ESP_LOGI(TAG, "Beginning firmware update");
-	ESP_LOGI(TAG, "Target URL is \"" UPDATE_FW_URL "\"");
+	ESP_LOGI(TAG, "Target URL is \"%s\"", url);
 
 	ESP_RETURN_ON_FALSE(
 		wifi_network_available(),
@@ -373,7 +400,7 @@ esp_err_t ota_update_fw(){
 	__log_partition_info("Target", part_target);
 
 	esp_http_client_config_t http_client_config = {
-		.url = UPDATE_FW_URL,
+		.url = url,
 		.timeout_ms = UPDATE_TIMEOUT_MS,
 		.keep_alive_enable = true,
 	};

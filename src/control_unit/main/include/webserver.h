@@ -22,11 +22,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <errno.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 // Platform libraries.
 #include <esp_err.h>
@@ -34,6 +33,7 @@
 #include <esp_log.h>
 
 #include <esp_http_server.h>
+#include <esp_netif_ip_addr.h>
 
 // UniLibC libraries.
 #include <ul_errors.h>
@@ -43,6 +43,7 @@
 #include <main.h>
 #include <wifi.h>
 #include <fs.h>
+#include <ota.h>
 
 /************************************************************************************************************
 * Public Defines

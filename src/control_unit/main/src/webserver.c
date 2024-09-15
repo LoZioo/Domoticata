@@ -23,6 +23,7 @@
 #define WEBSERVER_ROOT_FOLDER				FS_LITTLEFS_BASE_PATH "/www"
 #define WEBSERVER_ROOT_FOLDER_LEN		(sizeof(WEBSERVER_ROOT_FOLDER) - 1)
 
+// #define QUERY_VAL_BUFFER_SIZE		100
 #define SEND_FILE_BUFFER_SIZE		1024
 
 #define __str_ends_with2(str, len, str_end) \
@@ -71,6 +72,7 @@ static esp_err_t __register_routes();
 
 static void __log_http_request(httpd_req_t *req);
 static decoded_uri_t __decode_uri(httpd_req_t *req);
+static esp_ip4_addr_t __get_sender_ipv4(httpd_req_t *req);
 
 static esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filename);
 
@@ -136,6 +138,50 @@ decoded_uri_t __decode_uri(httpd_req_t *req){
 	return uri;
 }
 
+esp_ip4_addr_t __get_sender_ipv4(httpd_req_t *req){
+	esp_ip4_addr_t ret = {
+		.addr = 0
+	};
+
+	int sockfd = httpd_req_to_sockfd(req);
+	struct sockaddr_in6 addr;
+	socklen_t addr_len = sizeof(addr);
+
+	// if(
+	// 	sockfd == -1 ||
+	// 	getpeername(sockfd, (struct sockaddr*) &addr, &addr_len) != 0 ||
+	// 	addr.sin_family != AF_INET
+	// )
+	// 	return ret;
+
+	if(sockfd == -1){
+		ESP_LOGW(TAG, "1");
+		return ret;
+	}
+
+	if(getpeername(sockfd, (struct sockaddr*) &addr, &addr_len) < 0){
+		ESP_LOGW(TAG, "2");
+		return ret;
+	}
+
+	if(addr.sin6_family == AF_INET6){
+		uint8_t *ipv6_addr = ul_utils_cast_to_mem(addr.sin6_addr);
+		ret.addr = ntohl(
+			(ipv6_addr[12] << 24) |
+			(ipv6_addr[13] << 16) |
+			(ipv6_addr[14] << 8)  |
+			(ipv6_addr[15])
+		);
+	}
+
+	else if(addr.sin6_family == AF_INET) {
+		struct sockaddr_in *ipv4_addr = (struct sockaddr_in*) &addr;
+		ret.addr = ntohl(ipv4_addr->sin_addr.s_addr);
+	}
+
+	return ret;
+}
+
 esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filename){
 	uint32_t len = strlen(filename);
 
@@ -189,8 +235,7 @@ esp_err_t __route_send_file(httpd_req_t *req){
 		];
 
 		snprintf(
-			full_path,
-			sizeof(full_path),
+			full_path, sizeof(full_path),
 			WEBSERVER_ROOT_FOLDER "%s",
 			uri.uri
 		);
@@ -214,7 +259,7 @@ esp_err_t __route_send_file(httpd_req_t *req){
 
 		label_error_500,
 		TAG,
-		"Error on `__set_content_type_from_file_type(filename=\"%s\")",
+		"Error on `__set_content_type_from_file_type(filename=\"%s\")`",
 		uri.uri
 	);
 
@@ -263,7 +308,7 @@ esp_err_t __route_root(httpd_req_t *req){
 
 		label_error,
 		TAG,
-		"Error on `httpd_resp_set_status()"
+		"Error on `httpd_resp_set_status()`"
 	);
 
 	ESP_GOTO_ON_ERROR(
@@ -271,7 +316,7 @@ esp_err_t __route_root(httpd_req_t *req){
 
 		label_error,
 		TAG,
-		"Error on `httpd_resp_set_hdr()"
+		"Error on `httpd_resp_set_hdr()`"
 	);
 
 	ESP_GOTO_ON_ERROR(
@@ -279,7 +324,7 @@ esp_err_t __route_root(httpd_req_t *req){
 
 		label_error,
 		TAG,
-		"Error on `httpd_resp_send()"
+		"Error on `httpd_resp_send()`"
 	);
 
 	return ret;
@@ -294,43 +339,68 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 	__log_http_request(req);
 
 	decoded_uri_t uri = __decode_uri(req);
+	esp_ip4_addr_t ota_server_ip =
+		__get_sender_ipv4(req);
+
+	ESP_GOTO_ON_FALSE(
+		ota_server_ip.addr != 0,
+
+		ESP_FAIL,
+		label_error_500,
+		TAG,
+		"Error on `__get_sender_ipv4()`"
+	);
 
 	if(__str_ends_with(
 		uri.uri,
 		"/fs"
-	))
-		ESP_GOTO_ON_ERROR(
-			httpd_resp_sendstr(req, "FS"),
+	)){
 
-			label_error,
+		ESP_GOTO_ON_ERROR(
+			ota_update_fs(ota_server_ip),
+
+			label_error_500,
 			TAG,
-			"Error on `httpd_resp_sendstr()"
+			"Error on `ota_update_fs()`"
 		);
+
+		ESP_GOTO_ON_ERROR(
+			httpd_resp_sendstr(req, "Updating filesystem..."),
+
+			label_error_500,
+			TAG,
+			"Error on `httpd_resp_sendstr()`"
+		);
+	}
 
 	else if(__str_ends_with(
 		uri.uri,
 		"/fw"
-	))
-		ESP_GOTO_ON_ERROR(
-			httpd_resp_sendstr(req, "FW"),
+	)){
 
-			label_error,
+		ESP_GOTO_ON_ERROR(
+			ota_update_fw(ota_server_ip),
+
+			label_error_500,
 			TAG,
-			"Error on `httpd_resp_sendstr()"
+			"Error on `ota_update_fw()`"
 		);
+
+		ESP_GOTO_ON_ERROR(
+			httpd_resp_sendstr(req, "Updating firmware..."),
+
+			label_error_500,
+			TAG,
+			"Error on `httpd_resp_sendstr()`"
+		);
+	}
 
 	else
-		ESP_GOTO_ON_ERROR(
-			httpd_resp_send_404(req),
-
-			label_error,
-			TAG,
-			"Error on `httpd_resp_send_404()"
-		);
+		goto label_error_500;
 
 	return ret;
 
-	label_error:
+	label_error_500:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(httpd_resp_send_500(req));
 	return ret;
 }
@@ -338,8 +408,6 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 /************************************************************************************************************
 * Public Functions Definitions
  ************************************************************************************************************/
-
-// !!! VEDERE COME PRENDERE I PARAMETRI DALL'URL
 
 esp_err_t webserver_setup(){
 
@@ -393,3 +461,5 @@ esp_err_t webserver_setup(){
 
 	return ESP_OK;
 }
+
+// !!! METTERE ESP_RESTART

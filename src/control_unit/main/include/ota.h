@@ -35,6 +35,7 @@
 #include <esp_flash_partitions.h>
 #include <esp_partition.h>
 #include <esp_http_client.h>
+#include <esp_netif_ip_addr.h>
 
 #include <freertos/FreeRTOS.h>
 
@@ -62,11 +63,11 @@
 /**
  * @brief Trigger a filesystem update.
  */
-extern esp_err_t ota_update_fs();
+extern esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip);
 
 /**
  * @brief Trigger a firmware update.
  */
-extern esp_err_t ota_update_fw();
+extern esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip);
 
 #endif  /* INC_OTA_H_ */
