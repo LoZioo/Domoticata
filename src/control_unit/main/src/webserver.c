@@ -62,8 +62,10 @@ static httpd_handle_t __webserver_handle = NULL;
 
 static esp_err_t __register_routes();
 
+static int __get_first_char_occurrence_index(const char *str, uint32_t len, char searched, bool from_end);
+static void __get_uri_len_without_params(httpd_req_t *req, uint32_t *uri_len, uint32_t *uri_len_without_params);
 static void __log_http_request(httpd_req_t *req);
-static int __get_first_occurrence_index(const char *str, uint32_t len, char searched, bool from_end);
+
 static esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filename);
 
 /**
@@ -107,16 +109,7 @@ esp_err_t __register_routes(){
 	return ESP_OK;
 }
 
-void __log_http_request(httpd_req_t *req){
-	ESP_LOGI(
-		TAG,
-		"(%s) %s",
-		req->method == -1 ? "Unsupported HTTP method" : http_method_str(req->method),
-		req->uri
-	);
-}
-
-int __get_first_occurrence_index(const char *str, uint32_t len, char searched, bool from_end){
+int __get_first_char_occurrence_index(const char *str, uint32_t len, char searched, bool from_end){
 
 	if(from_end){
 		for(int i=len-1; i>=0; i--)
@@ -131,6 +124,27 @@ int __get_first_occurrence_index(const char *str, uint32_t len, char searched, b
 	}
 
 	return -1;
+}
+
+void __get_uri_len_without_params(httpd_req_t *req, uint32_t *uri_len, uint32_t *uri_len_without_params){
+
+	*uri_len = strlen(req->uri);
+	ul_utils_cast_to_type(uri_len_without_params, int) =
+		__get_first_char_occurrence_index(
+			req->uri, *uri_len, '?', false
+		);
+
+	if(ul_utils_cast_to_type(uri_len_without_params, int) == -1)
+		*uri_len_without_params = *uri_len;
+}
+
+void __log_http_request(httpd_req_t *req){
+	ESP_LOGI(
+		TAG,
+		"(%s) %s",
+		req->method == -1 ? "Unsupported HTTP method" : http_method_str(req->method),
+		req->uri
+	);
 }
 
 esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filename){
@@ -176,20 +190,14 @@ esp_err_t __send_file(httpd_req_t *req){
 	esp_err_t ret = ESP_OK;
 	__log_http_request(req);
 
-	uint32_t len = strlen(req->uri);
-
-	// For truncating the URI.
-	int path_last_char_index =
-		__get_first_occurrence_index(
-			req->uri, len, '?', false
-		);
+	uint32_t uri_len, uri_len_without_params;
+	__get_uri_len_without_params(
+		req, &uri_len, &uri_len_without_params
+	);
 
 	char full_path[
-		WEBSERVER_ROOT_FOLDER_LEN + 1 + (
-			path_last_char_index > 0 ?
-			path_last_char_index :
-			len
-		)
+		WEBSERVER_ROOT_FOLDER_LEN +
+		uri_len_without_params + 1
 	];
 
 	snprintf(
@@ -296,21 +304,14 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 	esp_err_t ret = ESP_OK;
 	__log_http_request(req);
 
-	// !!! FARE FUNZIONE PER TUTTE QUESTE SINGOLE OPERAZIONI
-
-	uint32_t len = strlen(req->uri);
-
-	// For truncating the URI.
-	int path_last_char_index =
-		__get_first_occurrence_index(
-			req->uri, len, '?', false
-		);
-
-	// !!! METTERE path_last_char_index > -1
+	uint32_t uri_len, uri_len_without_params;
+	__get_uri_len_without_params(
+		req, &uri_len, &uri_len_without_params
+	);
 
 	if(__str_ends_with2(
 		req->uri,
-		path_last_char_index,
+		uri_len_without_params,
 		"/fs"
 	))
 		ESP_GOTO_ON_ERROR(
@@ -320,10 +321,10 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 			TAG,
 			"Error on `httpd_resp_sendstr()"
 		);
-	
+
 	else if(__str_ends_with2(
 		req->uri,
-		path_last_char_index,
+		uri_len_without_params,
 		"/fw"
 	))
 		ESP_GOTO_ON_ERROR(
@@ -336,11 +337,11 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 
 	else
 		ESP_GOTO_ON_ERROR(
-			httpd_resp_sendstr(req, "Error"),
+			httpd_resp_send_404(req),
 
 			label_error,
 			TAG,
-			"Error on `httpd_resp_sendstr()"
+			"Error on `httpd_resp_send_404()"
 		);
 
 	return ret;
