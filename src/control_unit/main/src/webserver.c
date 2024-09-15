@@ -25,8 +25,11 @@
 
 #define SEND_FILE_BUFFER_SIZE		1024
 
-#define __is_file_ext(filename, len, ext) \
-	(strcasecmp(&filename[len - sizeof(ext) + 1], ext) == 0)
+#define __str_ends_with2(str, len, str_end) \
+	(strcasecmp(&str[len - sizeof(str_end) + 1], str_end) == 0)
+
+#define __str_ends_with(str, str_end) \
+	__str_ends_with2(str, strlen(str), str_end)
 
 #define __route(__uri, __method, __handler)	{ \
 	.uri			= (__uri), \
@@ -38,6 +41,7 @@
 // Webserver routes.
 #define ROUTES	{ \
 	__route("/",	HTTP_GET,	__route_root), \
+	__route("/update/*",	HTTP_GET,	__route_ota_update), \
 	__route("/*",	HTTP_GET,	__send_file), \
 }
 
@@ -69,6 +73,7 @@ static esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char 
 static esp_err_t __send_file(httpd_req_t *req);
 
 static esp_err_t __route_root(httpd_req_t *req);
+static esp_err_t __route_ota_update(httpd_req_t *req);
 
 /************************************************************************************************************
 * Private Functions Definitions
@@ -131,37 +136,37 @@ int __get_first_occurrence_index(const char *str, uint32_t len, char searched, b
 esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filename){
 	uint32_t len = strlen(filename);
 
-	if(__is_file_ext(filename, len, ".pdf"))
+	if(__str_ends_with2(filename, len, ".pdf"))
 		return httpd_resp_set_type(req, "application/pdf");
 
 	else if(
-		__is_file_ext(filename, len, ".html") ||
-		__is_file_ext(filename, len, ".htm")
+		__str_ends_with2(filename, len, ".html") ||
+		__str_ends_with2(filename, len, ".htm")
 	)
 		return httpd_resp_set_type(req, "text/html");
 
-	else if(__is_file_ext(filename, len, ".css"))
+	else if(__str_ends_with2(filename, len, ".css"))
 		return httpd_resp_set_type(req, "text/css");
 
-	else if(__is_file_ext(filename, len, ".js"))
+	else if(__str_ends_with2(filename, len, ".js"))
 		return httpd_resp_set_type(req, "text/javascript");
 
-	else if(__is_file_ext(filename, len, ".xml"))
+	else if(__str_ends_with2(filename, len, ".xml"))
 		return httpd_resp_set_type(req, "application/xml");
 
-	else if(__is_file_ext(filename, len, ".json"))
+	else if(__str_ends_with2(filename, len, ".json"))
 		return httpd_resp_set_type(req, "application/json");
 
-	else if(__is_file_ext(filename, len, ".gif"))
+	else if(__str_ends_with2(filename, len, ".gif"))
 		return httpd_resp_set_type(req, "image/gif");
 
-	else if(__is_file_ext(filename, len, ".jpeg"))
+	else if(__str_ends_with2(filename, len, ".jpeg"))
 		return httpd_resp_set_type(req, "image/jpeg");
 
-	else if(__is_file_ext(filename, len, ".png"))
+	else if(__str_ends_with2(filename, len, ".png"))
 		return httpd_resp_set_type(req, "image/png");
 
-	else if(__is_file_ext(filename, len, ".ico"))
+	else if(__str_ends_with2(filename, len, ".ico"))
 		return httpd_resp_set_type(req, "image/x-icon");
 
 	return httpd_resp_set_type(req, "text/plain");
@@ -279,6 +284,64 @@ esp_err_t __route_root(httpd_req_t *req){
 		TAG,
 		"Error on `httpd_resp_send()"
 	);
+
+	return ret;
+
+	label_error:
+	ESP_ERROR_CHECK_WITHOUT_ABORT(httpd_resp_send_500(req));
+	return ret;
+}
+
+esp_err_t __route_ota_update(httpd_req_t *req){
+	esp_err_t ret = ESP_OK;
+	__log_http_request(req);
+
+	// !!! FARE FUNZIONE PER TUTTE QUESTE SINGOLE OPERAZIONI
+
+	uint32_t len = strlen(req->uri);
+
+	// For truncating the URI.
+	int path_last_char_index =
+		__get_first_occurrence_index(
+			req->uri, len, '?', false
+		);
+
+	// !!! METTERE path_last_char_index > -1
+
+	if(__str_ends_with2(
+		req->uri,
+		path_last_char_index,
+		"/fs"
+	))
+		ESP_GOTO_ON_ERROR(
+			httpd_resp_sendstr(req, "FS"),
+
+			label_error,
+			TAG,
+			"Error on `httpd_resp_sendstr()"
+		);
+	
+	else if(__str_ends_with2(
+		req->uri,
+		path_last_char_index,
+		"/fw"
+	))
+		ESP_GOTO_ON_ERROR(
+			httpd_resp_sendstr(req, "FW"),
+
+			label_error,
+			TAG,
+			"Error on `httpd_resp_sendstr()"
+		);
+
+	else
+		ESP_GOTO_ON_ERROR(
+			httpd_resp_sendstr(req, "Error"),
+
+			label_error,
+			TAG,
+			"Error on `httpd_resp_sendstr()"
+		);
 
 	return ret;
 

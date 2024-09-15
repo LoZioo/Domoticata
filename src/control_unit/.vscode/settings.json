@@ -103,6 +103,7 @@
 		"random": "c",
 		"ul_private.h": "c",
 		"ul_esp_shims.h": "c",
-		"dirent.h": "c"
+		"dirent.h": "c",
+		"esp_http_server.h": "c"
 	}
 }
