@@ -1,10 +1,12 @@
 # ESP-IDF Partition Table
-# Name,   Type, SubType,  Offset,   Size, Flags
-nvs,      data, nvs,      0x9000,   16k,
-otadata,  data, ota,      0xd000,   8k,
-phy_init, data, phy,      0xf000,   4k,
-factory,  app,  factory,  0x10000,  1M,
-ota_0,    app,  ota_0,    0x110000, 1M,
-ota_1,    app,  ota_1,    0x210000, 1M,
-fs_0,     data, littlefs, 0x310000, 480k,
-fs_1,     data, littlefs, 0x388000, 480k,
+# https://docs.google.com/spreadsheets/d/1UCj7plirJj47rYItWUU8vbKt9giNCLB-kaLE4cC25Rk/edit?usp=drive_link
+
+# Name,   Type, SubType,  Offset,   Size,  Flags
+nvs, data, nvs, 0x9000, 0x24000
+otadata, data, ota, 0x2D000, 0x2000
+phy_init, data, phy, 0x2F000, 0x1000
+factory, app, factory, 0x30000, 0x120000
+ota_0, app, ota_0, 0x150000, 0x120000
+ota_1, app, ota_1, 0x270000, 0x120000
+fs_0, data, littlefs, 0x390000, 0x38000
+fs_1, data, littlefs, 0x3C8000, 0x38000
