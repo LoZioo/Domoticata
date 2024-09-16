@@ -196,7 +196,7 @@ esp_err_t __pwm_task_setup(){
 
 	BaseType_t ret_val = xTaskCreatePinnedToCore(
 		__pwm_task,
-		LOG_TAG"_task",
+		LOG_TAG "_task",
 		CONFIG_PWM_TASK_STACK_SIZE_BYTES,
 		NULL,
 		CONFIG_PWM_TASK_PRIORITY,
@@ -209,7 +209,7 @@ esp_err_t __pwm_task_setup(){
 
 		ESP_ERR_INVALID_STATE,
 		TAG,
-		"Error %d: unable to spawn \""LOG_TAG"_task\"",
+		"Error %d: unable to spawn \"" LOG_TAG "_task\"",
 		ret_val
 	);
 

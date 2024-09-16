@@ -255,7 +255,7 @@ esp_err_t __pm_task_setup(){
 
 	BaseType_t ret_val = xTaskCreatePinnedToCore(
 		__pm_task,
-		LOG_TAG"_task",
+		LOG_TAG "_task",
 		CONFIG_PM_TASK_STACK_SIZE_BYTES,
 		NULL,
 		CONFIG_PM_TASK_PRIORITY,
@@ -268,7 +268,7 @@ esp_err_t __pm_task_setup(){
 
 		ESP_ERR_INVALID_STATE,
 		TAG,
-		"Error %d: unable to spawn \""LOG_TAG"_task\"",
+		"Error %d: unable to spawn \"" LOG_TAG "_task\"",
 		ret_val
 	);
 
