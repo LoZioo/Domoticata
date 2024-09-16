@@ -70,7 +70,7 @@ static esp_err_t __esp_http_client_ret_to_esp_err_t(int64_t esp_http_client_ret)
 void __log_partition_info(const char *part_name, const esp_partition_t *part){
 	ESP_LOGI(
 		TAG,
-		"Running partition info ("
+		"%s partition info ("
 			"label=\"%s\", "
 			"type=%u "
 			"subtype=%u, "
@@ -78,6 +78,7 @@ void __log_partition_info(const char *part_name, const esp_partition_t *part){
 			"size=%lu"
 		")",
 
+		part_name,
 		part->label,
 		part->type,
 		part->subtype,
