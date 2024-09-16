@@ -54,6 +54,11 @@ typedef struct {
 	uint32_t query_len;
 } decoded_uri_t;
 
+typedef struct {
+	bool update_fs;
+	esp_ip4_addr_t ota_server_ip;
+} worker_ota_update_params_t;
+
 /************************************************************************************************************
 * Private Variables
  ************************************************************************************************************/
@@ -79,6 +84,8 @@ static esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char 
 static esp_err_t __route_send_text_file(httpd_req_t *req);
 static esp_err_t __route_root(httpd_req_t *req);
 static esp_err_t __route_ota_update(httpd_req_t *req);
+
+static void __worker_ota_update(void *parameters);
 
 /************************************************************************************************************
 * Private Functions Definitions
@@ -336,11 +343,12 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 	__log_http_request(req);
 
 	decoded_uri_t uri = __decode_uri(req);
-	esp_ip4_addr_t ota_server_ip =
-		__get_sender_ipv4(req);
+	worker_ota_update_params_t params = {
+		.ota_server_ip = __get_sender_ipv4(req)
+	};
 
 	ESP_GOTO_ON_FALSE(
-		ota_server_ip.addr != 0,
+		params.ota_server_ip.addr != 0,
 
 		ESP_FAIL,
 		label_error_500,
@@ -348,18 +356,17 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 		"Error on `__get_sender_ipv4()`"
 	);
 
-	bool update_fs;
 	if(__str_ends_with(
 		uri.uri,
 		"/fs"
 	))
-		update_fs = true;
+		params.update_fs = true;
 
 	else if(__str_ends_with(
 		uri.uri,
 		"/fw"
 	))
-		update_fs = false;
+		params.update_fs = false;
 
 	else
 		goto label_error_400;
@@ -369,10 +376,10 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 		ota_server_ip_str,
 		sizeof(ota_server_ip_str),
 		IPSTR,
-		IP2STR(&ota_server_ip)
+		IP2STR(&(params.ota_server_ip))
 	);
 
-	if(update_fs)
+	if(params.update_fs)
 		ESP_GOTO_ON_ERROR(
 			httpd_resp_sendstr_chunk(req, "Updating filesystem..."),
 
@@ -414,36 +421,26 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 		"Error on `httpd_resp_sendstr_chunk(str=NULL)`"
 	);
 
-	if(update_fs){
+	TaskHandle_t __worker_ota_update_task_handle;
+	BaseType_t ret_val = xTaskCreatePinnedToCore(
+		__worker_ota_update,
+		LOG_TAG "_worker",
+		CONFIG_WEBSERVER_WORKER_TASK_STACK_SIZE_BYTES,
+		&params,
+		CONFIG_WEBSERVER_WORKER_TASK_PRIORITY,
+		&__worker_ota_update_task_handle,
+		CONFIG_WEBSERVER_WORKER_TASK_CORE_AFFINITY
+	);
 
-		ESP_RETURN_ON_ERROR(
-			ota_update_fs(ota_server_ip),
+	ESP_GOTO_ON_FALSE(
+		ret_val == pdPASS,
 
-			TAG,
-			"Error on `ota_update_fs()`"
-		);
-
-		ESP_LOGI(TAG, "Mounting the new filesystem partition");
-		ESP_RETURN_ON_ERROR(
-			fs_partition_swap(),
-
-			TAG,
-			"Error on `fs_partition_swap()`"
-		);
-	}
-
-	else {
-
-		ESP_RETURN_ON_ERROR(
-			ota_update_fw(ota_server_ip),
-
-			TAG,
-			"Error on `ota_update_fw()`"
-		);
-
-		ESP_LOGI(TAG, "Rebooting to the newly updated firmware");
-		esp_restart();
-	}
+		ESP_ERR_INVALID_STATE,
+		label_error_500,
+		TAG,
+		"Error %d: unable to spawn \"" LOG_TAG "_worker\"",
+		ret_val
+	);
 
 	return ret;
 
@@ -453,6 +450,24 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 	label_error_500:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(httpd_resp_send_500(req));
 	return ret;
+}
+
+void __worker_ota_update(void *parameters){
+	worker_ota_update_params_t *params = parameters;
+
+	if(params->update_fs){
+		ESP_ERROR_CHECK_WITHOUT_ABORT(ota_update_fs(params->ota_server_ip));
+		ESP_LOGI(TAG, "Mounting the new filesystem partition");
+		ESP_ERROR_CHECK_WITHOUT_ABORT(fs_partition_swap());
+	}
+
+	else {
+		ESP_ERROR_CHECK_WITHOUT_ABORT(ota_update_fw(params->ota_server_ip));
+		ESP_LOGI(TAG, "Rebooting to the newly updated firmware");
+		esp_restart();
+	}
+
+	vTaskDelete(NULL);
 }
 
 /************************************************************************************************************
