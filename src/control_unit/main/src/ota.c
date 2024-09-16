@@ -59,7 +59,7 @@ static const char *TAG = LOG_TAG;
  ************************************************************************************************************/
 
 static void __log_partition_info(const char *part_name, const esp_partition_t *partition);
-static esp_err_t __log_fw_versions(uint8_t *ota_buffer);
+static esp_err_t __log_fw_versions(uint8_t *buffer);
 
 static esp_err_t __esp_http_client_ret_to_esp_err_t(int64_t esp_http_client_ret);
 
@@ -86,7 +86,7 @@ void __log_partition_info(const char *part_name, const esp_partition_t *part){
 	);
 }
 
-esp_err_t __log_fw_versions(uint8_t *ota_buffer){
+esp_err_t __log_fw_versions(uint8_t *buffer){
 
 	esp_app_desc_t app_info;
 	ESP_RETURN_ON_ERROR(
@@ -103,7 +103,7 @@ esp_err_t __log_fw_versions(uint8_t *ota_buffer){
 
 	memcpy(
 		&app_info,
-		&ota_buffer[
+		&buffer[
 			sizeof(esp_image_header_t) +
 			sizeof(esp_image_segment_header_t)
 		],
@@ -175,6 +175,17 @@ esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 		"Error on `wifi_power_save_mode(power_save_mode_enabled=false)`"
 	);
 
+	uint8_t *buffer = malloc(CONFIG_OTA_BUFFER_LEN_BYTES);
+	ESP_GOTO_ON_FALSE(
+		buffer != NULL,
+
+		ESP_ERR_NO_MEM,
+		label_restore_wifi_ps_mode,
+		TAG,
+		"Error on `malloc(size=%lu)`",
+		CONFIG_OTA_BUFFER_LEN_BYTES
+	);
+
 	esp_http_client_config_t http_client_config = {
 		.url = url,
 		.timeout_ms = UPDATE_TIMEOUT_MS,
@@ -188,7 +199,7 @@ esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 		http_client_handle != NULL,
 
 		ESP_FAIL,
-		label_restore_wifi_ps_mode,
+		label_free_buffer,
 		TAG,
 		"Error on `esp_http_client_init()`"
 	);
@@ -196,7 +207,7 @@ esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 	ESP_GOTO_ON_ERROR(
 		esp_http_client_open(http_client_handle, 0),
 
-		label_restore_wifi_ps_mode,
+		label_free_http_client,
 		TAG,
 		"Error on `esp_http_client_open()`"
 	);
@@ -211,10 +222,6 @@ esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 		"Error on `esp_http_client_fetch_headers()`"
 	);
 
-	uint8_t ota_buffer[CONFIG_OTA_BUFFER_LEN_BYTES];
-	uint32_t data_total_len = 0;
-	int read_len;
-
 	ESP_LOGI(TAG, "Erasing filesystem partition...");
 	ESP_GOTO_ON_ERROR(
 		fs_partition_unmounted_write(NULL, 0),
@@ -226,6 +233,9 @@ esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 
 	ESP_LOGI(TAG, "Downloading and writing OTA filesystem to flash...");
 
+	uint32_t data_total_len = 0;
+	int read_len;
+
 	// Begin sequential data reading loop.
 	for(;;){
 
@@ -234,8 +244,8 @@ esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 
 		read_len = esp_http_client_read(
 			http_client_handle,
-			(char*) ota_buffer,
-			sizeof(ota_buffer)
+			(char*) buffer,
+			sizeof(buffer)
 		);
 
 		// TCP/IP error or simply connection close.
@@ -253,7 +263,7 @@ esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 
 		ESP_GOTO_ON_ERROR(
 			fs_partition_unmounted_write(
-				ota_buffer,
+				buffer,
 				read_len
 			),
 
@@ -302,18 +312,13 @@ esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 		sha256, sizeof(sha256)
 	);
 
-	ESP_GOTO_ON_ERROR(
-		fs_partition_swap(),
-
-		label_free_http_client,
-		TAG,
-		"Error on `fs_partition_swap()`"
-	);
-
 	ESP_LOGI(TAG, "Filesystem update done");
 
 	label_free_http_client:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_cleanup(http_client_handle));
+
+	label_free_buffer:
+	free(buffer);
 
 	label_restore_wifi_ps_mode:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(wifi_power_save_mode(true));
@@ -354,6 +359,17 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 		"Error on `wifi_power_save_mode(power_save_mode_enabled=false)`"
 	);
 
+	uint8_t *buffer = malloc(CONFIG_OTA_BUFFER_LEN_BYTES);
+	ESP_GOTO_ON_FALSE(
+		buffer != NULL,
+
+		ESP_ERR_NO_MEM,
+		label_restore_wifi_ps_mode,
+		TAG,
+		"Error on `malloc(size=%lu)`",
+		CONFIG_OTA_BUFFER_LEN_BYTES
+	);
+
 	const esp_partition_t *part_boot = esp_ota_get_boot_partition();
 	const esp_partition_t *part_running = esp_ota_get_running_partition();
 	const esp_partition_t *part_target = esp_ota_get_next_update_partition(NULL);
@@ -362,7 +378,7 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 		part_boot != NULL,
 
 		ESP_ERR_NOT_FOUND,
-		label_restore_wifi_ps_mode,
+		label_free_buffer,
 		TAG,
 		"Error on `esp_ota_get_boot_partition()`"
 	);
@@ -371,7 +387,7 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 		part_running != NULL,
 
 		ESP_ERR_NOT_FOUND,
-		label_restore_wifi_ps_mode,
+		label_free_buffer,
 		TAG,
 		"Error on `esp_ota_get_running_partition()`"
 	);
@@ -380,7 +396,7 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 		part_target != NULL,
 
 		ESP_ERR_NOT_FOUND,
-		label_restore_wifi_ps_mode,
+		label_free_buffer,
 		TAG,
 		"Error on `esp_ota_get_next_update_partition()`"
 	);
@@ -410,7 +426,7 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 		http_client_handle != NULL,
 
 		ESP_FAIL,
-		label_restore_wifi_ps_mode,
+		label_free_buffer,
 		TAG,
 		"Error on `esp_http_client_init()`"
 	);
@@ -418,7 +434,7 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 	ESP_GOTO_ON_ERROR(
 		esp_http_client_open(http_client_handle, 0),
 
-		label_restore_wifi_ps_mode,
+		label_free_http_client,
 		TAG,
 		"Error on `esp_http_client_open()`"
 	);
@@ -434,7 +450,6 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 	);
 
 	esp_ota_handle_t ota_handle;
-	uint8_t ota_buffer[CONFIG_OTA_BUFFER_LEN_BYTES];
 	uint32_t data_total_len = 0;
 	int read_len;
 	bool app_header_was_checked = false;
@@ -447,8 +462,8 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 
 		read_len = esp_http_client_read(
 			http_client_handle,
-			(char*) ota_buffer,
-			sizeof(ota_buffer)
+			(char*) buffer,
+			sizeof(buffer)
 		);
 
 		// TCP/IP error or simply connection close.
@@ -481,7 +496,7 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 			);
 
 			ESP_GOTO_ON_ERROR(
-				__log_fw_versions(ota_buffer),
+				__log_fw_versions(buffer),
 
 				label_free_http_client,
 				TAG,
@@ -508,7 +523,7 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 		ESP_GOTO_ON_ERROR(
 			esp_ota_write(
 				ota_handle,
-				ota_buffer,
+				buffer,
 				read_len
 			),
 
@@ -557,6 +572,9 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 
 	label_free_http_client:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_cleanup(http_client_handle));
+
+	label_free_buffer:
+	free(buffer);
 
 	label_restore_wifi_ps_mode:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(wifi_power_save_mode(true));

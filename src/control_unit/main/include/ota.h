@@ -64,11 +64,13 @@
 
 /**
  * @brief Trigger a filesystem update.
+ * @note Call `fs_partition_swap()` from "fs.h" to mount the updated filesystem partition.
  */
 extern esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip);
 
 /**
  * @brief Trigger a firmware update.
+ * @note Call `esp_restart()` from "esp_system.h" to reboot the system to the newly updated firmware.
  */
 extern esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip);
 
