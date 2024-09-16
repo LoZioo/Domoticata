@@ -23,8 +23,6 @@
 #define __stringify(x)	#x
 #define __to_string(x)	__stringify(x)
 
-#define IPV4_ADDR_LEN		15
-
 #define UPDATE_URL_BEFORE_IP	\
 	"http://"
 
@@ -141,7 +139,7 @@ esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 
 	char url[
 		sizeof(UPDATE_URL_BEFORE_IP) - 1 +
-		IPV4_ADDR_LEN +
+		OTA_IPV4_ADDR_STR_LEN +
 		sizeof(UPDATE_URL_AFTER_IP_FS)
 	];
 
@@ -328,7 +326,7 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 
 	char url[
 		sizeof(UPDATE_URL_BEFORE_IP) - 1 +
-		IPV4_ADDR_LEN +
+		OTA_IPV4_ADDR_STR_LEN +
 		sizeof(UPDATE_URL_AFTER_IP_FW)
 	];
 
