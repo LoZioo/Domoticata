@@ -20,11 +20,8 @@
 
 #define LOG_TAG	"webserver"
 
-#define WEBSERVER_ROOT_FOLDER				FS_LITTLEFS_BASE_PATH "/www"
+#define WEBSERVER_ROOT_FOLDER				FS_LITTLEFS_BASE_PATH CONFIG_WEBSERVER_VFS_ROOT_FOLDER
 #define WEBSERVER_ROOT_FOLDER_LEN		(sizeof(WEBSERVER_ROOT_FOLDER) - 1)
-
-// #define QUERY_VAL_BUFFER_SIZE		100
-#define SEND_FILE_BUFFER_SIZE		1024
 
 #define __str_ends_with2(str, len, str_end) \
 	(strcasecmp(&str[len - sizeof(str_end) + 1], str_end) == 0)
@@ -43,7 +40,7 @@
 #define ROUTES	{ \
 	__route("/",	HTTP_GET,	__route_root), \
 	__route("/update/*",	HTTP_GET,	__route_ota_update), \
-	__route("/*",	HTTP_GET,	__route_send_file), \
+	__route("/*",	HTTP_GET,	__route_send_text_file), \
 }
 
 /************************************************************************************************************
@@ -79,7 +76,7 @@ static esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char 
 /**
  * @brief Send the requested file from VFS.
  */
-static esp_err_t __route_send_file(httpd_req_t *req);
+static esp_err_t __route_send_text_file(httpd_req_t *req);
 static esp_err_t __route_root(httpd_req_t *req);
 static esp_err_t __route_ota_update(httpd_req_t *req);
 
@@ -147,22 +144,11 @@ esp_ip4_addr_t __get_sender_ipv4(httpd_req_t *req){
 	struct sockaddr_in6 addr;
 	socklen_t addr_len = sizeof(addr);
 
-	// if(
-	// 	sockfd == -1 ||
-	// 	getpeername(sockfd, (struct sockaddr*) &addr, &addr_len) != 0 ||
-	// 	addr.sin_family != AF_INET
-	// )
-	// 	return ret;
-
-	if(sockfd == -1){
-		ESP_LOGW(TAG, "1");
+	if(
+		sockfd == -1 ||
+		getpeername(sockfd, (struct sockaddr*) &addr, &addr_len) < 0
+	)
 		return ret;
-	}
-
-	if(getpeername(sockfd, (struct sockaddr*) &addr, &addr_len) < 0){
-		ESP_LOGW(TAG, "2");
-		return ret;
-	}
 
 	if(addr.sin6_family == AF_INET6){
 		uint8_t *ipv6_addr = ul_utils_cast_to_mem(addr.sin6_addr);
@@ -221,11 +207,12 @@ esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filena
 	return httpd_resp_set_type(req, "text/plain");
 }
 
-esp_err_t __route_send_file(httpd_req_t *req){
+esp_err_t __route_send_text_file(httpd_req_t *req){
 	esp_err_t ret = ESP_OK;
 	__log_http_request(req);
 
 	decoded_uri_t uri = __decode_uri(req);
+	char *buffer = NULL;
 	FILE *file;
 
 	{
@@ -263,7 +250,17 @@ esp_err_t __route_send_file(httpd_req_t *req){
 		uri.uri
 	);
 
-	char buffer[SEND_FILE_BUFFER_SIZE];
+	buffer = malloc(CONFIG_WEBSERVER_FILE_LINE_BUFFER_LEN_BYTES);
+	ESP_GOTO_ON_FALSE(
+		buffer != NULL,
+
+		ESP_ERR_NO_MEM,
+		label_error_500,
+		TAG,
+		"Error on `malloc(size=%u)`",
+		CONFIG_WEBSERVER_FILE_LINE_BUFFER_LEN_BYTES
+	);
+
 	while(fgets(buffer, sizeof(buffer), file) != NULL)
 		ESP_GOTO_ON_ERROR(
 			httpd_resp_sendstr_chunk(
@@ -283,21 +280,21 @@ esp_err_t __route_send_file(httpd_req_t *req){
 
 		label_error_500,
 		TAG,
-		"Error on `httpd_resp_sendstr_chunk(str=\"%s\")`",
-		buffer
+		"Error on `httpd_resp_sendstr_chunk(str=NULL)`"
 	);
 
-	label_fclose:
+	label_cleanup:
+	free(buffer);
 	fclose(file);
 	return ret;
 
 	label_error_404:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(httpd_resp_send_404(req));
-	goto label_fclose;
+	goto label_cleanup;
 
 	label_error_500:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(httpd_resp_send_500(req));
-	goto label_fclose;
+	goto label_cleanup;
 }
 
 esp_err_t __route_root(httpd_req_t *req){
@@ -351,54 +348,107 @@ esp_err_t __route_ota_update(httpd_req_t *req){
 		"Error on `__get_sender_ipv4()`"
 	);
 
+	bool update_fs;
 	if(__str_ends_with(
 		uri.uri,
 		"/fs"
-	)){
-
-		ESP_GOTO_ON_ERROR(
-			ota_update_fs(ota_server_ip),
-
-			label_error_500,
-			TAG,
-			"Error on `ota_update_fs()`"
-		);
-
-		ESP_GOTO_ON_ERROR(
-			httpd_resp_sendstr(req, "Updating filesystem..."),
-
-			label_error_500,
-			TAG,
-			"Error on `httpd_resp_sendstr()`"
-		);
-	}
+	))
+		update_fs = true;
 
 	else if(__str_ends_with(
 		uri.uri,
 		"/fw"
-	)){
+	))
+		update_fs = false;
 
+	else
+		goto label_error_400;
+
+	char ota_server_ip_str[WIFI_IPV4_ADDR_STR_LEN];
+	snprintf(
+		ota_server_ip_str,
+		sizeof(ota_server_ip_str),
+		IPSTR,
+		IP2STR(&ota_server_ip)
+	);
+
+	if(update_fs)
 		ESP_GOTO_ON_ERROR(
-			ota_update_fw(ota_server_ip),
+			httpd_resp_sendstr_chunk(req, "Updating filesystem..."),
 
 			label_error_500,
+			TAG,
+			"Error on `httpd_resp_sendstr_chunk()`"
+		);
+
+	else
+		ESP_GOTO_ON_ERROR(
+			httpd_resp_sendstr_chunk(req, "Updating firmware..."),
+
+			label_error_500,
+			TAG,
+			"Error on `httpd_resp_sendstr_chunk()`"
+		);
+
+	ESP_GOTO_ON_ERROR(
+		httpd_resp_sendstr_chunk(req, "<br>OTA webserver IP: "),
+
+		label_error_500,
+		TAG,
+		"Error on `httpd_resp_sendstr_chunk()`"
+	);
+
+	ESP_GOTO_ON_ERROR(
+		httpd_resp_sendstr_chunk(req, ota_server_ip_str),
+
+		label_error_500,
+		TAG,
+		"Error on `httpd_resp_sendstr_chunk()`"
+	);
+
+	ESP_GOTO_ON_ERROR(
+		httpd_resp_sendstr_chunk(req, NULL),
+
+		label_error_500,
+		TAG,
+		"Error on `httpd_resp_sendstr_chunk(str=NULL)`"
+	);
+
+	if(update_fs){
+
+		ESP_RETURN_ON_ERROR(
+			ota_update_fs(ota_server_ip),
+
+			TAG,
+			"Error on `ota_update_fs()`"
+		);
+
+		ESP_LOGI(TAG, "Mounting the new filesystem partition");
+		ESP_RETURN_ON_ERROR(
+			fs_partition_swap(),
+
+			TAG,
+			"Error on `fs_partition_swap()`"
+		);
+	}
+
+	else {
+
+		ESP_RETURN_ON_ERROR(
+			ota_update_fw(ota_server_ip),
+
 			TAG,
 			"Error on `ota_update_fw()`"
 		);
 
-		ESP_GOTO_ON_ERROR(
-			httpd_resp_sendstr(req, "Updating firmware..."),
-
-			label_error_500,
-			TAG,
-			"Error on `httpd_resp_sendstr()`"
-		);
+		ESP_LOGI(TAG, "Rebooting to the newly updated firmware");
+		esp_restart();
 	}
 
-	else
-		goto label_error_500;
-
 	return ret;
+
+	label_error_400:
+	ESP_ERROR_CHECK_WITHOUT_ABORT(httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, NULL));
 
 	label_error_500:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(httpd_resp_send_500(req));
@@ -461,5 +511,3 @@ esp_err_t webserver_setup(){
 
 	return ESP_OK;
 }
-
-// !!! METTERE ESP_RESTART
