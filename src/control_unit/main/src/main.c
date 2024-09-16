@@ -126,6 +126,7 @@ void app_main(){
 	/* USER CODE BEGIN 1 */
 
 	ESP_LOGI(TAG, "Completed");
+	vTaskDelete(NULL);
 	return;
 
 	/* Infinite loop */
