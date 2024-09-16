@@ -201,7 +201,7 @@ esp_err_t __littlefs_partition_mount(){
 		.base_path = FS_LITTLEFS_BASE_PATH,
 		.partition_label = NULL,
 		.partition = __fs_partitions[__current_partition_index],
-		.format_if_mount_failed = false,
+		.format_if_mount_failed = true,
 		.read_only = false,
 		.dont_mount = false,
 		.grow_on_mount = true
