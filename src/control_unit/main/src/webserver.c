@@ -480,9 +480,9 @@ esp_err_t webserver_setup(){
 	// Webserver daemon configurations.
 	httpd_config_t webserver_config = HTTPD_DEFAULT_CONFIG();
 
-	webserver_config.stack_size = CONFIG_WEBSERVER_TASK_STACK_SIZE_BYTES;
-	webserver_config.task_priority = CONFIG_WEBSERVER_TASK_PRIORITY;
-	webserver_config.core_id = CONFIG_WEBSERVER_TASK_CORE_AFFINITY;
+	webserver_config.stack_size = CONFIG_WEBSERVER_MAIN_TASK_STACK_SIZE_BYTES;
+	webserver_config.task_priority = CONFIG_WEBSERVER_MAIN_TASK_PRIORITY;
+	webserver_config.core_id = CONFIG_WEBSERVER_MAIN_TASK_CORE_AFFINITY;
 	webserver_config.server_port = CONFIG_WEBSERVER_LISTEN_PORT;
 
 	/**
