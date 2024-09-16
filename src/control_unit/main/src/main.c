@@ -31,6 +31,7 @@
 #include <esp_err.h>
 #include <esp_check.h>
 #include <esp_log.h>
+#include <esp_system.h>
 
 // Project libraries.
 #include <main.h>

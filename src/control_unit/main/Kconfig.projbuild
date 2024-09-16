@@ -18,7 +18,7 @@ menu "Project configurations"
 			range 0 24
 			default 0
 			help
-				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority)
+				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority).
 
 		choice RS485_TASK_CORE_AFFINITY
 			prompt "Task core affinity"
@@ -59,7 +59,7 @@ menu "Project configurations"
 			range 0 24
 			default 0
 			help
-				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority)
+				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority).
 
 		choice PWM_TASK_CORE_AFFINITY
 			prompt "Task core affinity"
@@ -95,7 +95,7 @@ menu "Project configurations"
 			range 0 24
 			default 0
 			help
-				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority)
+				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority).
 
 		choice PM_TASK_CORE_AFFINITY
 			prompt "Task core affinity"
@@ -136,7 +136,7 @@ menu "Project configurations"
 			range 0 24
 			default 0
 			help
-				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority)
+				0 is equal to `tskIDLE_PRIORITY` (lower priority), while 24 is equal to `configMAX_PRIORITIES` - 1 (higher priority).
 
 		choice WEBSERVER_TASK_CORE_AFFINITY
 			prompt "Task core affinity"
@@ -159,6 +159,21 @@ menu "Project configurations"
 			int "Webserver listen port"
 			range 0 65535
 			default 80
+
+		config WEBSERVER_VFS_ROOT_FOLDER
+			string "Root folder on VFS"
+			default "/www"
+
+		config WEBSERVER_FILE_LINE_BUFFER_LEN_BYTES
+			int "File line buffer length (bytes)"
+			default 1024
+
+		config WEBSERVER_QUERY_VAL_BUFFER_LEN_BYTES
+			int "HTTP query value buffer length (bytes)"
+			default 100
+			help
+				Needed to allocate a buffer for reading a value of
+				a given key in an HTTP URL query string.
 
 	endmenu
 
@@ -184,7 +199,7 @@ menu "Project configurations"
 			default "control_unit"
 
 		config OTA_BUFFER_LEN_BYTES
-			int "RAM buffer length (bytes)"
+			int "OTA buffer length (bytes)"
 			default 1024
 
 	endmenu

@@ -139,7 +139,7 @@ esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 
 	char url[
 		sizeof(UPDATE_URL_BEFORE_IP) - 1 +
-		OTA_IPV4_ADDR_STR_LEN +
+		WIFI_IPV4_ADDR_STR_LEN +
 		sizeof(UPDATE_URL_AFTER_IP_FS)
 	];
 
@@ -331,7 +331,7 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 
 	char url[
 		sizeof(UPDATE_URL_BEFORE_IP) - 1 +
-		OTA_IPV4_ADDR_STR_LEN +
+		WIFI_IPV4_ADDR_STR_LEN +
 		sizeof(UPDATE_URL_AFTER_IP_FW)
 	];
 
