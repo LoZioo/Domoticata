@@ -178,10 +178,6 @@ menu "Project configurations"
 	endmenu
 
 	menu "OTA update"
-		config OTA_HTTP_SERVER_IP_ADDR
-			string "HTTP server IP address"
-			default "192.168.1.2"
-
 		config OTA_HTTP_SERVER_PORT
 			int "HTTP server port"
 			default 5500
