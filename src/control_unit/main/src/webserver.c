@@ -261,7 +261,7 @@ esp_err_t __route_send_text_file(httpd_req_t *req){
 		CONFIG_WEBSERVER_FILE_LINE_BUFFER_LEN_BYTES
 	);
 
-	while(fgets(buffer, sizeof(buffer), file) != NULL)
+	while(fgets(buffer, CONFIG_WEBSERVER_FILE_LINE_BUFFER_LEN_BYTES, file) != NULL)
 		ESP_GOTO_ON_ERROR(
 			httpd_resp_sendstr_chunk(
 				req, buffer

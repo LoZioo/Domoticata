@@ -246,7 +246,7 @@ esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 		read_len = esp_http_client_read(
 			http_client_handle,
 			(char*) buffer,
-			sizeof(buffer)
+			CONFIG_OTA_BUFFER_LEN_BYTES
 		);
 
 		// TCP/IP error or simply connection close.
@@ -464,7 +464,7 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 		read_len = esp_http_client_read(
 			http_client_handle,
 			(char*) buffer,
-			sizeof(buffer)
+			CONFIG_OTA_BUFFER_LEN_BYTES
 		);
 
 		// TCP/IP error or simply connection close.
@@ -493,7 +493,8 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 				ESP_ERR_OTA_VALIDATE_FAILED,
 				label_free_http_client,
 				TAG,
-				"Error: HTTP server answered with an invalid app header"
+				"Error: HTTP server answered with an invalid app header (read_len=%d > threshold=%u)",
+				read_len, sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t)
 			);
 
 			ESP_GOTO_ON_ERROR(
