@@ -361,7 +361,7 @@ void __pm_task(void *parameters){
 		if(xSemaphoreTake(__pm_res_mutex, pdMS_TO_TICKS(MUTEX_TAKE_TIMEOUT_MS)) == pdFALSE)
 			continue;
 
-		ESP_GOTO_ON_FALSE(
+		ESP_GOTO_ON_ERROR(
 			ul_errors_to_esp_err(
 				ul_pm_evaluate(
 					__pm_handle,
@@ -371,7 +371,6 @@ void __pm_task(void *parameters){
 				)
 			),
 
-			ESP_ERR_INVALID_STATE,
 			task_continue,
 			TAG,
 			"Error on `ul_pm_evaluate()`"
