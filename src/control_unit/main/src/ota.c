@@ -182,7 +182,7 @@ esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip){
 		ESP_ERR_NO_MEM,
 		label_restore_wifi_ps_mode,
 		TAG,
-		"Error on `malloc(size=%lu)`",
+		"Error on `malloc(size=%u)`",
 		CONFIG_OTA_BUFFER_LEN_BYTES
 	);
 
@@ -366,7 +366,7 @@ esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip){
 		ESP_ERR_NO_MEM,
 		label_restore_wifi_ps_mode,
 		TAG,
-		"Error on `malloc(size=%lu)`",
+		"Error on `malloc(size=%u)`",
 		CONFIG_OTA_BUFFER_LEN_BYTES
 	);
 
