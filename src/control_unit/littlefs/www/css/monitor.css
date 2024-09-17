@@ -1,0 +1,23 @@
+body {
+	background-color: #1E1E1E;
+
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	flex-wrap: wrap;
+	row-gap: 1rem;
+
+	font-family: sans-serif;
+	color: yellowgreen;
+}
+
+body>div {
+	width: 160px;
+	text-align: center;
+}
+
+/* Mobile */
+/* @media only screen and (max-width: 768px) {
+	body {
+	}
+} */
