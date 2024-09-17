@@ -36,6 +36,8 @@
 	.user_ctx	= NULL \
 }
 
+#define ROUTE_ROOT_REDIRECT		"/monitor.html"
+
 // Webserver routes.
 #define ROUTES	{ \
 	__route("/",		HTTP_GET,	__route_root), \
@@ -390,7 +392,9 @@ esp_err_t __route_root(httpd_req_t *req){
 	esp_err_t ret = ESP_OK;
 
 	ESP_GOTO_ON_ERROR(
-		httpd_resp_set_status(req, "302 Found"),
+		httpd_resp_set_status(
+			req, "302 Found"
+		),
 
 		label_error,
 		TAG,
@@ -398,7 +402,11 @@ esp_err_t __route_root(httpd_req_t *req){
 	);
 
 	ESP_GOTO_ON_ERROR(
-		httpd_resp_set_hdr(req, "Location", "/index.html"),
+		httpd_resp_set_hdr(
+			req,
+			"Location",
+			ROUTE_ROOT_REDIRECT
+		),
 
 		label_error,
 		TAG,
@@ -406,7 +414,9 @@ esp_err_t __route_root(httpd_req_t *req){
 	);
 
 	ESP_GOTO_ON_ERROR(
-		httpd_resp_send(req, NULL, 0),
+		httpd_resp_send(
+			req, NULL, 0
+		),
 
 		label_error,
 		TAG,
