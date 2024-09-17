@@ -28,9 +28,6 @@
 * Public Defines
 ************************************************************************************************************/
 
-#define ESP_PROTOCOL_CORE			0
-#define ESP_APPLICATION_CORE	1
-
 #define delay(ms) \
 	vTaskDelay(pdMS_TO_TICKS(ms))
 
