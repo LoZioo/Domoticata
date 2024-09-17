@@ -21,8 +21,14 @@
 #define LOG_TAG	"pm"
 #define LOG_RESULTS
 
+// Voltage and current channels.
+#define ADC_CHANNELS	2
+#define ADC_BYTES_PER_SAMPLE	sizeof(adc_digi_output_data_t)
+
 // This number must be a multiple of `SOC_ADC_DIGI_DATA_BYTES_PER_CONV` on `soc/soc_caps.h`.
-#define ADC_BUF_SIZE_BYTES	(4 * CONFIG_PM_ADC_SAMPLES)
+#define ADC_BUF_SIZE_BYTES	( \
+	ADC_CHANNELS * ADC_BYTES_PER_SAMPLE * CONFIG_PM_ADC_SAMPLES \
+)
 
 /**
  * `adc_continuous_read()` timeout value (e.g. 200ms = ten 50Hz cycles).
@@ -42,15 +48,6 @@
 /************************************************************************************************************
 * Private Types Definitions
  ************************************************************************************************************/
-
-typedef struct __attribute__((__packed__)) {
-
-	adc_digi_output_data_t *samples;
-
-	uint8_t v_sample_offset: 1;
-	uint8_t i_sample_offset: 1;
-
-} sample_callback_context_t;
 
 /************************************************************************************************************
 * Private Variables
@@ -74,6 +71,10 @@ static struct __attribute__((__packed__)) {
 static ul_pm_results_t __pm_res;
 static SemaphoreHandle_t __pm_res_mutex;
 
+// Sample buffer.
+static uint8_t __buffer[ADC_BUF_SIZE_BYTES];
+static uint8_t __v_sample_offset, __i_sample_offset;
+
 /************************************************************************************************************
 * Private Functions Prototypes
  ************************************************************************************************************/
@@ -82,7 +83,7 @@ static esp_err_t __adc_driver_setup();
 static esp_err_t __pm_code_setup();
 static esp_err_t __pm_task_setup();
 
-static uint16_t __pm_get_sample(ul_pm_sample_type_t sample_type, uint32_t index, void *context);
+static uint16_t __pm_get_sample(void *user_context, ul_pm_sample_type_t sample_type, uint32_t index);
 static bool __adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data);
 
 static void __pm_task(void *parameters);
@@ -276,15 +277,15 @@ esp_err_t __pm_task_setup(){
 	return ESP_OK;
 }
 
-uint16_t __pm_get_sample(ul_pm_sample_type_t sample_type, uint32_t index, void *context){
+uint16_t __pm_get_sample(void *user_context, ul_pm_sample_type_t sample_type, uint32_t index){
 
 	index = (index * 2) + (
 		sample_type == UL_PM_SAMPLE_TYPE_VOLTAGE ?
-		((sample_callback_context_t*) context)->v_sample_offset :
-		((sample_callback_context_t*) context)->i_sample_offset
+		__v_sample_offset :
+		__i_sample_offset
 	);
 
-	return ((sample_callback_context_t*) context)->samples[index].type1.data;
+	return ((adc_digi_output_data_t*) __buffer)[index].type1.data;
 }
 
 bool __adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data){
@@ -304,14 +305,8 @@ void __pm_task(void *parameters){
 	// `ESP_GOTO_ON_ERROR()` return code.
 	esp_err_t ret __attribute__((unused));
 
-	// Sample buffer.
-	static adc_digi_output_data_t samples[ADC_BUF_SIZE_BYTES];
-	uint32_t read_size;
-
-	// Sample callback context.
-	sample_callback_context_t sample_callback_context = {
-		.samples = samples
-	};
+	// Sample buffer read length.
+	uint32_t read_len;
 
 	/* Code */
 
@@ -346,9 +341,9 @@ void __pm_task(void *parameters){
 		ESP_GOTO_ON_ERROR(
 			adc_continuous_read(
 				__adc_handle,
-				(uint8_t*) samples,
+				__buffer,
 				ADC_BUF_SIZE_BYTES,
-				&read_size,
+				&read_len,
 				ADC_CONTINUOUS_READ_TIMEOUT_MS
 			),
 
@@ -367,17 +362,16 @@ void __pm_task(void *parameters){
 		);
 
 		// Sample order.
-		if(samples[0].type1.channel == adc_channels.v_channel){
-			sample_callback_context.v_sample_offset = 0;
-			sample_callback_context.i_sample_offset = 1;
+		if(((adc_digi_output_data_t*) __buffer)[0].type1.channel == adc_channels.v_channel){
+			__v_sample_offset = 0;
+			__i_sample_offset = 1;
 		}
 
 		else {
-			sample_callback_context.v_sample_offset = 1;
-			sample_callback_context.i_sample_offset = 0;
+			__v_sample_offset = 1;
+			__i_sample_offset = 0;
 		}
 
-		// Sample to results conversion ready; taking mutex...
 		if(xSemaphoreTake(__pm_res_mutex, pdMS_TO_TICKS(ADC_CONTINUOUS_READ_TIMEOUT_MS)) == pdFALSE)
 			continue;
 
@@ -385,8 +379,8 @@ void __pm_task(void *parameters){
 			ul_errors_to_esp_err(
 				ul_pm_evaluate(
 					__pm_handle,
-					&sample_callback_context,
-					CONFIG_PM_ADC_SAMPLES,
+					NULL,
+					read_len / (ADC_CHANNELS * ADC_BYTES_PER_SAMPLE),
 					&__pm_res
 				)
 			),
@@ -396,7 +390,6 @@ void __pm_task(void *parameters){
 			"Error on `ul_pm_evaluate()`"
 		);
 
-		// Sample to results conversion ready; releasing mutex...
 		xSemaphoreGive(__pm_res_mutex);
 
 		#ifdef LOG_RESULTS
