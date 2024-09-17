@@ -19,16 +19,18 @@
 ************************************************************************************************************/
 
 #define LOG_TAG	"pm"
-// #define LOG_STUB
-
-// `adc_continuous_read()` timeout value (200ms = ten 50Hz cycles).
-#define ADC_CONTINUOUS_READ_TIMEOUT_MS	200
+#define LOG_RESULTS
 
 // This number must be a multiple of `SOC_ADC_DIGI_DATA_BYTES_PER_CONV` on `soc/soc_caps.h`.
 #define ADC_BUF_SIZE_BYTES	(4 * CONFIG_PM_ADC_SAMPLES)
 
-// `__pm_res_mutex` timeout before refreshing data.
-#define MUTEX_TAKE_TIMEOUT_MS		ADC_CONTINUOUS_READ_TIMEOUT_MS
+/**
+ * `adc_continuous_read()` timeout value (e.g. 200ms = ten 50Hz cycles).
+ * Period of time in which the read data becomes obsolete.
+ */
+#define ADC_CONTINUOUS_READ_TIMEOUT_MS	( \
+	(CONFIG_PM_ADC_SAMPLES * 1000) / CONFIG_PM_ADC_SAMPLE_RATE \
+)
 
 /**
  * @brief Statement to check if the library was initialized.
@@ -80,10 +82,8 @@ static esp_err_t __adc_driver_setup();
 static esp_err_t __pm_code_setup();
 static esp_err_t __pm_task_setup();
 
-static esp_err_t __adc_flush_and_start();
-
 static uint16_t __pm_get_sample(ul_pm_sample_type_t sample_type, uint32_t index, void *context);
-static bool IRAM_ATTR __adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data);
+static bool __adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data);
 
 static void __pm_task(void *parameters);
 
@@ -246,7 +246,6 @@ esp_err_t __pm_code_setup(){
 esp_err_t __pm_task_setup(){
 
 	__pm_res_mutex = xSemaphoreCreateMutex();
-
 	ESP_RETURN_ON_FALSE(
 		__pm_res_mutex != NULL,
 
@@ -272,27 +271,6 @@ esp_err_t __pm_task_setup(){
 		TAG,
 		"Error %d: unable to spawn \"" LOG_TAG "_task\"",
 		ret_val
-	);
-
-	return ESP_OK;
-}
-
-esp_err_t __adc_flush_and_start(){
-
-	// Flush old samples.
-	ESP_RETURN_ON_ERROR(
-		adc_continuous_flush_pool(__adc_handle),
-
-		TAG,
-		"Error on `adc_continuous_flush_pool()`"
-	);
-
-	// Start the sample acquisition.
-	ESP_RETURN_ON_ERROR(
-		adc_continuous_start(__adc_handle),
-
-		TAG,
-		"Error on `adc_continuous_start()`"
 	);
 
 	return ESP_OK;
@@ -343,12 +321,22 @@ void __pm_task(void *parameters){
 	for(;;){
 		ret = ESP_OK;
 
+		// Flush old samples.
 		ESP_GOTO_ON_ERROR(
-			__adc_flush_and_start(),
+			adc_continuous_flush_pool(__adc_handle),
 
 			task_continue,
 			TAG,
-			"Error on `__adc_flush_and_start()`"
+			"Error on `adc_continuous_flush_pool()`"
+		);
+
+		// Start the sample acquisition.
+		ESP_GOTO_ON_ERROR(
+			adc_continuous_start(__adc_handle),
+
+			task_continue,
+			TAG,
+			"Error on `adc_continuous_start()`"
 		);
 
 		// Wait for the ISR and then clear the notification (`pdTRUE`).
@@ -390,7 +378,7 @@ void __pm_task(void *parameters){
 		}
 
 		// Sample to results conversion ready; taking mutex...
-		if(xSemaphoreTake(__pm_res_mutex, pdMS_TO_TICKS(MUTEX_TAKE_TIMEOUT_MS)) == pdFALSE)
+		if(xSemaphoreTake(__pm_res_mutex, pdMS_TO_TICKS(ADC_CONTINUOUS_READ_TIMEOUT_MS)) == pdFALSE)
 			continue;
 
 		ESP_GOTO_ON_ERROR(
@@ -411,8 +399,8 @@ void __pm_task(void *parameters){
 		// Sample to results conversion ready; releasing mutex...
 		xSemaphoreGive(__pm_res_mutex);
 
-		#ifdef LOG_STUB
-		ESP_LOGW(TAG, "LOG_STUB");
+		#ifdef LOG_RESULTS
+		ESP_LOGW(TAG, "LOG_RESULTS");
 
 		ESP_LOGI(TAG, "Voltage:");
 		ESP_LOGI(TAG, "  V_pos_peak: %.2f", __pm_res.v_pos_peak);
@@ -469,46 +457,6 @@ esp_err_t pm_setup(){
 	return ESP_OK;
 }
 
-esp_err_t pm_start_compute(){
-
-	ESP_RETURN_ON_FALSE(
-		__is_initialized(),
-
-		ESP_ERR_INVALID_STATE,
-		TAG,
-		"Error: library not initialized"
-	);
-
-	ESP_RETURN_ON_ERROR(
-		__adc_flush_and_start(),
-
-		TAG,
-		"Error on `__adc_flush_and_start()`"
-	);
-
-	return ESP_OK;
-}
-
-esp_err_t pm_stop_compute(){
-
-	ESP_RETURN_ON_FALSE(
-		__is_initialized(),
-
-		ESP_ERR_INVALID_STATE,
-		TAG,
-		"Error: library not initialized"
-	);
-
-	ESP_RETURN_ON_ERROR(
-		adc_continuous_stop(__adc_handle),
-
-		TAG,
-		"Error on `adc_continuous_stop()`"
-	);
-
-	return ESP_OK;
-}
-
 esp_err_t pm_get_results(ul_pm_results_t *ul_pm_results){
 	assert_param_notnull(ul_pm_results);
 
@@ -523,7 +471,7 @@ esp_err_t pm_get_results(ul_pm_results_t *ul_pm_results){
 	ESP_RETURN_ON_FALSE(
 		xSemaphoreTake(
 			__pm_res_mutex,
-			pdMS_TO_TICKS(MUTEX_TAKE_TIMEOUT_MS)
+			pdMS_TO_TICKS(ADC_CONTINUOUS_READ_TIMEOUT_MS)
 		) == pdTRUE,
 
 		ESP_ERR_TIMEOUT,

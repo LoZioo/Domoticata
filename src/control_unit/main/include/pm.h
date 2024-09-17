@@ -62,16 +62,6 @@
 extern esp_err_t pm_setup();
 
 /**
- * @brief Start the computation.
- */
-extern esp_err_t pm_start_compute();
-
-/**
- * @brief Stop the computation.
- */
-extern esp_err_t pm_stop_compute();
-
-/**
  * @brief Get the latest PowerMonitor measurements.
  */
 extern esp_err_t pm_get_results(ul_pm_results_t *ul_pm_results);
