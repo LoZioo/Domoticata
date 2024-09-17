@@ -111,22 +111,20 @@ void app_main(){
 	ESP_LOGI(TAG, "webserver_setup()");
 	ESP_ERROR_CHECK(webserver_setup());
 
-	ESP_LOGI(TAG, "pm_setup()");
-	ESP_ERROR_CHECK(pm_setup());
-
-	// !!! AVVIARE VENTOLE
-
 	/* USER CODE END SysInit */
 
 	/* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
-
-	/* USER CODE BEGIN 1 */
+	ESP_LOGI(TAG, "Starting fans");
+	ESP_ERROR_CHECK(pwm_set_fan(512));
 
 	ESP_LOGI(TAG, "Completed");
 	vTaskDelete(NULL);
 	return;
+
+	/* USER CODE END Init */
+
+	/* USER CODE BEGIN 1 */
 
 	/* Infinite loop */
 	// for(;;){
