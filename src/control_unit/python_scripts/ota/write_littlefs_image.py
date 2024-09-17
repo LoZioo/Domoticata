@@ -1,9 +1,13 @@
 import os, sys, csv, json, esptool
 
+# User settings.
+TARGET_PARTITION_INDEX = 0
 PARTITIONS_CSV = "partitions.csv"
 SETTINGS_JSON = ".vscode/settings.json"
-PARTITION_NAME = "fs"
-PARTITION_BIN = "build/%s.bin" % PARTITION_NAME
+PARTITION_BIN = "build/fs_0.bin"
+
+# Derived settings.
+TARGET_PARTITION_NAME = "fs_%u" % TARGET_PARTITION_INDEX
 
 if __name__ == "__main__":
 	assert os.path.exists(PARTITIONS_CSV)
@@ -18,7 +22,7 @@ if __name__ == "__main__":
 			if row and row[0].startswith('#'):
 				continue
 
-			if len(row) > 0 and row[0].strip() == PARTITION_NAME:
+			if len(row) > 0 and row[0].strip() == TARGET_PARTITION_NAME:
 				target_partition_offset = row[3].strip()
 				break
 
