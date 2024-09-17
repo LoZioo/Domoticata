@@ -23,8 +23,8 @@
 	#define v_samples_get(i)	v_samples[i]
 	#define i_samples_get(i)	i_samples[i]
 #else
-	#define v_samples_get(i)	self->init.sample_callback(UL_PM_SAMPLE_TYPE_VOLTAGE, i, sample_callback_context)
-	#define i_samples_get(i)	self->init.sample_callback(UL_PM_SAMPLE_TYPE_CURRENT, i, sample_callback_context)
+	#define v_samples_get(i)	self->init.sample_callback(user_context, UL_PM_SAMPLE_TYPE_VOLTAGE, i)
+	#define i_samples_get(i)	self->init.sample_callback(user_context, UL_PM_SAMPLE_TYPE_CURRENT, i)
 #endif
 
 /************************************************************************************************************
@@ -192,7 +192,7 @@ ul_err_t ul_pm_evaluate(
 		uint16_t *v_samples,
 		uint16_t *i_samples,
 	#else
-		void *sample_callback_context,
+		void *user_context,
 	#endif
 
 	uint32_t samples_len,

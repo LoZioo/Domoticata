@@ -44,12 +44,12 @@ typedef enum __attribute__((__packed__)) {
 
 /**
  * @brief Callback to retrieve the samples needed for `ul_pm_evaluate()`.
+ * @param user_context A generic user context to be passed to this callback by the library; leave it to `NULL` if unused.
  * @param sample_type `UL_PM_SAMPLE_TYPE_VOLTAGE` or `UL_PM_SAMPLE_TYPE_CURRENT`.
  * @param index Index of the sample wanted by the library.
- * @param context A generic user context to be passed to this callback by the library; leave it to `NULL` if unused.
  * @return The raw read sample.
 */
-typedef uint16_t (*ul_pm_sample_callback_t)(ul_pm_sample_type_t sample_type, uint32_t index, void *context);
+typedef uint16_t (*ul_pm_sample_callback_t)(void *user_context, ul_pm_sample_type_t sample_type, uint32_t index);
 
 #endif
 
@@ -172,10 +172,10 @@ extern ul_err_t ul_pm_evaluate(ul_pm_handle_t *self, uint16_t *v_samples, uint16
 /**
  * @brief Evaluate the provided data.
  * @param samples_len Number of samples acquired.
- * @param sample_callback_context A generic user context to be passed to the `ul_pm_sample_callback_t`; leave it to `NULL` if unused.
+ * @param user_context A generic user context to be passed to the `ul_pm_sample_callback_t`; leave it to `NULL` if unused.
  * @param res Where to store the evaluated result.
  */
-extern ul_err_t ul_pm_evaluate(ul_pm_handle_t *self, void *sample_callback_context, uint32_t samples_len, ul_pm_results_t *res);
+extern ul_err_t ul_pm_evaluate(ul_pm_handle_t *self, void *user_context, uint32_t samples_len, ul_pm_results_t *res);
 
 #endif
 
