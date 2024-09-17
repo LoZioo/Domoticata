@@ -19,7 +19,7 @@
 ************************************************************************************************************/
 
 #define LOG_TAG	"pm"
-#define LOG_RESULTS
+// #define LOG_RESULTS
 
 // Voltage and current channels.
 #define ADC_CHANNELS	2
