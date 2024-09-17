@@ -80,10 +80,12 @@ static esp_err_t __adc_driver_setup();
 static esp_err_t __pm_code_setup();
 static esp_err_t __pm_task_setup();
 
-static void __pm_task(void *parameters);
+static esp_err_t __adc_flush_and_start();
 
 static uint16_t __pm_get_sample(ul_pm_sample_type_t sample_type, uint32_t index, void *context);
 static bool IRAM_ATTR __adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data);
+
+static void __pm_task(void *parameters);
 
 /************************************************************************************************************
 * Private Functions Definitions
@@ -275,6 +277,46 @@ esp_err_t __pm_task_setup(){
 	return ESP_OK;
 }
 
+esp_err_t __adc_flush_and_start(){
+
+	// Flush old samples.
+	ESP_RETURN_ON_ERROR(
+		adc_continuous_flush_pool(__adc_handle),
+
+		TAG,
+		"Error on `adc_continuous_flush_pool()`"
+	);
+
+	// Start the sample acquisition.
+	ESP_RETURN_ON_ERROR(
+		adc_continuous_start(__adc_handle),
+
+		TAG,
+		"Error on `adc_continuous_start()`"
+	);
+
+	return ESP_OK;
+}
+
+uint16_t __pm_get_sample(ul_pm_sample_type_t sample_type, uint32_t index, void *context){
+
+	index = (index * 2) + (
+		sample_type == UL_PM_SAMPLE_TYPE_VOLTAGE ?
+		((sample_callback_context_t*) context)->v_sample_offset :
+		((sample_callback_context_t*) context)->i_sample_offset
+	);
+
+	return ((sample_callback_context_t*) context)->samples[index].type1.data;
+}
+
+bool __adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data){
+
+	BaseType_t must_yield = pdFALSE;
+	vTaskNotifyGiveFromISR(__pm_task_handle, &must_yield);
+
+	return (must_yield == pdTRUE);
+}
+
 void __pm_task(void *parameters){
 
 	ESP_LOGI(TAG, "Started");
@@ -301,22 +343,12 @@ void __pm_task(void *parameters){
 	for(;;){
 		ret = ESP_OK;
 
-		// Flush old samples.
 		ESP_GOTO_ON_ERROR(
-			adc_continuous_flush_pool(__adc_handle),
+			__adc_flush_and_start(),
 
 			task_continue,
 			TAG,
-			"Error on `adc_continuous_flush_pool()`"
-		);
-
-		// Start the sample acquisition.
-		ESP_GOTO_ON_ERROR(
-			adc_continuous_start(__adc_handle),
-
-			task_continue,
-			TAG,
-			"Error on `adc_continuous_start()`"
+			"Error on `__adc_flush_and_start()`"
 		);
 
 		// Wait for the ISR and then clear the notification (`pdTRUE`).
@@ -407,25 +439,6 @@ void __pm_task(void *parameters){
 	}
 }
 
-uint16_t __pm_get_sample(ul_pm_sample_type_t sample_type, uint32_t index, void *context){
-
-	index = (index * 2) + (
-		sample_type == UL_PM_SAMPLE_TYPE_VOLTAGE ?
-		((sample_callback_context_t*) context)->v_sample_offset :
-		((sample_callback_context_t*) context)->i_sample_offset
-	);
-
-	return ((sample_callback_context_t*) context)->samples[index].type1.data;
-}
-
-bool __adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data){
-
-	BaseType_t must_yield = pdFALSE;
-	vTaskNotifyGiveFromISR(__pm_task_handle, &must_yield);
-
-	return (must_yield == pdTRUE);
-}
-
 /************************************************************************************************************
 * Public Functions Definitions
  ************************************************************************************************************/
@@ -451,6 +464,46 @@ esp_err_t pm_setup(){
 
 		TAG,
 		"Error on `__pm_task_setup()`"
+	);
+
+	return ESP_OK;
+}
+
+esp_err_t pm_start_compute(){
+
+	ESP_RETURN_ON_FALSE(
+		__is_initialized(),
+
+		ESP_ERR_INVALID_STATE,
+		TAG,
+		"Error: library not initialized"
+	);
+
+	ESP_RETURN_ON_ERROR(
+		__adc_flush_and_start(),
+
+		TAG,
+		"Error on `__adc_flush_and_start()`"
+	);
+
+	return ESP_OK;
+}
+
+esp_err_t pm_stop_compute(){
+
+	ESP_RETURN_ON_FALSE(
+		__is_initialized(),
+
+		ESP_ERR_INVALID_STATE,
+		TAG,
+		"Error: library not initialized"
+	);
+
+	ESP_RETURN_ON_ERROR(
+		adc_continuous_stop(__adc_handle),
+
+		TAG,
+		"Error on `adc_continuous_stop()`"
 	);
 
 	return ESP_OK;

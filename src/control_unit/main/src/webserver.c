@@ -472,6 +472,16 @@ void __worker_ota_update(void *parameters){
 
 esp_err_t __worker_ota_update_code(worker_ota_update_params_t *parameters){
 
+	// !!! CRASHA QUI'
+
+	ESP_LOGI(TAG, "Shutting down PowerMonitor task");
+	ESP_RETURN_ON_ERROR(
+		pm_stop_compute(),
+
+		TAG,
+		"Error on `pm_stop_compute()`"
+	);
+
 	if(parameters->update_fs){
 
 		ESP_RETURN_ON_ERROR(
@@ -502,6 +512,14 @@ esp_err_t __worker_ota_update_code(worker_ota_update_params_t *parameters){
 		ESP_LOGI(TAG, "Rebooting to the newly updated firmware");
 		esp_restart();
 	}
+
+	ESP_LOGI(TAG, "Starting back PowerMonitor task");
+	ESP_RETURN_ON_ERROR(
+		pm_start_compute(),
+
+		TAG,
+		"Error on `pm_start_compute()`"
+	);
 
 	return ESP_OK;
 }
