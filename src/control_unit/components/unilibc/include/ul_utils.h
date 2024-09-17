@@ -229,8 +229,9 @@ extern bool ul_utils_in(int x, uint8_t argc, ...);
  * @param x The floating point to be converted.
  * @param str The destination string; ensure it's big enough.
  * @param afterpoint The number of decimal places.
+ * @return `NULL` if there are some parameter errors, otherwise `str`.
 */
-extern ul_err_t ul_utils_ftoa(float x, char *str, uint8_t afterpoint);
+extern char* ul_utils_ftoa(float x, char *str, uint8_t afterpoint);
 
 /**
  * @brief Converts an `uint32_t` to its binary string representation.

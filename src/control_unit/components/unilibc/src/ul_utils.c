@@ -122,8 +122,9 @@ bool ul_utils_in(int x, uint8_t argc, ...){
 
 /* Strings */
 
-ul_err_t ul_utils_ftoa(float x, char *str, uint8_t afterpoint){
-	assert_param_notnull(str);
+char* ul_utils_ftoa(float x, char *str, uint8_t afterpoint){
+	if(str == NULL)
+		return str;
 
 	int ipart = (int) x;
 	float fpart = x - (float) ipart;
@@ -138,7 +139,7 @@ ul_err_t ul_utils_ftoa(float x, char *str, uint8_t afterpoint){
 	int fpart_int = (int) (fpart * multiplier);
 	itoa(fpart_int, str + strlen(str), 10);
 
-	return UL_OK;
+	return str;
 }
 
 ul_err_t ul_utils_int_to_bin_str(uint32_t n, char *str, uint8_t byte_len){
