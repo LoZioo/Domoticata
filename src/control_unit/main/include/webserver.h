@@ -31,7 +31,6 @@
 #include <esp_err.h>
 #include <esp_check.h>
 #include <esp_log.h>
-#include <esp_system.h>
 
 #include <esp_http_server.h>
 #include <esp_netif_ip_addr.h>
@@ -44,7 +43,6 @@
 #include <main.h>
 #include <wifi.h>
 #include <fs.h>
-#include <ota.h>
 #include <pm.h>
 
 /************************************************************************************************************

@@ -207,6 +207,10 @@ menu "Project configurations"
 	endmenu
 
 	menu "OTA update"
+		config OTA_ENABLED
+			bool "Enable OTA code"
+			default n
+
 		config OTA_HTTP_SERVER_PORT
 			int "HTTP server port"
 			default 5500

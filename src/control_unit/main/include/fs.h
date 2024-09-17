@@ -12,6 +12,7 @@
  * 						-	Add the `FLASH_IN_PROJECT` flag to flash the LittleFS image together with the fw image (annoying).
  * 							[ `littlefs_create_partition_image(partition_name path_to_folder_containing_files FLASH_IN_PROJECT)` ]
  * 						-	To manually flash the built LittleFS image (much better):
+ * 							- `cd python_scripts`
  * 							-	`pip install -r requirements.txt`
  * 							-	Right click on `flash_littlefs_image.py` and "Run Python File in Terminal".
  *
@@ -44,7 +45,6 @@
 
 // Project libraries.
 #include <main.h>
-#include <non_volatile_storage.h>
 
 /************************************************************************************************************
 * Public Defines
@@ -75,23 +75,5 @@ extern esp_err_t fs_setup();
  * @brief Check if the filesystem service is available.
  */
 extern bool fs_available();
-
-/**
- * @brief Swap between the two LittleFS partitions.
- */
-extern esp_err_t fs_partition_swap();
-
-/**
- * @brief Write data to the currently unmounted LittleFS partition.
- * @param data If `NULL`, initialize the write process (this must be done on the first call).
- * @note Call `fs_partition_swap()` to mount the partition.
- */
-extern esp_err_t fs_partition_unmounted_write(uint8_t* data, size_t size);
-
-/**
- * @brief Get the SHA-256 hash for the currently unmounted LittleFS partition.
- * @param hash Pointer to a 32-bytes buffer.
- */
-extern esp_err_t fs_partition_unmounted_get_sha256(uint8_t* hash);
 
 #endif  /* INC_FS_H_ */

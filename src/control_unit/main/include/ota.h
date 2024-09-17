@@ -9,6 +9,8 @@
  *
 */
 
+#ifdef CONFIG_OTA_ENABLED
+
 #ifndef INC_OTA_H_
 #define INC_OTA_H_
 
@@ -73,3 +75,4 @@ extern esp_err_t ota_update_fs(esp_ip4_addr_t ota_server_ip);
 extern esp_err_t ota_update_fw(esp_ip4_addr_t ota_server_ip);
 
 #endif  /* INC_OTA_H_ */
+#endif  /* CONFIG_OTA_ENABLED */

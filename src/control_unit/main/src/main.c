@@ -41,7 +41,6 @@
 #include <wifi.h>
 #include <fs.h>
 #include <webserver.h>
-#include <ota.h>
 #include <pm.h>
 
 // !!! SISTEMARE IL REBOOT IN CASO DI CRASH NEL MENUCONFIG SOTTO IL MENU Trace memory
@@ -114,6 +113,8 @@ void app_main(){
 
 	ESP_LOGI(TAG, "pm_setup()");
 	ESP_ERROR_CHECK(pm_setup());
+
+	// !!! AVVIARE VENTOLE
 
 	/* USER CODE END SysInit */
 
