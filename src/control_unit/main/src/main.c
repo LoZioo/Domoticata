@@ -43,7 +43,6 @@
 #include <webserver.h>
 #include <pm.h>
 
-// !!! SISTEMARE IL REBOOT IN CASO DI CRASH NEL MENUCONFIG (ESP_SYSTEM_PANIC)
 // !!! OTTIMIZZARE CODICE ZONE.H
 
 /* USER CODE END Includes */
