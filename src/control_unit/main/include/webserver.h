@@ -35,9 +35,12 @@
 #include <esp_http_server.h>
 #include <esp_netif_ip_addr.h>
 
+#include <cJSON.h>
+
 // UniLibC libraries.
 #include <ul_errors.h>
 #include <ul_utils.h>
+#include <ul_pm.h>
 
 // Project libraries.
 #include <main.h>

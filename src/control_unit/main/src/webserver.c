@@ -38,8 +38,9 @@
 
 // Webserver routes.
 #define ROUTES	{ \
-	__route("/",	HTTP_GET,	__route_root), \
-	__route("/*",	HTTP_GET,	__route_send_text_file), \
+	__route("/",		HTTP_GET,	__route_root), \
+	__route("/pm",	HTTP_GET,	__route_pm), \
+	__route("/*",		HTTP_GET,	__route_send_text_file), \
 }
 
 /************************************************************************************************************
@@ -69,13 +70,21 @@ static esp_err_t __register_routes();
 static void __log_http_request(httpd_req_t *req);
 static decoded_uri_t __decode_uri(httpd_req_t *req);
 static esp_ip4_addr_t __get_sender_ipv4(httpd_req_t *req) __attribute__((unused));
-
 static esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filename);
+
+static char *__decimals(float x);
+
+/**
+ * @brief Encode `*res` to a dynamically allocated JSON string.
+ * @note You must manually `free()` the returned string.
+ */
+static char *__encode_pm_json(ul_pm_results_t *res);
 
 /**
  * @brief Send the requested file from VFS.
  */
 static esp_err_t __route_send_text_file(httpd_req_t *req);
+static esp_err_t __route_pm(httpd_req_t *req);
 static esp_err_t __route_root(httpd_req_t *req);
 
 /************************************************************************************************************
@@ -205,6 +214,44 @@ esp_err_t __set_content_type_from_file_type(httpd_req_t *req, const char *filena
 	return httpd_resp_set_type(req, "text/plain");
 }
 
+char *__decimals(float x){
+	static char str[20];
+	snprintf(str, sizeof(str), "%.2f", x);
+	return str;
+}
+
+char *__encode_pm_json(ul_pm_results_t *res){
+	cJSON *root = cJSON_CreateObject();
+
+	cJSON *v = cJSON_CreateObject();
+	cJSON_AddStringToObject(v, "p_p", __decimals(res->v_pos_peak));
+	cJSON_AddStringToObject(v, "n_p", __decimals(res->v_neg_peak));
+	cJSON_AddStringToObject(v, "pp", __decimals(res->v_pp));
+	cJSON_AddStringToObject(v, "rms", __decimals(res->v_rms));
+	cJSON_AddItemToObject(root, "v", v);
+
+	cJSON *i = cJSON_CreateObject();
+	cJSON_AddStringToObject(i, "p_p", __decimals(res->i_pos_peak));
+	cJSON_AddStringToObject(i, "n_p", __decimals(res->i_neg_peak));
+	cJSON_AddStringToObject(i, "pp", __decimals(res->i_pp));
+	cJSON_AddStringToObject(i, "rms", __decimals(res->i_rms));
+	cJSON_AddItemToObject(root, "i", i);
+
+	cJSON *p = cJSON_CreateObject();
+	cJSON_AddStringToObject(p, "va", __decimals(res->p_va));
+	cJSON_AddStringToObject(p, "w", __decimals(res->p_w));
+	cJSON_AddStringToObject(p, "var", __decimals(res->p_var));
+	cJSON_AddStringToObject(p, "pf", __decimals(res->p_pf));
+	cJSON_AddItemToObject(root, "p", p);
+
+	char *json = cJSON_Print(root);
+
+	// Free root with every appended child.
+	cJSON_Delete(root);
+
+	return json;
+}
+
 esp_err_t __route_send_text_file(httpd_req_t *req){
 	esp_err_t ret = ESP_OK;
 	__log_http_request(req);
@@ -289,6 +336,50 @@ esp_err_t __route_send_text_file(httpd_req_t *req){
 	label_error_404:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(httpd_resp_send_404(req));
 	goto label_cleanup;
+
+	label_error_500:
+	ESP_ERROR_CHECK_WITHOUT_ABORT(httpd_resp_send_500(req));
+	goto label_cleanup;
+}
+
+esp_err_t __route_pm(httpd_req_t *req){
+	esp_err_t ret = ESP_OK;
+
+	ul_pm_results_t res;
+	char *json = NULL;
+
+	ESP_GOTO_ON_ERROR(
+		pm_get_results(&res),
+
+		label_error_500,
+		TAG,
+		"Error on `pm_get_results()`"
+	);
+
+	json = __encode_pm_json(&res);
+	ESP_GOTO_ON_ERROR(
+		httpd_resp_set_type(
+			req, HTTPD_TYPE_JSON
+		),
+
+		label_error_500,
+		TAG,
+		"Error on `httpd_resp_set_type()`"
+	);
+
+	ESP_GOTO_ON_ERROR(
+		httpd_resp_sendstr(
+			req, json
+		),
+
+		label_error_500,
+		TAG,
+		"Error on `httpd_resp_send()`"
+	);
+
+	label_cleanup:
+	free(json);
+	return ret;
 
 	label_error_500:
 	ESP_ERROR_CHECK_WITHOUT_ABORT(httpd_resp_send_500(req));
