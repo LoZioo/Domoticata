@@ -223,8 +223,8 @@ esp_err_t __pm_code_setup(){
 		.v_rms_threshold = 10,
 		.i_rms_threshold = 0.05,
 
-		.v_correction_factor = 1,
-		.i_correction_factor = 1,
+		.v_correction_factor = 0.98,
+		.i_correction_factor = 1.08,
 
 		.sample_callback = __pm_get_sample
 	};
