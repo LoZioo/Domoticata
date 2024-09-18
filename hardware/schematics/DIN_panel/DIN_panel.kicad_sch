@@ -7,7 +7,7 @@
 	(title_block
 		(title "Domoticata DIN panel")
 		(date "2024-07-26")
-		(rev "0.1")
+		(rev "0.0.1")
 		(company "Davide Scalisi")
 	)
 	(lib_symbols

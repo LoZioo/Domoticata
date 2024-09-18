@@ -7,7 +7,7 @@
 	(title_block
 		(title "Domoticata main control unit")
 		(date "2024-07-14")
-		(rev "0.1")
+		(rev "0.0.1")
 		(company "Davide Scalisi")
 	)
 	(lib_symbols
@@ -3867,6 +3867,16 @@
 			(type default)
 		)
 		(uuid "fa8c223b-dc1a-4859-ab67-cf88b9b02800")
+	)
+	(text "!!! AGGIUNGERE ACCESSO AD UART CON STRIPLINE\n\nApplique 4 LED di fila: 36V @ 102.5mA\nA gruppi di due, è stata messa una resistenza da 56 Ohm, 1W."
+		(exclude_from_sim no)
+		(at 51.054 95.25 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "09c19b8b-a811-4cd0-89d1-e0ba3da1dd1d")
 	)
 	(label "AC_N"
 		(at 171.45 29.21 0)

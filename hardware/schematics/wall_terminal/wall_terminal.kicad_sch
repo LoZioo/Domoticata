@@ -7,7 +7,7 @@
 	(title_block
 		(title "Domoticata wall terminal")
 		(date "2024-07-12")
-		(rev "0.1")
+		(rev "0.0.1")
 		(company "Davide Scalisi")
 	)
 	(lib_symbols
@@ -2641,6 +2641,16 @@
 			(type default)
 		)
 		(uuid "f8ef25f4-9cd8-471d-9d66-f0d32d004bce")
+	)
+	(text "!!! RIFARE LASCIANDO UN SOLO PIN ADC E PREDISPONENDO DOPPIO DIODO PER TERZO PULSANTE\n\nSequenza fili: V, BA, A, BB, B, BV"
+		(exclude_from_sim no)
+		(at 162.306 38.1 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "e9cafc5b-275c-4d3c-b888-028a71fb45ca")
 	)
 	(label "RS485_A"
 		(at 123.19 72.39 180)
