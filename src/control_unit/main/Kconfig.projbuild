@@ -123,6 +123,14 @@ menu "Project configurations"
 			int "Number of samples per channel"
 			default 4000
 
+		config PM_POWER_THRESHOLD
+			int "Power threshold (W)"
+			default 3000
+
+		config PM_POWER_HYSTERESIS
+			int "Power hysteresis thresholds (W)"
+			default 100
+
 	endmenu
 
 	menu "Webserver"

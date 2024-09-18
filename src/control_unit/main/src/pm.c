@@ -38,6 +38,8 @@
 	(CONFIG_PM_ADC_SAMPLES * 1000) / CONFIG_PM_ADC_SAMPLE_RATE \
 )
 
+#define ALARM_TOGGLE_PERIOD_MS	100
+
 /**
  * @brief Statement to check if the library was initialized.
  */
@@ -71,6 +73,8 @@ static struct __attribute__((__packed__)) {
 static ul_pm_results_t __pm_res;
 static SemaphoreHandle_t __pm_res_mutex;
 
+static TimerHandle_t __alarm_timer_handle;
+
 // Sample buffer.
 static uint8_t __buffer[ADC_BUF_SIZE_BYTES];
 static uint8_t __v_sample_offset, __i_sample_offset;
@@ -82,6 +86,9 @@ static uint8_t __v_sample_offset, __i_sample_offset;
 static esp_err_t __adc_driver_setup();
 static esp_err_t __pm_code_setup();
 static esp_err_t __pm_task_setup();
+
+static esp_err_t __set_alarm(bool state);
+static void __alarm_timer(TimerHandle_t timer);
 
 static uint16_t __pm_get_sample(void *user_context, ul_pm_sample_type_t sample_type, uint32_t index);
 static bool __adc_conversion_done(adc_continuous_handle_t adc_handle, const adc_continuous_evt_data_t *edata, void *user_data);
@@ -255,6 +262,22 @@ esp_err_t __pm_task_setup(){
 		"Error: unable to allocate `__pm_res_mutex`"
 	);
 
+	__alarm_timer_handle = xTimerCreate(
+		"alarm_timer",
+		pdMS_TO_TICKS(ALARM_TOGGLE_PERIOD_MS),
+		pdTRUE,
+		NULL,
+		__alarm_timer
+	);
+
+	ESP_RETURN_ON_FALSE(
+		__alarm_timer_handle != NULL,
+
+		ESP_ERR_NO_MEM,
+		TAG,
+		"Error: unable to allocate `__alarm_timer_handle`"
+	);
+
 	BaseType_t ret_val = xTaskCreatePinnedToCore(
 		__pm_task,
 		LOG_TAG "_task",
@@ -275,6 +298,50 @@ esp_err_t __pm_task_setup(){
 	);
 
 	return ESP_OK;
+}
+
+esp_err_t __set_alarm(bool state){
+
+	if(state)
+		ESP_RETURN_ON_FALSE(
+			xTimerStart(
+				__alarm_timer_handle,
+				pdMS_TO_TICKS(ADC_CONTINUOUS_READ_TIMEOUT_MS)
+			) == pdPASS,
+
+			ESP_ERR_TIMEOUT,
+			TAG,
+			"Error on `xTimerStart()`"
+		);
+
+	else {
+
+		ESP_RETURN_ON_FALSE(
+			xTimerStop(
+				__alarm_timer_handle,
+				pdMS_TO_TICKS(ADC_CONTINUOUS_READ_TIMEOUT_MS)
+			) == pdPASS,
+
+			ESP_ERR_TIMEOUT,
+			TAG,
+			"Error on `xTimerStop()`"
+		);
+
+		ESP_RETURN_ON_ERROR(
+			gpio_set_alarm(state),
+
+			TAG,
+			"Error on `gpio_set_alarm()`"
+		);
+	}
+
+	return ESP_OK;
+}
+
+void __alarm_timer(TimerHandle_t timer){
+	static bool state = false;
+	ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_set_alarm(state));
+	state = !state;
 }
 
 uint16_t __pm_get_sample(void *user_context, ul_pm_sample_type_t sample_type, uint32_t index){
@@ -307,6 +374,10 @@ void __pm_task(void *parameters){
 
 	// Sample buffer read length.
 	uint32_t read_len;
+
+	// Alarm management.
+	bool alarm_enabled = false;
+	bool alarm_update = false;
 
 	/* Code */
 
@@ -391,6 +462,37 @@ void __pm_task(void *parameters){
 		);
 
 		xSemaphoreGive(__pm_res_mutex);
+
+		// Handle alarm.
+		if(
+			!alarm_enabled &&
+			__pm_res.p_w >= CONFIG_PM_POWER_THRESHOLD + CONFIG_PM_POWER_HYSTERESIS
+		){
+			alarm_enabled = true;
+			alarm_update = true;
+		}
+
+		else if(
+			alarm_enabled &&
+			__pm_res.p_w <= CONFIG_PM_POWER_THRESHOLD - CONFIG_PM_POWER_HYSTERESIS
+		){
+			alarm_enabled = false;
+			alarm_update = true;
+		}
+
+		if(alarm_update){
+
+			ESP_GOTO_ON_ERROR(
+				__set_alarm(alarm_enabled),
+
+				task_continue,
+				TAG,
+				"Error on `__set_alarm(state=%u)`",
+				alarm_enabled
+			);
+
+			alarm_update = false;
+		}
 
 		#ifdef LOG_RESULTS
 		ESP_LOGW(TAG, "LOG_RESULTS");
