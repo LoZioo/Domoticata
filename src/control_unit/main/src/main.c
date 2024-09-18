@@ -55,6 +55,12 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+// 0 - 1023
+#define PWM_FAN_SPEED				512
+#define PWM_FAN_SPEED_PERC	( \
+	(uint16_t) ( ((float) PWM_FAN_SPEED / (float) PWM_DUTY_MAX) * 100) \
+)
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -95,6 +101,9 @@ void app_main(){
 	ESP_LOGI(TAG, "pwm_setup()");
 	ESP_ERROR_CHECK(pwm_setup());
 
+	ESP_LOGI(TAG, "Starting fan: speed %u%%", PWM_FAN_SPEED_PERC);
+	ESP_ERROR_CHECK(pwm_set_fan(PWM_FAN_SPEED));
+
 	ESP_LOGI(TAG, "rs485_setup()");
 	ESP_ERROR_CHECK(rs485_setup());
 
@@ -116,9 +125,6 @@ void app_main(){
 	/* USER CODE END SysInit */
 
 	/* USER CODE BEGIN Init */
-
-	ESP_LOGI(TAG, "Starting fans");
-	ESP_ERROR_CHECK(pwm_set_fan(512));
 
 	ESP_LOGI(TAG, "Completed");
 	vTaskDelete(NULL);
