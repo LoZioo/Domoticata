@@ -224,7 +224,6 @@ void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, 
 	else if(event_base == IP_EVENT)
 		switch(event_id){
 			case IP_EVENT_STA_GOT_IP: {
-				xSemaphoreGive(__network_ready_semaphore);
 
 				ip_event_got_ip_t* event = event_data;
 				ESP_LOGI(TAG, "DHCP data received");
@@ -232,6 +231,7 @@ void __net_event_callback(void* event_handler_arg, esp_event_base_t event_base, 
 				ESP_LOGI(TAG, "Netmask: " IPSTR, IP2STR(&event->ip_info.netmask));
 				ESP_LOGI(TAG, "Gateway: " IPSTR, IP2STR(&event->ip_info.gw));
 
+				xSemaphoreGive(__network_ready_semaphore);
 				__unblock_caller();
 			} break;
 
