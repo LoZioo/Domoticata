@@ -101,6 +101,8 @@ void app_main(){
 	ESP_LOGI(TAG, "pwm_setup()");
 	ESP_ERROR_CHECK(pwm_setup());
 
+	startup_routine();
+
 	ESP_LOGI(TAG, "Starting fan: speed %u%%", PWM_FAN_SPEED_PERC);
 	ESP_ERROR_CHECK(pwm_set_fan(PWM_FAN_SPEED));
 
@@ -143,6 +145,20 @@ void app_main(){
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 2 */
+
+void startup_routine(){
+
+	uint8_t val;
+	for(uint8_t i=0; i<6; i++){
+		val = 1 - i % 2;
+		for(uint8_t zone=ZONE_LED_1; zone<=ZONE_LED_8; zone++){
+			gpio_write_zone(zone, val);
+			pwm_write_zone(zone, PWM_DUTY_MAX * val, 100);
+		}
+
+		delay(100);
+	}
+}
 
 void delay_remainings(int32_t ms, int64_t initial_timestamp_ms){
 	ms -= millis() - initial_timestamp_ms;
