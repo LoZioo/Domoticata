@@ -56,16 +56,8 @@ typedef enum __attribute__((__packed__)) {
 * Public Defines
 ************************************************************************************************************/
 
-/**
- * @brief Library internal helper.
- */
-#define __zone_same(zone)	\
-	(zone), (zone), (zone)
-
-#define ZONE_DIGITAL_LEN	7
-#define ZONE_PWM_LEN			11
-
 // Zones that must be controlled by a digital output.
+#define ZONE_DIGITAL_LEN		7
 #define ZONE_DIGITAL_ZONES	{ \
 	ZONE_LED_7, \
 	ZONE_LED_8, \
@@ -88,6 +80,7 @@ typedef enum __attribute__((__packed__)) {
 }
 
 // Zones that can be controlled by a PWM output.
+#define ZONE_PWM_LEN		11
 #define ZONE_PWM_ZONES	{ \
 	ZONE_LED_1, \
 	ZONE_LED_2, \
@@ -146,6 +139,9 @@ typedef enum __attribute__((__packed__)) {
 	LEDC_CHANNEL_1, \
 	LEDC_CHANNEL_2 \
 }
+
+#define __zone_same(zone)	\
+	(zone), (zone), (zone)
 
 /**
  * f: (device_id x button_id x button_state) -> (zone)

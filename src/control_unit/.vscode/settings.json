@@ -106,5 +106,6 @@
 		"dirent.h": "c",
 		"esp_http_server.h": "c",
 		"cjson.h": "c"
-	}
+	},
+	"idf.currentSetup": "e:\\Programmi\\ESP-IDF\\v5.2.2\\esp-idf"
 }

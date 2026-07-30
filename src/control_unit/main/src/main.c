@@ -17,6 +17,11 @@
 	*/
 /* USER CODE END Header */
 
+/* ---------------------------------------------------------------------------*/
+/* Developed using ESP-IDF v5.2.2 */
+/* Open VSCode "menuconfig" to access the project configurations */
+/* ---------------------------------------------------------------------------*/
+
 /* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -42,8 +47,6 @@
 #include <fs.h>
 #include <webserver.h>
 #include <pm.h>
-
-// !!! OTTIMIZZARE CODICE ZONE.H
 
 /* USER CODE END Includes */
 
@@ -101,7 +104,7 @@ void app_main(){
 	ESP_LOGI(TAG, "pwm_setup()");
 	ESP_ERROR_CHECK(pwm_setup());
 
-	startup_routine();
+	led_startup_routine();
 
 	ESP_LOGI(TAG, "Starting fan: speed %u%%", PWM_FAN_SPEED_PERC);
 	ESP_ERROR_CHECK(pwm_set_fan(PWM_FAN_SPEED));
@@ -109,20 +112,20 @@ void app_main(){
 	ESP_LOGI(TAG, "rs485_setup()");
 	ESP_ERROR_CHECK(rs485_setup());
 
-	ESP_LOGI(TAG, "nvs_setup()");
-	ESP_ERROR_CHECK(nvs_setup());
+	// ESP_LOGI(TAG, "nvs_setup()");
+	// ESP_ERROR_CHECK(nvs_setup());
 
-	ESP_LOGI(TAG, "wifi_setup()");
-	ESP_ERROR_CHECK(wifi_setup());
+	// ESP_LOGI(TAG, "wifi_setup()");
+	// ESP_ERROR_CHECK(wifi_setup());
 
-	ESP_LOGI(TAG, "fs_setup()");
-	ESP_ERROR_CHECK(fs_setup());
+	// ESP_LOGI(TAG, "fs_setup()");
+	// ESP_ERROR_CHECK(fs_setup());
 
-	ESP_LOGI(TAG, "webserver_setup()");
-	ESP_ERROR_CHECK(webserver_setup());
+	// ESP_LOGI(TAG, "webserver_setup()");
+	// ESP_ERROR_CHECK(webserver_setup());
 
-	ESP_LOGI(TAG, "pm_setup()");
-	ESP_ERROR_CHECK(pm_setup());
+	// ESP_LOGI(TAG, "pm_setup()");
+	// ESP_ERROR_CHECK(pm_setup());
 
 	/* USER CODE END SysInit */
 
@@ -146,7 +149,7 @@ void app_main(){
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 2 */
 
-void startup_routine(){
+void led_startup_routine(){
 
 	uint8_t val;
 	for(uint8_t i=0; i<6; i++){

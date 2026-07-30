@@ -50,7 +50,7 @@
 * Public Functions Prototypes
 ************************************************************************************************************/
 
-extern void startup_routine();
+extern void led_startup_routine();
 
 /**
  * @brief `delay( ms - (millis() - initial_timestamp_ms) )`
