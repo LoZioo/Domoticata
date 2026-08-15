@@ -14,13 +14,15 @@
 	* If no LICENSE file comes with this software, it is provided AS-IS.
 	*
 	******************************************************************************
+	*
+	* Developed using ESP-IDF v5.2.2
+	* Useful commands:
+	* - Open VSCode "menuconfig" to access the project configurations
+	* - ESP-IDF: Add VS Code Configuration Folder
+	* - ESP-IDF: Select Current ESP-IDF Version
+	* - ESP-IDF: Set Espressif Device Target (for this project: esp32 -> ESP-PROG)
 	*/
 /* USER CODE END Header */
-
-/* ---------------------------------------------------------------------------*/
-/* Developed using ESP-IDF v5.2.2 */
-/* Open VSCode "menuconfig" to access the project configurations */
-/* ---------------------------------------------------------------------------*/
 
 /* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
