@@ -21,6 +21,7 @@
 	* - ESP-IDF: Add VS Code Configuration Folder
 	* - ESP-IDF: Select Current ESP-IDF Version
 	* - ESP-IDF: Set Espressif Device Target (for this project: esp32 -> ESP-PROG)
+	* - ESP-IDF: Doctor Command
 	*/
 /* USER CODE END Header */
 
