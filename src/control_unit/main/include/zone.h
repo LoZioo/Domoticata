@@ -158,8 +158,8 @@ typedef enum __attribute__((__packed__)) {
 		{ __zone_same(ZONE_UNMAPPED)	} \
 	}, \
 	{ \
-		{ __zone_same(ZONE_LED_2)	}, \
 		{ __zone_same(ZONE_LED_1)	}, \
+		{ __zone_same(ZONE_LED_3)	}, \
 		{ __zone_same(ZONE_UNMAPPED)	} \
 	}, \
 	{ \
@@ -174,7 +174,7 @@ typedef enum __attribute__((__packed__)) {
 	}, \
 	{ \
 		{ __zone_same(ZONE_LED_2)	}, \
-		{ __zone_same(ZONE_LED_10)	}, \
+		{ __zone_same(ZONE_LED_3)	}, \
 		{ __zone_same(ZONE_UNMAPPED)	} \
 	}, \
 	{ \
@@ -222,10 +222,10 @@ typedef enum __attribute__((__packed__)) {
 // f: (device_id) -> (zone)
 #define ZONE_TRIMMERS	{ \
 	ZONE_LED_4, \
+	ZONE_LED_3, \
+	ZONE_UNMAPPED, \
+	ZONE_UNMAPPED, \
 	ZONE_LED_2, \
-	ZONE_UNMAPPED, \
-	ZONE_UNMAPPED, \
-	ZONE_LED_10, \
 	ZONE_LED_6, \
 	ZONE_UNMAPPED, \
 	ZONE_LED_5, \
